@@ -16,6 +16,7 @@ eggs/
 .eggs/
 lib/
 lib64/
+
 parts/
 sdist/
 var/
@@ -165,7 +166,7 @@ yarn-error.log
 
 # GitHub Copilot/Agent instructions (optional - uncomment if desired)
 .github/copilot-instructions.md
-.github/AGENTS.md
+.github/AGENT.md
 .github/PLAN.md
 
 # Local development
