@@ -207,9 +207,28 @@ def radians_to_degrees(radians: float) -> float:
 
 
 def normalize_angle(angle: float, min_angle: float = -180.0, max_angle: float = 180.0) -> float:
-    """Normalize an angle to a given range."""
+    """Normalize an angle to a given range.
+
+    Args:
+        angle: The angle to normalize
+        min_angle: Minimum of the target range (default -180)
+        max_angle: Maximum of the target range (default 180)
+
+    Returns:
+        The angle normalized to [min_angle, max_angle)
+    """
     range_size = max_angle - min_angle
     return ((angle - min_angle) % range_size) + min_angle
+
+
+def wrap_angle_180(angle: float) -> float:
+    """Wrap angle to [-180, 180) range."""
+    return normalize_angle(angle, -180.0, 180.0)
+
+
+def wrap_angle_360(angle: float) -> float:
+    """Wrap angle to [0, 360) range."""
+    return normalize_angle(angle, 0.0, 360.0)
 
 
 def map_range(
@@ -221,3 +240,66 @@ def map_range(
 ) -> float:
     """Map a value from one range to another."""
     return (value - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
+
+
+# Distance conversions
+def mm_to_m(mm: float) -> float:
+    """Convert millimeters to meters."""
+    return mm / 1000.0
+
+
+def m_to_mm(m: float) -> float:
+    """Convert meters to millimeters."""
+    return m * 1000.0
+
+
+def inches_to_mm(inches: float) -> float:
+    """Convert inches to millimeters."""
+    return inches * 25.4
+
+
+def mm_to_inches(mm: float) -> float:
+    """Convert millimeters to inches."""
+    return mm / 25.4
+
+
+# Temperature conversions
+def celsius_to_fahrenheit(celsius: float) -> float:
+    """Convert Celsius to Fahrenheit."""
+    return celsius * 9 / 5 + 32
+
+
+def fahrenheit_to_celsius(fahrenheit: float) -> float:
+    """Convert Fahrenheit to Celsius."""
+    return (fahrenheit - 32) * 5 / 9
+
+
+def celsius_to_kelvin(celsius: float) -> float:
+    """Convert Celsius to Kelvin."""
+    return celsius + 273.15
+
+
+def kelvin_to_celsius(kelvin: float) -> float:
+    """Convert Kelvin to Celsius."""
+    return kelvin - 273.15
+
+
+# Speed conversions
+def rpm_to_rad_per_sec(rpm: float) -> float:
+    """Convert RPM to radians per second."""
+    return rpm * 2 * math.pi / 60
+
+
+def rad_per_sec_to_rpm(rad_per_sec: float) -> float:
+    """Convert radians per second to RPM."""
+    return rad_per_sec * 60 / (2 * math.pi)
+
+
+def deg_per_sec_to_rad_per_sec(deg_per_sec: float) -> float:
+    """Convert degrees per second to radians per second."""
+    return degrees_to_radians(deg_per_sec)
+
+
+def rad_per_sec_to_deg_per_sec(rad_per_sec: float) -> float:
+    """Convert radians per second to degrees per second."""
+    return radians_to_degrees(rad_per_sec)
