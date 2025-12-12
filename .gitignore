@@ -182,9 +182,6 @@ temp/
 docs/_build/
 site/
 
-# Poetry
-poetry.lock
-
 # Benchmarks
 .benchmarks/
 
