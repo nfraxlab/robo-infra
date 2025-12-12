@@ -2,7 +2,8 @@
 
 **Universal robotics infrastructure for any hardware, any project.**
 
-[![CI](https://github.com/nfraxio/robo-infra/workflows/CI/badge.svg)](https://github.com/nfraxio/robo-infra/actions)
+[![PyPI](https://img.shields.io/pypi/v/robo-infra)](https://pypi.org/project/robo-infra/)
+[![CI](https://github.com/nfraxlab/robo-infra/workflows/CI/badge.svg)](https://github.com/nfraxlab/robo-infra/actions)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
