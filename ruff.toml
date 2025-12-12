@@ -1,0 +1,55 @@
+# Ruff configuration for robo-infra
+# Matches svc-infra and ai-infra settings
+
+line-length = 100
+target-version = "py311"
+
+[lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # Pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade
+    "ARG",    # flake8-unused-arguments
+    "SIM",    # flake8-simplify
+    "TCH",    # flake8-type-checking
+    "PTH",    # flake8-use-pathlib
+    "ERA",    # eradicate (commented code)
+    "PL",     # pylint
+    "RUF",    # Ruff-specific rules
+]
+
+ignore = [
+    "E501",    # line too long (handled by formatter)
+    "PLR0913", # too many arguments
+    "PLR2004", # magic value comparison
+    "PLR0911", # too many return statements
+    "PLR0912", # too many branches
+    "PLR0915", # too many statements
+    "ARG001",  # unused function argument (common in ABCs)
+    "ARG002",  # unused method argument (common in ABCs)
+]
+
+[lint.per-file-ignores]
+"tests/**/*.py" = [
+    "ARG",     # Unused arguments in tests are fine
+    "PLR2004", # Magic values in tests are fine
+]
+"src/robo_infra/core/*.py" = [
+    "ARG001",  # ABCs have unused arguments
+    "ARG002",
+]
+
+[lint.isort]
+known-first-party = ["robo_infra"]
+force-single-line = false
+lines-after-imports = 2
+
+[format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"

@@ -1,0 +1,86 @@
+[tool.poetry]
+name = "robo-infra"
+version = "0.1.0"
+description = "Universal robotics infrastructure - control any robot from servo to rocket"
+authors = ["nfraxlab <dev@nfrax.io>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/nfraxlab/robo-infra"
+repository = "https://github.com/nfraxlab/robo-infra"
+documentation = "https://github.com/nfraxlab/robo-infra#readme"
+keywords = ["robotics", "servo", "motor", "sensor", "raspberry-pi", "automation", "iot"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Hardware",
+    "Typing :: Typed",
+]
+packages = [{ include = "robo_infra", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pydantic = "^2.0"
+typing-extensions = "^4.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0"
+pytest-cov = "^5.0"
+pytest-asyncio = "^0.24"
+ruff = "^0.8"
+mypy = "^1.10"
+pre-commit = "^4.0"
+
+[tool.poetry.group.hardware]
+optional = true
+
+[tool.poetry.group.hardware.dependencies]
+smbus2 = "^0.4"
+spidev = "^3.6"
+pyserial = "^3.5"
+
+[tool.poetry.group.integrations]
+optional = true
+
+[tool.poetry.group.integrations.dependencies]
+# svc-infra = "^0.1"  # Uncomment when published
+# ai-infra = "^0.1"   # Uncomment when published
+
+[tool.poetry.scripts]
+robo-infra = "robo_infra.cli:main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = "-q --tb=short"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+
+[tool.coverage.run]
+source = ["src/robo_infra"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+    "@abstractmethod",
+]
