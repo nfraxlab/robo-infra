@@ -117,7 +117,12 @@ class DigitalPin(Pin):
             inverted: If True, invert logic
             initial: Initial state for output pins
         """
-        if mode not in (PinMode.INPUT, PinMode.OUTPUT, PinMode.INPUT_PULLUP, PinMode.INPUT_PULLDOWN):
+        if mode not in (
+            PinMode.INPUT,
+            PinMode.OUTPUT,
+            PinMode.INPUT_PULLUP,
+            PinMode.INPUT_PULLDOWN,
+        ):
             raise ValueError(f"Invalid mode for DigitalPin: {mode}")
         super().__init__(number, mode, name=name, inverted=inverted)
         self._initial = initial
@@ -412,7 +417,9 @@ class SimulatedAnalogPin(AnalogPin):
         reference_voltage: float = 3.3,
         initial_value: float = 0.0,
     ) -> None:
-        super().__init__(number, name=name, resolution=resolution, reference_voltage=reference_voltage)
+        super().__init__(
+            number, name=name, resolution=resolution, reference_voltage=reference_voltage
+        )
         self._simulated_voltage = initial_value
 
     def setup(self) -> None:

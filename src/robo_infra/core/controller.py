@@ -668,7 +668,9 @@ class Controller(ABC):
         self._set_state(ControllerState.RUNNING)
         interval = 1.0 / self._config.loop_rate
 
-        logger.info("Controller '%s' control loop started at %.1f Hz", self._name, self._config.loop_rate)
+        logger.info(
+            "Controller '%s' control loop started at %.1f Hz", self._name, self._config.loop_rate
+        )
 
         try:
             while not self._stop_requested:
@@ -805,38 +807,46 @@ class Controller(ABC):
         tools = []
 
         # Basic movement tool
-        tools.append({
-            "name": f"{self._name}_move",
-            "description": f"Move {self._name} actuators to target positions",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    name: {"type": "number", "description": f"Target position for {name}"}
-                    for name in self._actuators
+        tools.append(
+            {
+                "name": f"{self._name}_move",
+                "description": f"Move {self._name} actuators to target positions",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        name: {"type": "number", "description": f"Target position for {name}"}
+                        for name in self._actuators
+                    },
                 },
-            },
-        })
+            }
+        )
 
         # Home tool
-        tools.append({
-            "name": f"{self._name}_home",
-            "description": f"Home {self._name} to default positions",
-            "parameters": {"type": "object", "properties": {}},
-        })
+        tools.append(
+            {
+                "name": f"{self._name}_home",
+                "description": f"Home {self._name} to default positions",
+                "parameters": {"type": "object", "properties": {}},
+            }
+        )
 
         # Stop tool
-        tools.append({
-            "name": f"{self._name}_stop",
-            "description": f"Emergency stop {self._name}",
-            "parameters": {"type": "object", "properties": {}},
-        })
+        tools.append(
+            {
+                "name": f"{self._name}_stop",
+                "description": f"Emergency stop {self._name}",
+                "parameters": {"type": "object", "properties": {}},
+            }
+        )
 
         # Status tool
-        tools.append({
-            "name": f"{self._name}_status",
-            "description": f"Get status of {self._name}",
-            "parameters": {"type": "object", "properties": {}},
-        })
+        tools.append(
+            {
+                "name": f"{self._name}_status",
+                "description": f"Get status of {self._name}",
+                "parameters": {"type": "object", "properties": {}},
+            }
+        )
 
         return tools
 
@@ -878,7 +888,9 @@ class Controller(ABC):
         if state != self._state:
             old_state = self._state
             self._state = state
-            logger.debug("Controller '%s' state: %s -> %s", self._name, old_state.value, state.value)
+            logger.debug(
+                "Controller '%s' state: %s -> %s", self._name, old_state.value, state.value
+            )
 
             for callback in self._on_state_change:
                 try:

@@ -287,7 +287,9 @@ class Sensor(ABC):
         # Filter buffers
         self._value_buffer: deque[float] = deque(maxlen=max(1, self._filter_config.window_size))
         self._median_buffer: deque[float] = deque(
-            maxlen=max(1, self._filter_config.median_window) if self._filter_config.median_window > 0 else 1
+            maxlen=max(1, self._filter_config.median_window)
+            if self._filter_config.median_window > 0
+            else 1
         )
         self._ema_value: float | None = None
         self._last_filtered_value: float | None = None
@@ -579,7 +581,9 @@ class Sensor(ABC):
     # Calibration
     # -------------------------------------------------------------------------
 
-    def calibrate(self, *, zero_point: float | None = None, reference_value: float | None = None) -> None:
+    def calibrate(
+        self, *, zero_point: float | None = None, reference_value: float | None = None
+    ) -> None:
         """Calibrate the sensor.
 
         Args:
@@ -607,10 +611,17 @@ class Sensor(ABC):
                     # Read again after offset
                     new_current = self.read().value
                     if new_current != zero_point:
-                        self._calibration_scale = (reference_value - zero_point) / (new_current - zero_point)
+                        self._calibration_scale = (reference_value - zero_point) / (
+                            new_current - zero_point
+                        )
 
             self._is_calibrated = True
-            logger.info("Sensor '%s' calibrated (offset=%.4f, scale=%.4f)", self._name, self._calibration_offset, self._calibration_scale)
+            logger.info(
+                "Sensor '%s' calibrated (offset=%.4f, scale=%.4f)",
+                self._name,
+                self._calibration_offset,
+                self._calibration_scale,
+            )
 
         except Exception as e:
             self._is_calibrated = False

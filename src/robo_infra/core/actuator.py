@@ -550,9 +550,7 @@ class SimulatedActuator(Actuator):
         """Simulate applying value (store in memory)."""
         if self._driver is not None:
             # Normalize to 0-1 for driver
-            normalized = (value - self.limits.min) / (
-                self.limits.max - self.limits.min
-            )
+            normalized = (value - self.limits.min) / (self.limits.max - self.limits.min)
             self._driver.set_channel(self.channel, normalized)
 
         logger.debug(
@@ -566,9 +564,7 @@ class SimulatedActuator(Actuator):
         """Simulate reading value (return stored value)."""
         if self._driver is not None:
             normalized = self._driver.get_channel(self.channel)
-            return self.limits.min + normalized * (
-                self.limits.max - self.limits.min
-            )
+            return self.limits.min + normalized * (self.limits.max - self.limits.min)
 
         return self._current_value
 

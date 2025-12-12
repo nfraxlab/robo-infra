@@ -43,7 +43,9 @@ class LimitsExceededError(RoboInfraError):
 class CommunicationError(RoboInfraError):
     """Raised when communication with hardware fails."""
 
-    def __init__(self, bus: str, address: int | str | None = None, details: str | None = None) -> None:
+    def __init__(
+        self, bus: str, address: int | str | None = None, details: str | None = None
+    ) -> None:
         self.bus = bus
         self.address = address
         self.details = details

@@ -184,9 +184,7 @@ def get_driver(name: str) -> type[Driver]:
     """
     if name not in _driver_registry:
         available = list(_driver_registry.keys())
-        raise HardwareNotFoundError(
-            f"Driver '{name}' not found. Available: {available}"
-        )
+        raise HardwareNotFoundError(f"Driver '{name}' not found. Available: {available}")
     return _driver_registry[name]
 
 
@@ -251,9 +249,7 @@ class Driver(ABC):
 
         # Initialize channel configs
         for ch in range(self._channels):
-            self._channel_configs[ch] = self._config.channel_configs.get(
-                ch, ChannelConfig()
-            )
+            self._channel_configs[ch] = self._config.channel_configs.get(ch, ChannelConfig())
             self._channel_values[ch] = self._channel_configs[ch].default_value
 
     # -------------------------------------------------------------------------
@@ -530,8 +526,7 @@ class Driver(ABC):
         """
         if not 0 <= channel < self._channels:
             raise ValueError(
-                f"Channel {channel} out of range for {self._name} "
-                f"(0-{self._channels - 1})"
+                f"Channel {channel} out of range for {self._name} " f"(0-{self._channels - 1})"
             )
 
 
