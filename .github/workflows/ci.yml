@@ -1,10 +1,15 @@
 name: CI
 
 on:
+  workflow_dispatch:
   push:
-    branches: [main, develop]
+    branches:
+      - main
+      - 'feat/**'
+      - 'feature/**'
+      - 'release/**'
   pull_request:
-    branches: [main]
+    branches: ["*"]
 
 env:
   PYTHON_VERSION: "3.11"
