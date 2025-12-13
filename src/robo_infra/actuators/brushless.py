@@ -23,7 +23,6 @@ this class still sends normalized throttle to the driver/channel; hardware-
 
 from __future__ import annotations
 
-import contextlib
 import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
@@ -157,8 +156,11 @@ class Brushless(Actuator):
         """Disarm the ESC and force throttle to 0."""
         # Even if disabled, attempt to stop output.
         self._armed = False
-        with contextlib.suppress(Exception):
+        try:
             self._write_throttle(0.0)
+        except Exception as e:
+            logger.error("Failed to write zero throttle during disarm: %s", e)
+            # Still update state, but log the failure
         self._current_value = 0.0
         self._state = ActuatorState.IDLE if self._is_enabled else ActuatorState.DISABLED
 
@@ -198,14 +200,20 @@ class Brushless(Actuator):
         if self._pwm is not None:
             if not self._pwm.initialized:
                 self._pwm.setup()
-            with contextlib.suppress(Exception):
+            try:
                 self._pwm.set_frequency(self._frequency)
+            except Exception as e:
+                # Non-critical: some platforms don't support dynamic frequency
+                logger.debug("PWM frequency change not supported: %s", e)
         # Ensure safe output
         self.disarm()
 
     def disable(self) -> None:
-        with contextlib.suppress(Exception):
+        try:
             self.disarm()
+        except Exception as e:
+            logger.error("Failed to disarm during disable: %s", e)
+            # Continue to disable even if disarm fails
         super().disable()
 
     def _apply_value(self, value: float) -> None:

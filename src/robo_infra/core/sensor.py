@@ -485,22 +485,32 @@ class Sensor(ABC):
         rate: float = 100.0,
         count: int | None = None,
         duration: float | None = None,
+        *,
+        max_samples: int = 1_000_000,  # Safety limit: 1M samples max
     ) -> AsyncIterator[Reading]:
         """Stream readings asynchronously.
 
         Args:
             rate: Sample rate in Hz (default 100)
-            count: Stop after this many samples (None = infinite)
-            duration: Stop after this many seconds (None = infinite)
+            count: Stop after this many samples (None = use max_samples)
+            duration: Stop after this many seconds (None = no time limit)
+            max_samples: Safety limit - maximum samples before stopping (default 1M)
 
         Yields:
             Reading objects at the specified rate.
 
         Raises:
             DisabledError: If sensor is disabled.
+
+        Note:
+            For infinite streaming, explicitly set max_samples to a very high value
+            or use duration to limit by time.
         """
         if not self._is_enabled:
             raise DisabledError(self._name)
+
+        # Determine actual count limit
+        effective_count = count if count is not None else max_samples
 
         self._state = SensorState.STREAMING
         interval = 1.0 / rate
@@ -508,10 +518,8 @@ class Sensor(ABC):
         samples = 0
 
         try:
-            while True:
-                # Check stop conditions
-                if count is not None and samples >= count:
-                    break
+            while samples < effective_count:
+                # Check time limit
                 if duration is not None and (time.time() - start_time) >= duration:
                     break
 
@@ -519,6 +527,12 @@ class Sensor(ABC):
                 samples += 1
 
                 await asyncio.sleep(interval)
+
+            if samples >= effective_count and count is None:
+                logger.warning(
+                    "Sensor stream reached max_samples limit (%d) - stopping",
+                    max_samples,
+                )
         finally:
             self._state = SensorState.IDLE
 

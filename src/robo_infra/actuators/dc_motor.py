@@ -24,7 +24,6 @@ Speed is expressed as a float in [-1.0, 1.0]:
 
 from __future__ import annotations
 
-import contextlib
 import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
@@ -229,9 +228,11 @@ class DCMotor(Actuator):
         if self._enable_obj is not None:
             if not self._enable_obj.initialized:
                 self._enable_obj.setup()
-            with contextlib.suppress(Exception):
+            try:
                 # Some platforms may not support dynamic frequency changes.
                 self._enable_obj.set_frequency(self._pwm_frequency)
+            except Exception as e:
+                logger.debug("PWM frequency change not supported: %s", e)
 
         for pin in (self._pin_a_obj, self._pin_b_obj):
             if pin is not None and not pin.initialized:

@@ -19,7 +19,6 @@ Phase 3.5 requirements:
 
 from __future__ import annotations
 
-import contextlib
 import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
@@ -128,10 +127,13 @@ class LinearActuator(Actuator):
     def position(self) -> float:
         """Current position ratio in [0, 1]."""
         if self._position_sensor is not None:
+            reading = self._position_sensor.read()
             try:
-                return float(self._position_sensor.read().value)
-            except Exception:
-                return float(self._position_sensor.read())  # type: ignore[arg-type]
+                # Try Reading object with value attribute
+                return float(reading.value)
+            except AttributeError:
+                # Fallback for sensors returning floats directly
+                return float(reading)  # type: ignore[arg-type]
         return self._position_estimate
 
     @property
@@ -228,12 +230,16 @@ class LinearActuator(Actuator):
     def stop(self) -> None:
         """Stop actuator motion."""
         if self._motor is not None:
-            with contextlib.suppress(Exception):
+            try:
                 self._motor.stop()
+            except Exception as e:
+                logger.error("Failed to stop motor: %s", e)
         if self._solenoid is not None:
             # safest default: deactivate
-            with contextlib.suppress(Exception):
+            try:
                 self._solenoid.deactivate()
+            except Exception as e:
+                logger.error("Failed to deactivate solenoid: %s", e)
 
         self._state = ActuatorState.IDLE if self._is_enabled else ActuatorState.DISABLED
 
@@ -264,20 +270,44 @@ class LinearActuator(Actuator):
         self._state = ActuatorState.IDLE
 
     def disable(self) -> None:
-        with contextlib.suppress(Exception):
+        # Stop motion first
+        try:
             self.stop()
+        except Exception as e:
+            logger.error("Failed to stop during disable: %s", e)
+
+        # Disable sub-components, tracking failures
+        failures: list[str] = []
 
         if self._motor is not None:
-            with contextlib.suppress(Exception):
+            try:
                 self._motor.disable()
+            except Exception as e:
+                failures.append(f"motor: {e}")
+                logger.error("Failed to disable motor: %s", e)
+
         if self._solenoid is not None:
-            with contextlib.suppress(Exception):
+            try:
                 self._solenoid.disable()
+            except Exception as e:
+                failures.append(f"solenoid: {e}")
+                logger.error("Failed to disable solenoid: %s", e)
+
         if self._position_sensor is not None:
-            with contextlib.suppress(Exception):
+            try:
                 self._position_sensor.disable()
+            except Exception as e:
+                # Sensor disable is non-critical
+                logger.debug("Failed to disable position sensor: %s", e)
 
         super().disable()
+
+        if failures:
+            logger.warning(
+                "Linear actuator %s disable completed with failures: %s",
+                self.name,
+                failures,
+            )
 
     def _apply_value(self, value: float) -> None:
         # Interpret Actuator.set(value) as position command

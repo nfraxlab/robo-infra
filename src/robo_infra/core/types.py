@@ -65,6 +65,18 @@ class Unit(Enum):
     FAHRENHEIT = "°F"
     KELVIN = "K"
 
+    # Pressure
+    PASCALS = "Pa"
+    HECTOPASCALS = "hPa"
+    KILOPASCALS = "kPa"
+    BAR = "bar"
+    PSI = "psi"
+    ATM = "atm"
+
+    # Light
+    LUX = "lx"
+    LUMENS = "lm"
+
     # Dimensionless
     PERCENT = "%"
     RATIO = "ratio"

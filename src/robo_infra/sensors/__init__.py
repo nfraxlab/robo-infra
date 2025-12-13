@@ -1,6 +1,36 @@
 """Sensor implementations."""
 
 from robo_infra.sensors.distance import IRDistance, ToF, Ultrasonic
+from robo_infra.sensors.electrical import (
+    CurrentSensor,
+    CurrentSensorConfig,
+    CurrentSensorType,
+    PowerSensor,
+    PowerSensorConfig,
+    VoltageSensor,
+    VoltageSensorConfig,
+    VoltageSensorType,
+)
+from robo_infra.sensors.encoder import (
+    AbsoluteEncoder,
+    Encoder,
+    EncoderDirection,
+    QuadratureEncoder,
+)
+from robo_infra.sensors.environmental import (
+    Humidity,
+    HumidityConfig,
+    HumiditySensorType,
+    Light,
+    LightConfig,
+    LightSensorType,
+    Pressure,
+    PressureConfig,
+    PressureSensorType,
+    Temperature,
+    TemperatureConfig,
+    TemperatureSensorType,
+)
 from robo_infra.sensors.imu import (
     IMU,
     Accelerometer,
@@ -8,15 +38,53 @@ from robo_infra.sensors.imu import (
     IMUSensor,
     Magnetometer,
 )
+from robo_infra.sensors.switches import (
+    Button,
+    HallEffect,
+    HallEffectMode,
+    LimitSwitch,
+    Switch,
+    SwitchState,
+)
 
 
 __all__ = [
     "IMU",
+    "AbsoluteEncoder",
     "Accelerometer",
+    "Button",
+    "CurrentSensor",
+    "CurrentSensorConfig",
+    "CurrentSensorType",
+    "Encoder",
+    "EncoderDirection",
     "Gyroscope",
+    "HallEffect",
+    "HallEffectMode",
+    "Humidity",
+    "HumidityConfig",
+    "HumiditySensorType",
     "IMUSensor",
     "IRDistance",
+    "Light",
+    "LightConfig",
+    "LightSensorType",
+    "LimitSwitch",
     "Magnetometer",
+    "PowerSensor",
+    "PowerSensorConfig",
+    "Pressure",
+    "PressureConfig",
+    "PressureSensorType",
+    "QuadratureEncoder",
+    "Switch",
+    "SwitchState",
+    "Temperature",
+    "TemperatureConfig",
+    "TemperatureSensorType",
     "ToF",
     "Ultrasonic",
+    "VoltageSensor",
+    "VoltageSensorConfig",
+    "VoltageSensorType",
 ]

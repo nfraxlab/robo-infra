@@ -14,7 +14,7 @@ Notes:
 
 from __future__ import annotations
 
-import contextlib
+import logging
 import time
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
@@ -25,6 +25,8 @@ from robo_infra.core.exceptions import CommunicationError
 from robo_infra.core.sensor import Sensor
 from robo_infra.core.types import Limits, Unit
 
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from robo_infra.core.bus import I2CBus
@@ -244,12 +246,18 @@ class ToF(DistanceSensor):
 
     def enable(self) -> None:
         super().enable()
-        with contextlib.suppress(Exception):
+        try:
             self._bus.open()
+        except Exception as e:
+            logger.error("Failed to open I2C bus for ToF sensor: %s", e)
+            raise
 
     def disable(self) -> None:
-        with contextlib.suppress(Exception):
+        try:
             self._bus.close()
+        except Exception as e:
+            # Bus close is non-critical, just log
+            logger.debug("Failed to close I2C bus: %s", e)
         super().disable()
 
     def status(self) -> ToFStatus:  # type: ignore[override]

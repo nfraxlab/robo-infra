@@ -21,7 +21,7 @@ Phase 3.6 requirements:
 
 from __future__ import annotations
 
-import contextlib
+import logging
 import time
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
@@ -32,6 +32,8 @@ from robo_infra.core.actuator import Actuator, ActuatorConfig, ActuatorState, Ac
 from robo_infra.core.exceptions import DisabledError
 from robo_infra.core.types import Limits
 
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from robo_infra.core.driver import Driver
@@ -148,12 +150,16 @@ class Solenoid(Actuator):
         if self._pin is not None and not self._pin.initialized:
             self._pin.setup()
         # default safe state
-        with contextlib.suppress(Exception):
+        try:
             self.deactivate()
+        except Exception as e:
+            logger.error("Failed to deactivate solenoid on enable: %s", e)
 
     def disable(self) -> None:
-        with contextlib.suppress(Exception):
+        try:
             self.deactivate()
+        except Exception as e:
+            logger.error("Failed to deactivate solenoid on disable: %s", e)
         super().disable()
 
     def _apply_value(self, value: float) -> None:

@@ -26,7 +26,6 @@ Example:
 from __future__ import annotations
 
 import asyncio
-import contextlib
 import logging
 import time
 from abc import ABC, abstractmethod
@@ -503,6 +502,9 @@ class Controller(ABC):
 
         This should be called in emergency situations.
         Does not require controller to be enabled.
+
+        Raises:
+            SafetyError: If any actuator fails to disable (logged but raised).
         """
         logger.warning("Controller '%s' EMERGENCY STOP", self._name)
 
@@ -514,12 +516,26 @@ class Controller(ABC):
         except Exception as e:
             logger.error("Error during emergency stop: %s", e)
 
-        # Disable all actuators
-        for actuator in self._actuators.values():
-            with contextlib.suppress(Exception):
+        # Disable all actuators - TRACK FAILURES, DON'T SUPPRESS
+        failed_actuators: list[str] = []
+        for name, actuator in self._actuators.items():
+            try:
                 actuator.disable()
+            except Exception as e:
+                failed_actuators.append(name)
+                logger.critical(
+                    "E-STOP FAILED to disable actuator '%s': %s", name, e
+                )
 
         self._is_running = False
+
+        # Raise if any actuator failed to disable
+        if failed_actuators:
+            from robo_infra.core.exceptions import SafetyError
+            raise SafetyError(
+                f"E-stop failed to disable {len(failed_actuators)} actuators: {failed_actuators}",
+                action_taken="partial_disable",
+            )
 
     def reset_stop(self) -> None:
         """Reset from emergency stop state.

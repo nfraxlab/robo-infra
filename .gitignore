@@ -27,6 +27,9 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+# Agent instructions (local only, never commit)
+.github/copilot-instructions.md
+
 # PyInstaller
 *.manifest
 *.spec
@@ -166,7 +169,7 @@ yarn-error.log
 
 # GitHub Copilot/Agent instructions (optional - uncomment if desired)
 .github/copilot-instructions.md
-.github/AGENT.md
+.github/AGENTS.md
 .github/PLAN.md
 
 # Local development

@@ -274,14 +274,18 @@ class Stepper(Actuator):
         if not self._is_enabled:
             raise DisabledError(f"Actuator {self.name} is disabled")
 
-        # If already triggered, just zero.
-        try:
-            triggered = float(switch.read().value) >= 0.5
-        except Exception:
-            # Fallback for sensors returning floats
-            triggered = float(switch.read()) >= 0.5  # type: ignore[arg-type]
+        def read_switch() -> bool:
+            """Read switch state with duck typing support."""
+            reading = switch.read()
+            try:
+                # Try Reading object with value attribute
+                return float(reading.value) >= 0.5
+            except AttributeError:
+                # Fallback for sensors returning floats directly
+                return float(reading) >= 0.5  # type: ignore[arg-type]
 
-        if triggered:
+        # If already triggered, just zero.
+        if read_switch():
             self._position_steps = 0
             self._current_value = 0.0
             return
@@ -292,11 +296,7 @@ class Stepper(Actuator):
             if self._stop_requested:
                 break
             self.step(1, Direction.REVERSE)
-            try:
-                triggered = float(switch.read().value) >= 0.5
-            except Exception:
-                triggered = float(switch.read()) >= 0.5  # type: ignore[arg-type]
-            if triggered:
+            if read_switch():
                 self._position_steps = 0
                 self._current_value = 0.0
                 return
