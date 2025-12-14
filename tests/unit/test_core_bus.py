@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+import os
+
+import pytest
+
 from robo_infra.core.bus import (
     Bus,
     BusType,
@@ -22,6 +26,12 @@ from robo_infra.core.bus import (
     get_serial,
     get_spi,
 )
+
+
+@pytest.fixture(autouse=True)
+def _enable_simulation(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Enable simulation mode for all tests in this module."""
+    monkeypatch.setenv("ROBO_SIMULATION", "true")
 
 
 class TestEnums:

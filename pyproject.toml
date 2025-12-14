@@ -31,6 +31,8 @@ packages = [{ include = "robo_infra", from = "src" }]
 python = "^3.11"
 pydantic = "^2.0"
 typing-extensions = "^4.0"
+ai-infra = { path = "../ai-infra", develop = true }
+svc-infra = { path = "../svc-infra", develop = true }
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0"
@@ -52,8 +54,8 @@ pyserial = "^3.5"
 optional = true
 
 [tool.poetry.group.integrations.dependencies]
-# svc-infra = "^0.1"  # Uncomment when published
-# ai-infra = "^0.1"   # Uncomment when published
+# Integration dependencies are included in main dependencies
+# This group exists for documentation/organization purposes
 
 [tool.poetry.scripts]
 robo-infra = "robo_infra.cli:main"

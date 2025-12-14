@@ -511,10 +511,14 @@ class Controller(ABC):
         self._stop_requested = True
         self._set_state(ControllerState.STOPPED)
 
+        # Track _do_stop error to propagate after actuator disable attempts
+        do_stop_error: Exception | None = None
         try:
             self._do_stop()
         except Exception as e:
+            # Log but continue to disable actuators - propagate at end
             logger.error("Error during emergency stop: %s", e)
+            do_stop_error = e
 
         # Disable all actuators - TRACK FAILURES, DON'T SUPPRESS
         failed_actuators: list[str] = []
@@ -529,11 +533,18 @@ class Controller(ABC):
 
         self._is_running = False
 
-        # Raise if any actuator failed to disable
-        if failed_actuators:
+        # Raise if _do_stop failed or any actuator failed to disable
+        if failed_actuators or do_stop_error:
             from robo_infra.core.exceptions import SafetyError
+            error_msg = []
+            if do_stop_error:
+                error_msg.append(f"_do_stop failed: {do_stop_error}")
+            if failed_actuators:
+                error_msg.append(
+                    f"Failed to disable {len(failed_actuators)} actuators: {failed_actuators}"
+                )
             raise SafetyError(
-                f"E-stop failed to disable {len(failed_actuators)} actuators: {failed_actuators}",
+                "; ".join(error_msg),
                 action_taken="partial_disable",
             )
 
@@ -690,7 +701,7 @@ class Controller(ABC):
 
         try:
             while not self._stop_requested:
-                loop_start = time.time()
+                loop_start = time.perf_counter()
 
                 # Execute control step
                 try:
@@ -700,8 +711,15 @@ class Controller(ABC):
                     if self._config.disable_on_error:
                         break
 
-                # Maintain loop rate
-                elapsed = time.time() - loop_start
+                # Maintain loop rate with jitter detection
+                elapsed = time.perf_counter() - loop_start
+                if elapsed > interval:
+                    logger.warning(
+                        "Control loop overrun in '%s': %.1fms > %.1fms target",
+                        self._name,
+                        elapsed * 1000,
+                        interval * 1000,
+                    )
                 sleep_time = interval - elapsed
                 if sleep_time > 0:
                     await asyncio.sleep(sleep_time)

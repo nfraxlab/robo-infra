@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 import time
 from collections import defaultdict
 from collections.abc import Callable
@@ -250,7 +251,19 @@ class SimulationDriver(Driver):
     # -------------------------------------------------------------------------
 
     def connect(self) -> None:
-        """Simulate connecting to hardware."""
+        """Simulate connecting to hardware.
+
+        Emits a warning if ROBO_SIMULATION is not set to remind
+        the user that no real hardware is connected.
+        """
+        # Warn about simulation mode unless explicitly enabled
+        if not os.getenv("ROBO_SIMULATION"):
+            logger.warning(
+                "⚠️ SIMULATION MODE — SimulationDriver '%s' has no real hardware. "
+                "Set ROBO_SIMULATION=true to suppress this warning.",
+                self._name,
+            )
+
         start = time.time()
         self._simulate_delay()
 

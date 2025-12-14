@@ -27,10 +27,13 @@ Example:
 from __future__ import annotations
 
 import logging
+import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import TYPE_CHECKING
+
+from robo_infra.core.exceptions import HardwareNotFoundError
 
 
 if TYPE_CHECKING:
@@ -1069,6 +1072,9 @@ def get_i2c(
     """
     config = I2CConfig(bus_number=bus_number, frequency=frequency)
 
+    # Track if simulation was explicitly requested vs auto-detected
+    simulate_explicit = simulate is not None
+
     if simulate is None:
         # Try to detect if we have real hardware
         try:
@@ -1079,7 +1085,14 @@ def get_i2c(
             simulate = True
 
     if simulate:
-        logger.info("Using simulated I2C bus %d", bus_number)
+        # Only require ROBO_SIMULATION env var for auto-detected simulation
+        # (explicit simulate=True is allowed without it)
+        if not simulate_explicit and not os.getenv("ROBO_SIMULATION"):
+            raise HardwareNotFoundError(
+                "No I2C hardware detected (smbus2 not available). "
+                "Set ROBO_SIMULATION=true to use simulated hardware."
+            )
+        logger.warning("⚠️ SIMULATION MODE — Using simulated I2C bus %d", bus_number)
         return SimulatedI2CBus(config)
 
     # Real hardware implementation would go here
@@ -1117,6 +1130,9 @@ def get_spi(
     """
     config = SPIConfig(bus=bus, device=device, max_speed_hz=max_speed_hz, mode=mode)
 
+    # Track if simulation was explicitly requested vs auto-detected
+    simulate_explicit = simulate is not None
+
     if simulate is None:
         # Try to detect if we have real hardware
         try:
@@ -1127,7 +1143,13 @@ def get_spi(
             simulate = True
 
     if simulate:
-        logger.info("Using simulated SPI bus %d:%d", bus, device)
+        # Only require ROBO_SIMULATION env var for auto-detected simulation
+        if not simulate_explicit and not os.getenv("ROBO_SIMULATION"):
+            raise HardwareNotFoundError(
+                "No SPI hardware detected (spidev not available). "
+                "Set ROBO_SIMULATION=true to use simulated hardware."
+            )
+        logger.warning("⚠️ SIMULATION MODE — Using simulated SPI bus %d:%d", bus, device)
         return SimulatedSPIBus(config)
 
     # Real hardware implementation would go here
@@ -1163,6 +1185,9 @@ def get_serial(
     """
     config = SerialConfig(port=port, baudrate=baudrate, timeout=timeout)
 
+    # Track if simulation was explicitly requested vs auto-detected
+    simulate_explicit = simulate is not None
+
     if simulate is None:
         # Try to detect if we have real hardware
         try:
@@ -1173,7 +1198,13 @@ def get_serial(
             simulate = True
 
     if simulate:
-        logger.info("Using simulated serial port %s", port)
+        # Only require ROBO_SIMULATION env var for auto-detected simulation
+        if not simulate_explicit and not os.getenv("ROBO_SIMULATION"):
+            raise HardwareNotFoundError(
+                f"No serial hardware detected (pyserial not available for {port}). "
+                "Set ROBO_SIMULATION=true to use simulated hardware."
+            )
+        logger.warning("⚠️ SIMULATION MODE — Using simulated serial port %s", port)
         return SimulatedSerialBus(config)
 
     # Real hardware implementation would go here
