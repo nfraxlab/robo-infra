@@ -76,8 +76,8 @@ def controller_to_router(
         >>> app.include_router(router)
     """
     try:
-        from fastapi import APIRouter, HTTPException  # noqa: PLC0415
-        from pydantic import BaseModel  # noqa: PLC0415
+        from fastapi import APIRouter, HTTPException
+        from pydantic import BaseModel
     except ImportError as e:
         raise ImportError(
             "FastAPI and Pydantic are required for svc-infra integration. "
@@ -231,8 +231,8 @@ def actuator_to_router(
         FastAPI APIRouter instance.
     """
     try:
-        from fastapi import APIRouter, HTTPException  # noqa: PLC0415
-        from pydantic import BaseModel, Field  # noqa: PLC0415
+        from fastapi import APIRouter, HTTPException
+        from pydantic import BaseModel, Field
     except ImportError as e:
         raise ImportError(
             "FastAPI and Pydantic are required for svc-infra integration. "
@@ -313,15 +313,15 @@ def create_websocket_handler(controller: Controller) -> Any:
         >>> app.add_websocket_route("/ws/arm", handler)
     """
     try:
-        from fastapi import WebSocket, WebSocketDisconnect  # noqa: PLC0415
+        from fastapi import WebSocket, WebSocketDisconnect
     except ImportError as e:
         raise ImportError(
             "FastAPI is required for WebSocket support. "
             "Install with: pip install fastapi"
         ) from e
 
-    import asyncio  # noqa: PLC0415
-    import json  # noqa: PLC0415
+    import asyncio
+    import json
 
     async def websocket_handler(websocket: WebSocket) -> None:
         """Handle WebSocket connection for controller updates."""

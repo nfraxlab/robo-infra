@@ -49,6 +49,7 @@ import threading
 import time
 from dataclasses import dataclass
 from enum import Enum
+from typing import TYPE_CHECKING
 
 from robo_infra.core.driver import (
     Driver,
@@ -58,6 +59,9 @@ from robo_infra.core.driver import (
 from robo_infra.core.exceptions import HardwareNotFoundError
 from robo_infra.core.pin import detect_platform
 
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 logger = logging.getLogger(__name__)
 
@@ -209,7 +213,7 @@ class SoftwarePWMThread(threading.Thread):
         pin: int,
         frequency: float,
         duty_cycle: float,
-        write_callback: callable,
+        write_callback: Callable[[int, bool], None],
     ) -> None:
         """Initialize software PWM thread.
 
@@ -342,7 +346,7 @@ class GPIODriver(Driver):
         """
         super().__init__(name="GPIO", channels=0)
 
-        self._config = config or GPIOConfig()
+        self._gpio_config: GPIOConfig = config or GPIOConfig()
         self._platform: Platform | None = None
         self._gpio_backend: object | None = None
 
@@ -391,8 +395,8 @@ class GPIODriver(Driver):
 
     def _detect_platform(self) -> None:
         """Detect the current hardware platform."""
-        if self._config.platform is not None:
-            self._platform = self._config.platform
+        if self._gpio_config.platform is not None:
+            self._platform = self._gpio_config.platform
             return
 
         detected = detect_platform()
@@ -427,12 +431,12 @@ class GPIODriver(Driver):
         try:
             from RPi import GPIO  # type: ignore[import-not-found]
 
-            if self._config.numbering_mode == "BCM":
+            if self._gpio_config.numbering_mode == "BCM":
                 GPIO.setmode(GPIO.BCM)
             else:
                 GPIO.setmode(GPIO.BOARD)
 
-            if not self._config.warnings:
+            if not self._gpio_config.warnings:
                 GPIO.setwarnings(False)
 
             self._gpio_backend = GPIO
@@ -448,7 +452,7 @@ class GPIODriver(Driver):
             from Jetson import GPIO  # type: ignore[import-not-found]
 
             GPIO.setmode(GPIO.BCM)
-            if not self._config.warnings:
+            if not self._gpio_config.warnings:
                 GPIO.setwarnings(False)
 
             self._gpio_backend = GPIO
@@ -486,9 +490,10 @@ class GPIODriver(Driver):
         self._detect_platform()
         self._init_gpio_backend()
         self._state = DriverState.CONNECTED
+        platform_name = self._platform.value if self._platform else "unknown"
         logger.info(
             "GPIO driver connected (platform=%s, simulation=%s)",
-            self._platform.value,
+            platform_name,
             self.simulation_mode,
         )
 
@@ -507,7 +512,7 @@ class GPIODriver(Driver):
             logger.debug("Stopped PWM on pin %d", pin)
 
         # Cleanup pins
-        if self._config.cleanup_on_disconnect:
+        if self._gpio_config.cleanup_on_disconnect:
             self._cleanup_all_pins()
 
         # Cleanup backend
@@ -765,7 +770,7 @@ class GPIODriver(Driver):
         """
         self._require_connected()
 
-        freq = frequency or self._config.software_pwm_default_frequency
+        freq = frequency or self._gpio_config.software_pwm_default_frequency
 
         with self._lock:
             # Ensure pin is configured as output

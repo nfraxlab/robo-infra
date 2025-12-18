@@ -1003,7 +1003,8 @@ class ArduinoDriver(Driver):
 
                 # Timeout
                 raise TimeoutError(
-                    f"No response from Arduino within {self._arduino_config.response_timeout}s"
+                    operation="arduino_read_response",
+                    timeout=self._arduino_config.response_timeout,
                 )
 
             except TimeoutError:

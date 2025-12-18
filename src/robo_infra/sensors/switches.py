@@ -365,13 +365,13 @@ class LimitSwitch(Switch):
     async def wait_for_trigger(
         self,
         *,
-        timeout: float | None = None,
+        timeout: float = 30.0,
         poll_interval: float = 0.01,
     ) -> bool:
         """Wait for limit switch to be triggered.
 
         Args:
-            timeout: Maximum wait time in seconds (None = forever)
+            timeout: Maximum wait time in seconds
             poll_interval: Polling interval in seconds
 
         Returns:
@@ -382,13 +382,13 @@ class LimitSwitch(Switch):
     async def wait_for_release(
         self,
         *,
-        timeout: float | None = None,
+        timeout: float = 30.0,
         poll_interval: float = 0.01,
     ) -> bool:
         """Wait for limit switch to be released.
 
         Args:
-            timeout: Maximum wait time in seconds (None = forever)
+            timeout: Maximum wait time in seconds
             poll_interval: Polling interval in seconds
 
         Returns:
@@ -583,13 +583,13 @@ class Button(Switch):
     async def wait_for_press(
         self,
         *,
-        timeout: float | None = None,
+        timeout: float = 30.0,
         poll_interval: float = 0.01,
     ) -> bool:
         """Wait for button to be pressed.
 
         Args:
-            timeout: Maximum wait time in seconds (None = forever)
+            timeout: Maximum wait time in seconds
             poll_interval: Polling interval in seconds
 
         Returns:
@@ -600,13 +600,13 @@ class Button(Switch):
     async def wait_for_release(
         self,
         *,
-        timeout: float | None = None,
+        timeout: float = 30.0,
         poll_interval: float = 0.01,
     ) -> bool:
         """Wait for button to be released.
 
         Args:
-            timeout: Maximum wait time in seconds (None = forever)
+            timeout: Maximum wait time in seconds
             poll_interval: Polling interval in seconds
 
         Returns:
@@ -617,29 +617,30 @@ class Button(Switch):
     async def wait_for_click(
         self,
         *,
-        timeout: float | None = None,
+        timeout: float = 30.0,
         poll_interval: float = 0.01,
     ) -> bool:
         """Wait for a complete click (press then release).
 
         Args:
-            timeout: Maximum wait time in seconds (None = forever)
+            timeout: Maximum wait time in seconds
             poll_interval: Polling interval in seconds
 
         Returns:
             True if clicked, False if timeout.
         """
         start = time.time()
-        remaining = timeout
 
         # Wait for press
+        remaining = timeout - (time.time() - start)
+        if remaining <= 0:
+            return False
         if not await self.wait_for_press(timeout=remaining, poll_interval=poll_interval):
             return False
 
-        if timeout is not None:
-            remaining = timeout - (time.time() - start)
-            if remaining <= 0:
-                return False
+        remaining = timeout - (time.time() - start)
+        if remaining <= 0:
+            return False
 
         # Wait for release
         return await self.wait_for_release(timeout=remaining, poll_interval=poll_interval)

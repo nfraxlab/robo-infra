@@ -100,3 +100,16 @@ publish:
 cli:
 	@echo "[cli] Running robo-infra CLI..."
 	@poetry run robo-infra $(ARGS)
+
+# --- Documentation ---
+.PHONY: docs docs-serve docs-build
+
+docs: docs-serve ## Alias for docs-serve
+
+docs-serve: ## Serve documentation locally with live reload
+	@echo "[docs] Starting documentation server..."
+	poetry run mkdocs serve
+
+docs-build: ## Build documentation for production
+	@echo "[docs] Building documentation..."
+	poetry run mkdocs build

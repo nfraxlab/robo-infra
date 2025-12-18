@@ -14,8 +14,7 @@ Tests cover:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -24,7 +23,6 @@ from robo_infra.drivers.pca9685 import (
     PCA9685,
     PCA9685_DEFAULT_ADDRESS,
     PCA9685_MAX_FREQUENCY,
-    PCA9685_MAX_PWM,
     PCA9685_MIN_FREQUENCY,
     PCA9685_RESOLUTION,
     PCA9685Config,
@@ -32,10 +30,6 @@ from robo_infra.drivers.pca9685 import (
     PCA9685Mode2,
     PCA9685Register,
 )
-
-
-if TYPE_CHECKING:
-    from robo_infra.core.bus import I2CBus
 
 
 # =============================================================================
@@ -598,10 +592,10 @@ class TestPCA9685Integration:
         servo_channels = [0, 1, 2, 3]
         positions = [0.25, 0.5, 0.75, 1.0]
 
-        for ch, pos in zip(servo_channels, positions):
+        for ch, pos in zip(servo_channels, positions, strict=False):
             driver_simulation.set_channel(ch, pos)
 
-        for ch, expected in zip(servo_channels, positions):
+        for ch, expected in zip(servo_channels, positions, strict=False):
             actual = driver_simulation.get_channel(ch)
             assert abs(actual - expected) < 0.01
 

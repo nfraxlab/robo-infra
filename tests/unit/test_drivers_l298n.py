@@ -4,16 +4,16 @@ from __future__ import annotations
 
 import pytest
 
+from robo_infra.core.driver import DriverState, get_driver
 from robo_infra.drivers.l298n import (
-    BrakeMode,
     L298N,
+    BrakeMode,
     L298NConfig,
     MotorChannel,
     MotorConfig,
     MotorDirection,
     MotorState,
 )
-from robo_infra.core.driver import DriverState, get_driver, clear_driver_registry
 
 
 # =============================================================================
@@ -666,6 +666,7 @@ class TestL298NRegistration:
         """Test L298N is registered as 'l298n'."""
         # Force re-import to ensure registration
         import importlib
+
         import robo_infra.drivers.l298n
         importlib.reload(robo_infra.drivers.l298n)
 
@@ -676,6 +677,7 @@ class TestL298NRegistration:
         """Test creating L298N from registry."""
         # Force re-import to ensure registration
         import importlib
+
         import robo_infra.drivers.l298n
         importlib.reload(robo_infra.drivers.l298n)
 

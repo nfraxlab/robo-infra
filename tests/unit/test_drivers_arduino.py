@@ -6,26 +6,23 @@ Comprehensive tests for the Arduino/Serial driver implementation.
 from __future__ import annotations
 
 import threading
-import time
-from typing import TYPE_CHECKING
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import pytest
 
 from robo_infra.core.driver import DriverState
-from robo_infra.core.exceptions import CommunicationError, HardwareNotFoundError, TimeoutError
+from robo_infra.core.exceptions import CommunicationError, HardwareNotFoundError
 from robo_infra.drivers.arduino import (
     ARDUINO_ANALOG_MAX,
     ARDUINO_PWM_MAX,
+    DEFAULT_BAUDRATE,
     ArduinoConfig,
     ArduinoDriver,
     ArduinoPinState,
     ArduinoProtocol,
-    DEFAULT_BAUDRATE,
     PinMode,
     SerialConfig,
     get_arduino_driver,
-    list_arduino_ports,
 )
 
 
@@ -273,7 +270,7 @@ class TestArduinoDriverConnection:
         """Test connecting in simulation mode."""
         driver = ArduinoDriver(simulation=True)
         assert driver.state == DriverState.DISCONNECTED
-        
+
         driver.connect()
         assert driver.state == DriverState.CONNECTED
         assert driver.is_connected is True
@@ -313,9 +310,9 @@ class TestArduinoDriverConnection:
             mock_serial_class = Mock()
             mock_serial_class.Serial.side_effect = FileNotFoundError("No such file or directory")
             mock_serial.return_value = mock_serial_class
-            
+
             driver = ArduinoDriver(port="/dev/nonexistent")
-            
+
             with pytest.raises(HardwareNotFoundError):
                 driver.connect()
 
@@ -372,7 +369,7 @@ class TestArduinoDriverPWM:
         """Test setting PWM on all channels."""
         for ch in range(6):
             simulation_driver.set_pwm(ch, ch * 40)
-        
+
         for ch in range(6):
             assert simulation_driver.get_pwm(ch) == ch * 40
 
@@ -464,7 +461,7 @@ class TestArduinoDriverAnalog:
         """Test reading all analog channels."""
         for ch in range(6):
             simulation_driver.set_simulated_analog(ch, ch * 100)
-        
+
         for ch in range(6):
             assert simulation_driver.read_analog(ch) == ch * 100
 
@@ -517,7 +514,7 @@ class TestArduinoDriverDigital:
         """Test reading/writing all digital pins."""
         for pin in range(14):
             simulation_driver.write_digital(pin, pin % 2 == 0)
-        
+
         for pin in range(14):
             assert simulation_driver.read_digital(pin) == (pin % 2 == 0)
 
@@ -598,10 +595,10 @@ class TestArduinoDriverReset:
         simulation_driver.set_pwm(0, 128)
         simulation_driver.set_simulated_analog(0, 512)
         simulation_driver.set_simulated_digital(13, True)
-        
+
         # Reset
         simulation_driver.reset()
-        
+
         # Check values are cleared
         assert simulation_driver.get_pwm(0) == 0
         assert simulation_driver.read_analog(0) == 0
@@ -619,7 +616,7 @@ class TestArduinoDriverDiagnostics:
     def test_get_diagnostics(self, simulation_driver: ArduinoDriver) -> None:
         """Test getting diagnostics."""
         diag = simulation_driver.get_diagnostics()
-        
+
         assert diag["name"] == "ArduinoDriver"
         assert diag["port"] == "/dev/ttyUSB0"
         assert diag["baudrate"] == DEFAULT_BAUDRATE
@@ -667,11 +664,12 @@ class TestFactoryFunctions:
 
     def test_list_arduino_ports_no_pyserial(self) -> None:
         """Test list_arduino_ports when pyserial not installed."""
-        with patch.dict("sys.modules", {"serial": None, "serial.tools": None, "serial.tools.list_ports": None}):
-            # Should return empty list, not raise
-            with patch("robo_infra.drivers.arduino.logger") as mock_logger:
-                # This will try to import and fail
-                pass
+        with (
+            patch.dict("sys.modules", {"serial": None, "serial.tools": None, "serial.tools.list_ports": None}),
+            patch("robo_infra.drivers.arduino.logger"),
+        ):
+            # This will try to import and fail
+            pass
 
 
 # =============================================================================
@@ -685,53 +683,53 @@ class TestThreadSafety:
     def test_concurrent_pwm_writes(self, simulation_driver: ArduinoDriver) -> None:
         """Test concurrent PWM writes are thread-safe."""
         errors: list[Exception] = []
-        
+
         def write_pwm(channel: int, iterations: int) -> None:
             try:
                 for i in range(iterations):
                     simulation_driver.set_pwm(channel, i % 256)
             except Exception as e:
                 errors.append(e)
-        
+
         threads = [
             threading.Thread(target=write_pwm, args=(ch, 100))
             for ch in range(6)
         ]
-        
+
         for t in threads:
             t.start()
         for t in threads:
             t.join()
-        
+
         assert len(errors) == 0
 
     def test_concurrent_analog_reads(self, simulation_driver: ArduinoDriver) -> None:
         """Test concurrent analog reads are thread-safe."""
         errors: list[Exception] = []
-        
+
         def read_analog(channel: int, iterations: int) -> None:
             try:
                 for _ in range(iterations):
                     simulation_driver.read_analog(channel)
             except Exception as e:
                 errors.append(e)
-        
+
         threads = [
             threading.Thread(target=read_analog, args=(ch, 100))
             for ch in range(6)
         ]
-        
+
         for t in threads:
             t.start()
         for t in threads:
             t.join()
-        
+
         assert len(errors) == 0
 
     def test_concurrent_digital_operations(self, simulation_driver: ArduinoDriver) -> None:
         """Test concurrent digital operations are thread-safe."""
         errors: list[Exception] = []
-        
+
         def digital_ops(pin: int, iterations: int) -> None:
             try:
                 for i in range(iterations):
@@ -739,17 +737,17 @@ class TestThreadSafety:
                     simulation_driver.read_digital(pin)
             except Exception as e:
                 errors.append(e)
-        
+
         threads = [
             threading.Thread(target=digital_ops, args=(pin, 100))
             for pin in range(14)
         ]
-        
+
         for t in threads:
             t.start()
         for t in threads:
             t.join()
-        
+
         assert len(errors) == 0
 
 
@@ -765,7 +763,7 @@ class TestSerialProtocol:
         """Test PWM command is formatted correctly."""
         driver = ArduinoDriver(simulation=True)
         driver.connect()
-        
+
         # Test through internal method - in simulation mode, nothing is sent
         # but we can verify the PWM value is stored
         driver.set_pwm(0, 127)
@@ -801,7 +799,7 @@ class TestEnableDisable:
     def test_disabled_prevents_operations(self, simulation_driver: ArduinoDriver) -> None:
         """Test that disabled driver prevents channel operations."""
         simulation_driver.disable()
-        
+
         from robo_infra.core.exceptions import DisabledError
         with pytest.raises(DisabledError):
             simulation_driver.set_channel(0, 0.5)
@@ -837,7 +835,7 @@ class TestEdgeCases:
     def test_connect_disconnect_cycle(self) -> None:
         """Test multiple connect/disconnect cycles."""
         driver = ArduinoDriver(simulation=True)
-        
+
         for _ in range(10):
             driver.connect()
             assert driver.is_connected
@@ -847,11 +845,11 @@ class TestEdgeCases:
     def test_operations_after_reconnect(self) -> None:
         """Test operations work after reconnection."""
         driver = ArduinoDriver(simulation=True)
-        
+
         driver.connect()
         driver.set_pwm(0, 128)
         driver.disconnect()
-        
+
         driver.connect()
         # Should work after reconnection
         driver.set_pwm(0, 64)
@@ -871,10 +869,12 @@ class TestFirmataMode:
         """Test graceful handling when Firmata not installed."""
         config = ArduinoConfig(protocol=ArduinoProtocol.FIRMATA)
         driver = ArduinoDriver(config=config)
-        
-        with patch.dict("sys.modules", {"pyfirmata": None, "pyfirmata2": None}):
-            with pytest.raises((ImportError, CommunicationError)):
-                driver.connect()
+
+        with (
+            patch.dict("sys.modules", {"pyfirmata": None, "pyfirmata2": None}),
+            pytest.raises((ImportError, CommunicationError)),
+        ):
+            driver.connect()
 
     def test_firmata_config(self) -> None:
         """Test Firmata configuration is recognized."""

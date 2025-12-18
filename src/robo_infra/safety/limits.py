@@ -30,7 +30,7 @@ import logging
 import time
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field
 
@@ -438,12 +438,12 @@ class LimitGuard:
 
     def __init__(
         self,
-        actuator: any,
+        actuator: Any,
         position_limits: tuple[float, float] | Limits | None = None,
         *,
         velocity_limit: float | None = None,
         acceleration_limit: float | None = None,
-        estop: any | None = None,
+        estop: Any | None = None,
     ) -> None:
         """Initialize limit guard.
 
@@ -468,7 +468,7 @@ class LimitGuard:
             estop.register_actuator(actuator)
 
     @property
-    def actuator(self) -> any:
+    def actuator(self) -> Any:
         """Wrapped actuator."""
         return self._actuator
 

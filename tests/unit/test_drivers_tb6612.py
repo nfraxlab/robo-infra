@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pytest
 
+from robo_infra.core.driver import DriverState, get_driver
 from robo_infra.drivers.tb6612 import (
     TB6612,
     TB6612BrakeMode,
@@ -13,7 +14,6 @@ from robo_infra.drivers.tb6612 import (
     TB6612MotorConfig,
     TB6612MotorState,
 )
-from robo_infra.core.driver import DriverState, get_driver
 
 
 # =============================================================================
@@ -655,6 +655,7 @@ class TestTB6612Registration:
         """Test TB6612 is registered as 'tb6612'."""
         # Force re-import to ensure registration
         import importlib
+
         import robo_infra.drivers.tb6612
         importlib.reload(robo_infra.drivers.tb6612)
 
@@ -665,6 +666,7 @@ class TestTB6612Registration:
         """Test creating TB6612 from registry."""
         # Force re-import to ensure registration
         import importlib
+
         import robo_infra.drivers.tb6612
         importlib.reload(robo_infra.drivers.tb6612)
 

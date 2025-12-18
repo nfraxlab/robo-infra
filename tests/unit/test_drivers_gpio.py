@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pytest
 
+from robo_infra.core.driver import DriverState
 from robo_infra.drivers.gpio import (
     GPIOConfig,
     GPIODirection,
@@ -17,7 +18,6 @@ from robo_infra.drivers.gpio import (
     SoftwarePWMThread,
     get_gpio_driver,
 )
-from robo_infra.core.driver import DriverState
 
 
 # =============================================================================
@@ -291,7 +291,7 @@ class TestGPIOPinConfiguration:
     def test_setup_pin_output(self, connected_driver: GPIODriver):
         """Test setting up an output pin."""
         connected_driver.setup_pin(17, GPIODirection.OUTPUT)
-        
+
         state = connected_driver.get_pin_state(17)
         assert state is not None
         assert state.pin == 17
@@ -301,7 +301,7 @@ class TestGPIOPinConfiguration:
     def test_setup_pin_input(self, connected_driver: GPIODriver):
         """Test setting up an input pin."""
         connected_driver.setup_pin(27, GPIODirection.INPUT)
-        
+
         state = connected_driver.get_pin_state(27)
         assert state is not None
         assert state.direction == GPIODirection.INPUT
@@ -309,7 +309,7 @@ class TestGPIOPinConfiguration:
     def test_setup_pin_with_initial_value(self, connected_driver: GPIODriver):
         """Test setting up a pin with initial value."""
         connected_driver.setup_pin(17, GPIODirection.OUTPUT, initial=True)
-        
+
         state = connected_driver.get_pin_state(17)
         assert state is not None
         assert state.value is True
@@ -317,17 +317,17 @@ class TestGPIOPinConfiguration:
     def test_is_pin_configured(self, connected_driver: GPIODriver):
         """Test checking if pin is configured."""
         assert connected_driver.is_pin_configured(17) is False
-        
+
         connected_driver.setup_pin(17, GPIODirection.OUTPUT)
         assert connected_driver.is_pin_configured(17) is True
 
     def test_configured_pins_property(self, connected_driver: GPIODriver):
         """Test configured_pins property."""
         assert connected_driver.configured_pins == []
-        
+
         connected_driver.setup_pin(17, GPIODirection.OUTPUT)
         connected_driver.setup_pin(18, GPIODirection.OUTPUT)
-        
+
         pins = connected_driver.configured_pins
         assert 17 in pins
         assert 18 in pins
@@ -346,7 +346,7 @@ class TestGPIODigitalIO:
         """Test writing HIGH to a pin."""
         connected_driver.setup_pin(17, GPIODirection.OUTPUT)
         connected_driver.digital_write(17, True)
-        
+
         state = connected_driver.get_pin_state(17)
         assert state is not None
         assert state.value is True
@@ -355,7 +355,7 @@ class TestGPIODigitalIO:
         """Test writing LOW to a pin."""
         connected_driver.setup_pin(17, GPIODirection.OUTPUT, initial=True)
         connected_driver.digital_write(17, False)
-        
+
         state = connected_driver.get_pin_state(17)
         assert state is not None
         assert state.value is False
@@ -363,7 +363,7 @@ class TestGPIODigitalIO:
     def test_digital_write_auto_configures(self, connected_driver: GPIODriver):
         """Test digital_write auto-configures unconfigured pin."""
         connected_driver.digital_write(17, True)
-        
+
         assert connected_driver.is_pin_configured(17) is True
         state = connected_driver.get_pin_state(17)
         assert state is not None
@@ -372,7 +372,7 @@ class TestGPIODigitalIO:
     def test_digital_write_on_input_raises(self, connected_driver: GPIODriver):
         """Test writing to input pin raises error."""
         connected_driver.setup_pin(27, GPIODirection.INPUT)
-        
+
         with pytest.raises(ValueError, match="not configured as output"):
             connected_driver.digital_write(27, True)
 
@@ -385,7 +385,7 @@ class TestGPIODigitalIO:
     def test_digital_read_auto_configures(self, connected_driver: GPIODriver):
         """Test digital_read auto-configures unconfigured pin."""
         connected_driver.digital_read(27)
-        
+
         assert connected_driver.is_pin_configured(27) is True
         state = connected_driver.get_pin_state(27)
         assert state is not None
@@ -395,7 +395,7 @@ class TestGPIODigitalIO:
         """Test set_high convenience method."""
         connected_driver.setup_pin(17, GPIODirection.OUTPUT)
         connected_driver.set_high(17)
-        
+
         state = connected_driver.get_pin_state(17)
         assert state is not None
         assert state.value is True
@@ -404,7 +404,7 @@ class TestGPIODigitalIO:
         """Test set_low convenience method."""
         connected_driver.setup_pin(17, GPIODirection.OUTPUT, initial=True)
         connected_driver.set_low(17)
-        
+
         state = connected_driver.get_pin_state(17)
         assert state is not None
         assert state.value is False
@@ -412,10 +412,10 @@ class TestGPIODigitalIO:
     def test_toggle(self, connected_driver: GPIODriver):
         """Test toggle method."""
         connected_driver.setup_pin(17, GPIODirection.OUTPUT)
-        
+
         result = connected_driver.toggle(17)
         assert result is True
-        
+
         result = connected_driver.toggle(17)
         assert result is False
 
@@ -437,7 +437,7 @@ class TestGPIOSoftwarePWM:
     def test_pwm_start(self, connected_driver: GPIODriver):
         """Test starting PWM on a pin."""
         connected_driver.pwm_start(18, frequency=1000.0, duty_cycle=0.5)
-        
+
         state = connected_driver.get_pin_state(18)
         assert state is not None
         assert state.pwm_config is not None
@@ -449,7 +449,7 @@ class TestGPIOSoftwarePWM:
         """Test stopping PWM on a pin."""
         connected_driver.pwm_start(18, duty_cycle=0.5)
         connected_driver.pwm_stop(18)
-        
+
         state = connected_driver.get_pin_state(18)
         assert state is not None
         assert state.pwm_config is not None
@@ -459,7 +459,7 @@ class TestGPIOSoftwarePWM:
         """Test setting PWM duty cycle."""
         connected_driver.pwm_start(18, duty_cycle=0.5)
         connected_driver.pwm_set_duty_cycle(18, 0.75)
-        
+
         duty = connected_driver.pwm_get_duty_cycle(18)
         assert duty == 0.75
 
@@ -467,7 +467,7 @@ class TestGPIOSoftwarePWM:
         """Test setting PWM frequency."""
         connected_driver.pwm_start(18, frequency=1000.0)
         connected_driver.pwm_set_frequency(18, 2000.0)
-        
+
         state = connected_driver.get_pin_state(18)
         assert state is not None
         assert state.pwm_config is not None
@@ -491,10 +491,10 @@ class TestGPIOSoftwarePWM:
     def test_active_pwm_pins(self, connected_driver: GPIODriver):
         """Test active_pwm_pins property."""
         assert connected_driver.active_pwm_pins == []
-        
+
         connected_driver.pwm_start(18, duty_cycle=0.5)
         connected_driver.pwm_start(19, duty_cycle=0.5)
-        
+
         pins = connected_driver.active_pwm_pins
         assert 18 in pins
         assert 19 in pins
@@ -502,7 +502,7 @@ class TestGPIOSoftwarePWM:
     def test_pwm_uses_default_frequency(self, connected_driver: GPIODriver):
         """Test PWM uses default frequency from config."""
         connected_driver.pwm_start(18, duty_cycle=0.5)
-        
+
         state = connected_driver.get_pin_state(18)
         assert state is not None
         assert state.pwm_config is not None
@@ -514,17 +514,21 @@ class TestGPIOSoftwarePWM:
 # =============================================================================
 
 
+def _noop_callback(pin: int, val: int) -> None:
+    """No-op callback for tests."""
+    pass
+
+
 class TestSoftwarePWMThread:
     """Tests for SoftwarePWMThread."""
 
     def test_thread_creation(self):
         """Test creating a PWM thread."""
-        callback = lambda pin, val: None
         thread = SoftwarePWMThread(
             pin=18,
             frequency=1000.0,
             duty_cycle=0.5,
-            write_callback=callback,
+            write_callback=_noop_callback,
         )
         assert thread._pin == 18
         assert thread.frequency == 1000.0
@@ -533,34 +537,30 @@ class TestSoftwarePWMThread:
 
     def test_frequency_property(self):
         """Test frequency property."""
-        callback = lambda pin, val: None
-        thread = SoftwarePWMThread(18, 1000.0, 0.5, callback)
-        
+        thread = SoftwarePWMThread(18, 1000.0, 0.5, _noop_callback)
+
         thread.frequency = 2000.0
         assert thread.frequency == 2000.0
 
     def test_frequency_clamped_to_max(self):
         """Test frequency is clamped to maximum."""
-        callback = lambda pin, val: None
-        thread = SoftwarePWMThread(18, 100000.0, 0.5, callback)  # Way above max
-        
+        thread = SoftwarePWMThread(18, 100000.0, 0.5, _noop_callback)  # Way above max
+
         assert thread.frequency <= SoftwarePWMThread.MAX_FREQUENCY
 
     def test_duty_cycle_property(self):
         """Test duty_cycle property."""
-        callback = lambda pin, val: None
-        thread = SoftwarePWMThread(18, 1000.0, 0.5, callback)
-        
+        thread = SoftwarePWMThread(18, 1000.0, 0.5, _noop_callback)
+
         thread.duty_cycle = 0.75
         assert thread.duty_cycle == 0.75
 
     def test_duty_cycle_clamped(self):
         """Test duty cycle is clamped to 0-1."""
-        callback = lambda pin, val: None
-        thread = SoftwarePWMThread(18, 1000.0, 1.5, callback)  # Above 1
-        
+        thread = SoftwarePWMThread(18, 1000.0, 1.5, _noop_callback)  # Above 1
+
         assert thread.duty_cycle == 1.0
-        
+
         thread.duty_cycle = -0.5
         assert thread.duty_cycle == 0.0
 
@@ -576,35 +576,35 @@ class TestGPIODriverInterface:
     def test_set_channel_starts_pwm(self, connected_driver: GPIODriver):
         """Test set_channel starts PWM if not running."""
         connected_driver.set_channel(18, 0.5)
-        
+
         assert 18 in connected_driver.active_pwm_pins
 
     def test_set_channel_updates_duty(self, connected_driver: GPIODriver):
         """Test set_channel updates existing PWM duty cycle."""
         connected_driver.pwm_start(18, duty_cycle=0.25)
         connected_driver.set_channel(18, 0.75)
-        
+
         duty = connected_driver.pwm_get_duty_cycle(18)
         assert duty == 0.75
 
     def test_set_channel_normalizes_negative(self, connected_driver: GPIODriver):
         """Test set_channel takes absolute value of negative."""
         connected_driver.set_channel(18, -0.5)
-        
+
         duty = connected_driver.get_channel(18)
         assert duty == 0.5
 
     def test_get_channel_pwm(self, connected_driver: GPIODriver):
         """Test get_channel returns PWM duty cycle."""
         connected_driver.pwm_start(18, duty_cycle=0.6)
-        
+
         value = connected_driver.get_channel(18)
         assert value == 0.6
 
     def test_get_channel_digital(self, connected_driver: GPIODriver):
         """Test get_channel returns digital value."""
         connected_driver.setup_pin(17, GPIODirection.OUTPUT, initial=True)
-        
+
         value = connected_driver.get_channel(17)
         assert value == 1.0
 
@@ -625,21 +625,21 @@ class TestGPIOValidation:
     def test_require_connected(self, driver: GPIODriver):
         """Test operations require connection."""
         from robo_infra.core.exceptions import HardwareNotFoundError
-        
+
         with pytest.raises(HardwareNotFoundError, match="not connected"):
             driver.digital_write(17, True)
 
     def test_setup_requires_connected(self, driver: GPIODriver):
         """Test setup_pin requires connection."""
         from robo_infra.core.exceptions import HardwareNotFoundError
-        
+
         with pytest.raises(HardwareNotFoundError, match="not connected"):
             driver.setup_pin(17, GPIODirection.OUTPUT)
 
     def test_pwm_requires_connected(self, driver: GPIODriver):
         """Test PWM operations require connection."""
         from robo_infra.core.exceptions import HardwareNotFoundError
-        
+
         with pytest.raises(HardwareNotFoundError, match="not connected"):
             driver.pwm_start(18, duty_cycle=0.5)
 
@@ -667,7 +667,7 @@ class TestGPIOConvenienceFunctions:
         """Test get_gpio_driver with default platform."""
         driver = get_gpio_driver()
         driver.connect()
-        
+
         # Should auto-detect to simulation on dev machine
         assert driver.simulation_mode is True
         driver.disconnect()
@@ -676,7 +676,7 @@ class TestGPIOConvenienceFunctions:
         """Test get_gpio_driver with specific platform."""
         driver = get_gpio_driver(Platform.SIMULATION)
         driver.connect()
-        
+
         assert driver.platform == Platform.SIMULATION
         driver.disconnect()
 
@@ -684,7 +684,7 @@ class TestGPIOConvenienceFunctions:
         """Test get_gpio_driver with string platform."""
         driver = get_gpio_driver("simulation")
         driver.connect()
-        
+
         assert driver.platform.value == "simulation"
         driver.disconnect()
 
@@ -727,18 +727,18 @@ class TestGPIOEdgeCases:
         # Setup all pins first
         for pin in range(17, 25):
             connected_driver.setup_pin(pin, GPIODirection.OUTPUT)
-        
+
         # Then write to them
         for pin in range(17, 25):
             connected_driver.digital_write(pin, pin % 2 == 0)
-        
+
         assert len(connected_driver.configured_pins) == 8
 
     def test_reconfigure_pin(self, connected_driver: GPIODriver):
         """Test reconfiguring a pin."""
         connected_driver.setup_pin(17, GPIODirection.OUTPUT, initial=True)
         connected_driver.setup_pin(17, GPIODirection.OUTPUT, initial=False)
-        
+
         state = connected_driver.get_pin_state(17)
         assert state is not None
         # Initial value should be updated
@@ -748,9 +748,9 @@ class TestGPIOEdgeCases:
         """Test disconnecting stops all PWM."""
         connected_driver.pwm_start(18, duty_cycle=0.5)
         connected_driver.pwm_start(19, duty_cycle=0.5)
-        
+
         connected_driver.disconnect()
-        
+
         # PWM threads should be stopped
         assert connected_driver.state == DriverState.DISCONNECTED
 
@@ -758,16 +758,16 @@ class TestGPIOEdgeCases:
         """Test disconnecting clears pin tracking."""
         connected_driver.setup_pin(17, GPIODirection.OUTPUT)
         connected_driver.disconnect()
-        
+
         # Pins should be cleared
         assert connected_driver.get_pin_state(17) is None
 
     def test_rapid_pwm_changes(self, connected_driver: GPIODriver):
         """Test rapid PWM duty cycle changes."""
         connected_driver.pwm_start(18, duty_cycle=0.0)
-        
+
         for i in range(10):
             connected_driver.pwm_set_duty_cycle(18, i * 0.1)
-        
+
         duty = connected_driver.pwm_get_duty_cycle(18)
         assert duty == 0.9  # 9 * 0.1
