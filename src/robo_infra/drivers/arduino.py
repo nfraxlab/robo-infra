@@ -1056,7 +1056,7 @@ class ArduinoDriver(Driver):
         """
         if self._simulation_mode:
             logger.debug("Simulated Arduino reset")
-            self._pwm_values = {ch: 0 for ch in range(self._arduino_config.pwm_channels)}
+            self._pwm_values = dict.fromkeys(range(self._arduino_config.pwm_channels), 0)
             self._analog_values.clear()
             self._simulated_analog.clear()
             self._simulated_digital.clear()

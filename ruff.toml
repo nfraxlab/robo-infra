@@ -29,6 +29,7 @@ ignore = [
     "PLR0911", # too many return statements
     "PLR0912", # too many branches
     "PLR0915", # too many statements
+    "PLC0415", # import not at top of file (intentional lazy imports for optional deps)
     "ARG001",  # unused function argument (common in ABCs)
     "ARG002",  # unused method argument (common in ABCs)
 ]
@@ -47,6 +48,9 @@ ignore = [
 known-first-party = ["robo_infra"]
 force-single-line = false
 lines-after-imports = 2
+
+[lint.pydocstyle]
+convention = "google"
 
 [format]
 quote-style = "double"

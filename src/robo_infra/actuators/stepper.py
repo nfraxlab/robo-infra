@@ -349,7 +349,7 @@ class Stepper(Actuator):
 
     def _apply_value(self, value: float) -> None:
         # Interpret Actuator.set(value) as move_to(step_position)
-        self.move_to(int(round(value)))
+        self.move_to(round(value))
 
     def _read_value(self) -> float:
         return float(self._position_steps)
