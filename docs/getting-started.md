@@ -13,7 +13,7 @@ This guide will help you get started with robo-infra, from installation to your 
 
 ```bash
 # Clone the repository
-git clone https://github.com/nfraxio/robo-infra.git
+git clone https://github.com/nfraxlab/robo-infra.git
 cd robo-infra
 
 # Install with Poetry

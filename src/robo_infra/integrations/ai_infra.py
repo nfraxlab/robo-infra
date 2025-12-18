@@ -11,8 +11,8 @@ Example:
     >>> tools = controller_to_tools(controller)
     >>>
     >>> # Use with ai-infra Agent
-    >>> from ai_infra.llm import CoreAgent
-    >>> agent = CoreAgent(tools=tools)
+    >>> from ai_infra.llm import Agent
+    >>> agent = Agent(tools=tools)
 
 Note:
     This module provides basic tool generation. For full LangChain/LangGraph

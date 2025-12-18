@@ -182,8 +182,8 @@ High-level control systems:
 
 `robo-infra` is designed to work seamlessly with:
 
-- **[svc-infra](https://github.com/nfraxio/svc-infra)** - Backend infrastructure (API, auth, database)
-- **[ai-infra](https://github.com/nfraxio/ai-infra)** - AI/LLM infrastructure (agents, tools, embeddings)
+- **[svc-infra](https://github.com/nfraxlab/svc-infra)** - Backend infrastructure (API, auth, database)
+- **[ai-infra](https://github.com/nfraxlab/ai-infra)** - AI/LLM infrastructure (agents, tools, embeddings)
 
 ## License
 
