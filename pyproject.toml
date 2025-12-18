@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "robo-infra"
-version = "0.1.8"
+version = "0.1.9"
 description = "Universal robotics infrastructure - control any robot from servo to rocket"
 authors = ["nfraxlab <dev@nfrax.io>"]
 license = "MIT"
