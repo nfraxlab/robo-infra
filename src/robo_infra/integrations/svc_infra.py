@@ -84,7 +84,8 @@ def controller_to_router(
             "Install with: pip install fastapi pydantic"
         ) from e
 
-    router = APIRouter(prefix=prefix, tags=tags or [controller.name])
+    _tags: list[str] = tags or [controller.name]
+    router = APIRouter(prefix=prefix, tags=_tags)  # type: ignore[arg-type]
     name = controller.name
 
     # Pydantic models for request/response
@@ -239,7 +240,8 @@ def actuator_to_router(
             "Install with: pip install fastapi pydantic"
         ) from e
 
-    router = APIRouter(prefix=prefix, tags=tags or [actuator.name])
+    _tags: list[str] = tags or [actuator.name]
+    router = APIRouter(prefix=prefix, tags=_tags)  # type: ignore[arg-type]
     limits = actuator.limits
 
     class SetRequest(BaseModel):
