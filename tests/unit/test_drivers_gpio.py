@@ -256,6 +256,7 @@ class TestGPIODriverLifecycle:
     def test_connect_already_connected_warns(self, connected_driver: GPIODriver, caplog):
         """Test connecting when already connected logs warning."""
         import logging
+
         with caplog.at_level(logging.WARNING):
             connected_driver.connect()
         assert "already connected" in caplog.text
@@ -268,6 +269,7 @@ class TestGPIODriverLifecycle:
     def test_disconnect_already_disconnected_warns(self, driver: GPIODriver, caplog):
         """Test disconnecting when already disconnected logs warning."""
         import logging
+
         with caplog.at_level(logging.WARNING):
             driver.disconnect()
         assert "already disconnected" in caplog.text

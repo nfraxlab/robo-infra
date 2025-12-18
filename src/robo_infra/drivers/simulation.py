@@ -211,9 +211,7 @@ class SimulationDriver(Driver):
         )
         # Initialize channel histories with correct channel numbers
         for ch in range(channels):
-            self._channel_histories[ch] = ChannelHistory(
-                channel=ch, max_history=max_history
-            )
+            self._channel_histories[ch] = ChannelHistory(channel=ch, max_history=max_history)
 
     # -------------------------------------------------------------------------
     # Properties
@@ -399,9 +397,7 @@ class SimulationDriver(Driver):
         """
         self._channel_change_callbacks.append(callback)
 
-    def remove_channel_change_callback(
-        self, callback: ChannelChangeCallback
-    ) -> bool:
+    def remove_channel_change_callback(self, callback: ChannelChangeCallback) -> bool:
         """Remove a channel change callback.
 
         Args:
@@ -489,11 +485,7 @@ class SimulationDriver(Driver):
         Returns:
             Number of write operations.
         """
-        writes = [
-            op
-            for op in self._operation_history
-            if op.operation == OperationType.WRITE
-        ]
+        writes = [op for op in self._operation_history if op.operation == OperationType.WRITE]
         if channel is not None:
             writes = [op for op in writes if op.channel == channel]
         return len(writes)
@@ -507,11 +499,7 @@ class SimulationDriver(Driver):
         Returns:
             Number of read operations.
         """
-        reads = [
-            op
-            for op in self._operation_history
-            if op.operation == OperationType.READ
-        ]
+        reads = [op for op in self._operation_history if op.operation == OperationType.READ]
         if channel is not None:
             reads = [op for op in reads if op.channel == channel]
         return len(reads)
@@ -559,9 +547,7 @@ class SimulationDriver(Driver):
 
             # Trim to max history
             if len(self._operation_history) > self._max_history:
-                self._operation_history = self._operation_history[
-                    -self._max_history :
-                ]
+                self._operation_history = self._operation_history[-self._max_history :]
 
         # Fire operation callbacks
         for callback in self._operation_callbacks:
@@ -570,9 +556,7 @@ class SimulationDriver(Driver):
             except Exception as e:
                 logger.warning("Operation callback failed: %s", e)
 
-    def _fire_channel_change_callbacks(
-        self, channel: int, value: float
-    ) -> None:
+    def _fire_channel_change_callbacks(self, channel: int, value: float) -> None:
         """Fire all channel change callbacks.
 
         Args:

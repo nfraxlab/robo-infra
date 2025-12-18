@@ -527,15 +527,14 @@ class Controller(ABC):
                 actuator.disable()
             except Exception as e:
                 failed_actuators.append(name)
-                logger.critical(
-                    "E-STOP FAILED to disable actuator '%s': %s", name, e
-                )
+                logger.critical("E-STOP FAILED to disable actuator '%s': %s", name, e)
 
         self._is_running = False
 
         # Raise if _do_stop failed or any actuator failed to disable
         if failed_actuators or do_stop_error:
             from robo_infra.core.exceptions import SafetyError
+
             error_msg = []
             if do_stop_error:
                 error_msg.append(f"_do_stop failed: {do_stop_error}")

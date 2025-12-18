@@ -61,8 +61,7 @@ class SafetyViolation(SafetyError):
         self.limit = limit
         self.unit = unit
         message = (
-            f"Safety violation: {component} {metric} = {value}{unit} "
-            f"(limit: {limit}{unit})"
+            f"Safety violation: {component} {metric} = {value}{unit} " f"(limit: {limit}{unit})"
         )
         super().__init__(message, action_taken="E-stop triggered")
 
@@ -221,15 +220,17 @@ class SafetyMonitor:
             warning_threshold: Warn at this fraction of max.
             level: Safety level for violations.
         """
-        self.add_limit(LimitConfig(
-            component=component,
-            metric="current",
-            unit="A",
-            min_value=min_current,
-            max_value=max_current,
-            warning_max=max_current * warning_threshold if max_current else None,
-            level=level,
-        ))
+        self.add_limit(
+            LimitConfig(
+                component=component,
+                metric="current",
+                unit="A",
+                min_value=min_current,
+                max_value=max_current,
+                warning_max=max_current * warning_threshold if max_current else None,
+                level=level,
+            )
+        )
 
     def add_temperature_limit(
         self,
@@ -249,15 +250,17 @@ class SafetyMonitor:
             warning_threshold: Warn at this fraction of max.
             level: Safety level for violations.
         """
-        self.add_limit(LimitConfig(
-            component=component,
-            metric="temperature",
-            unit="°C",
-            min_value=min_temp,
-            max_value=max_temp,
-            warning_max=max_temp * warning_threshold if max_temp else None,
-            level=level,
-        ))
+        self.add_limit(
+            LimitConfig(
+                component=component,
+                metric="temperature",
+                unit="°C",
+                min_value=min_temp,
+                max_value=max_temp,
+                warning_max=max_temp * warning_threshold if max_temp else None,
+                level=level,
+            )
+        )
 
     def add_voltage_limit(
         self,
@@ -275,14 +278,16 @@ class SafetyMonitor:
             min_voltage: Minimum voltage (for brownout detection).
             level: Safety level for violations.
         """
-        self.add_limit(LimitConfig(
-            component=component,
-            metric="voltage",
-            unit="V",
-            min_value=min_voltage,
-            max_value=max_voltage,
-            level=level,
-        ))
+        self.add_limit(
+            LimitConfig(
+                component=component,
+                metric="voltage",
+                unit="V",
+                min_value=min_voltage,
+                max_value=max_voltage,
+                level=level,
+            )
+        )
 
     def remove_limit(self, component: str, metric: str) -> None:
         """Remove a monitored limit.

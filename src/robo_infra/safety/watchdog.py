@@ -126,9 +126,7 @@ class Watchdog:
         if config:
             self._config = config
         else:
-            self._config = WatchdogConfig(
-                timeout=timeout if timeout is not None else 0.1
-            )
+            self._config = WatchdogConfig(timeout=timeout if timeout is not None else 0.1)
 
         self._estop = estop
         self._state = WatchdogState.STOPPED

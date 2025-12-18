@@ -665,7 +665,10 @@ class TestFactoryFunctions:
     def test_list_arduino_ports_no_pyserial(self) -> None:
         """Test list_arduino_ports when pyserial not installed."""
         with (
-            patch.dict("sys.modules", {"serial": None, "serial.tools": None, "serial.tools.list_ports": None}),
+            patch.dict(
+                "sys.modules",
+                {"serial": None, "serial.tools": None, "serial.tools.list_ports": None},
+            ),
             patch("robo_infra.drivers.arduino.logger"),
         ):
             # This will try to import and fail
@@ -691,10 +694,7 @@ class TestThreadSafety:
             except Exception as e:
                 errors.append(e)
 
-        threads = [
-            threading.Thread(target=write_pwm, args=(ch, 100))
-            for ch in range(6)
-        ]
+        threads = [threading.Thread(target=write_pwm, args=(ch, 100)) for ch in range(6)]
 
         for t in threads:
             t.start()
@@ -714,10 +714,7 @@ class TestThreadSafety:
             except Exception as e:
                 errors.append(e)
 
-        threads = [
-            threading.Thread(target=read_analog, args=(ch, 100))
-            for ch in range(6)
-        ]
+        threads = [threading.Thread(target=read_analog, args=(ch, 100)) for ch in range(6)]
 
         for t in threads:
             t.start()
@@ -738,10 +735,7 @@ class TestThreadSafety:
             except Exception as e:
                 errors.append(e)
 
-        threads = [
-            threading.Thread(target=digital_ops, args=(pin, 100))
-            for pin in range(14)
-        ]
+        threads = [threading.Thread(target=digital_ops, args=(pin, 100)) for pin in range(14)]
 
         for t in threads:
             t.start()
@@ -801,6 +795,7 @@ class TestEnableDisable:
         simulation_driver.disable()
 
         from robo_infra.core.exceptions import DisabledError
+
         with pytest.raises(DisabledError):
             simulation_driver.set_channel(0, 0.5)
 

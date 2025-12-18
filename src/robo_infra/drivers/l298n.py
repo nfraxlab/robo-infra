@@ -228,9 +228,7 @@ class L298N(Driver):
         self._pwm_frequency: int = self._l298n_config.pwm_frequency
 
         # Determine simulation mode
-        self._simulation_mode = all(
-            pin is None for pin in [in1, in2, in3, in4, ena, enb]
-        )
+        self._simulation_mode = all(pin is None for pin in [in1, in2, in3, in4, ena, enb])
 
         # Validate pin configuration
         if not self._simulation_mode:
@@ -265,18 +263,14 @@ class L298N(Driver):
         motor_a_present = [p is not None for p in motor_a_pins]
 
         if any(motor_a_present) and not all(motor_a_present):
-            raise ValueError(
-                "Motor A requires all pins (in1, in2, ena) or none"
-            )
+            raise ValueError("Motor A requires all pins (in1, in2, ena) or none")
 
         # Check motor B pins
         motor_b_pins = [self._in3, self._in4, self._enb]
         motor_b_present = [p is not None for p in motor_b_pins]
 
         if any(motor_b_present) and not all(motor_b_present):
-            raise ValueError(
-                "Motor B requires all pins (in3, in4, enb) or none"
-            )
+            raise ValueError("Motor B requires all pins (in3, in4, enb) or none")
 
         # At least one motor must be configured
         if not any(motor_a_present) and not any(motor_b_present):
@@ -794,9 +788,7 @@ class L298N(Driver):
             HardwareNotFoundError: If not connected.
         """
         if self._state != DriverState.CONNECTED:
-            raise HardwareNotFoundError(
-                f"L298N not connected (state={self._state.value})"
-            )
+            raise HardwareNotFoundError(f"L298N not connected (state={self._state.value})")
 
     # -------------------------------------------------------------------------
     # Representation

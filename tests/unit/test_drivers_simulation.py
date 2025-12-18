@@ -347,9 +347,7 @@ class TestSimulationDriverOperationLogging:
         driver.disconnect()
 
         history = driver.operation_history
-        disconnect_ops = [
-            h for h in history if h.operation == OperationType.DISCONNECT
-        ]
+        disconnect_ops = [h for h in history if h.operation == OperationType.DISCONNECT]
         assert len(disconnect_ops) == 1
 
     def test_write_logged(self, driver: SimulationDriver) -> None:

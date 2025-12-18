@@ -318,8 +318,7 @@ def create_websocket_handler(controller: Controller) -> Any:
         from fastapi import WebSocket, WebSocketDisconnect
     except ImportError as e:
         raise ImportError(
-            "FastAPI is required for WebSocket support. "
-            "Install with: pip install fastapi"
+            "FastAPI is required for WebSocket support. " "Install with: pip install fastapi"
         ) from e
 
     import asyncio

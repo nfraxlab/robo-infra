@@ -281,18 +281,14 @@ class TB6612(Driver):
         motor_a_present = [p is not None for p in motor_a_pins]
 
         if any(motor_a_present) and not all(motor_a_present):
-            raise ValueError(
-                "Motor A requires all pins (ain1, ain2, pwma) or none"
-            )
+            raise ValueError("Motor A requires all pins (ain1, ain2, pwma) or none")
 
         # Check motor B pins
         motor_b_pins = [self._bin1, self._bin2, self._pwmb]
         motor_b_present = [p is not None for p in motor_b_pins]
 
         if any(motor_b_present) and not all(motor_b_present):
-            raise ValueError(
-                "Motor B requires all pins (bin1, bin2, pwmb) or none"
-            )
+            raise ValueError("Motor B requires all pins (bin1, bin2, pwmb) or none")
 
         # At least one motor must be configured
         if not any(motor_a_present) and not any(motor_b_present):
@@ -870,9 +866,7 @@ class TB6612(Driver):
             HardwareNotFoundError: If not connected.
         """
         if self._state != DriverState.CONNECTED:
-            raise HardwareNotFoundError(
-                f"TB6612 not connected (state={self._state.value})"
-            )
+            raise HardwareNotFoundError(f"TB6612 not connected (state={self._state.value})")
 
     def _require_not_standby(self) -> None:
         """Require driver to not be in standby mode.

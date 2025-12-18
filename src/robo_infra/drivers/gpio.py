@@ -383,11 +383,7 @@ class GPIODriver(Driver):
     def active_pwm_pins(self) -> list[int]:
         """Get list of pins with active software PWM."""
         with self._lock:
-            return [
-                pin
-                for pin, thread in self._pwm_threads.items()
-                if thread._running.is_set()
-            ]
+            return [pin for pin, thread in self._pwm_threads.items() if thread._running.is_set()]
 
     # =========================================================================
     # Platform Detection

@@ -56,9 +56,7 @@ def mock_bus() -> MagicMock:
     def read_register(address: int, register: int, length: int) -> bytes:
         return bytes([registers.get(register + i, 0) for i in range(length)])
 
-    def write_register(
-        address: int, register: int, data: bytes | list[int]
-    ) -> int:
+    def write_register(address: int, register: int, data: bytes | list[int]) -> int:
         data_bytes = bytes(data) if isinstance(data, list) else data
         for i, byte in enumerate(data_bytes):
             registers[register + i] = byte
@@ -321,9 +319,7 @@ class TestPCA9685PWMOperations:
         assert on <= PCA9685_RESOLUTION
         assert off <= PCA9685_RESOLUTION
 
-    def test_set_pwm_with_bus(
-        self, driver_with_bus: PCA9685, mock_bus: MagicMock
-    ) -> None:
+    def test_set_pwm_with_bus(self, driver_with_bus: PCA9685, mock_bus: MagicMock) -> None:
         """Test setting PWM with I2C bus."""
         driver_with_bus.set_pwm(0, on=0, off=2048)
 
@@ -439,23 +435,17 @@ class TestPCA9685Frequency:
 
         assert driver_simulation.current_frequency <= PCA9685_MAX_FREQUENCY + 50
 
-    def test_set_frequency_out_of_range_low(
-        self, driver_simulation: PCA9685
-    ) -> None:
+    def test_set_frequency_out_of_range_low(self, driver_simulation: PCA9685) -> None:
         """Test setting frequency below minimum."""
         with pytest.raises(ValueError, match="Frequency must be"):
             driver_simulation.set_frequency(10)
 
-    def test_set_frequency_out_of_range_high(
-        self, driver_simulation: PCA9685
-    ) -> None:
+    def test_set_frequency_out_of_range_high(self, driver_simulation: PCA9685) -> None:
         """Test setting frequency above maximum."""
         with pytest.raises(ValueError, match="Frequency must be"):
             driver_simulation.set_frequency(2000)
 
-    def test_set_frequency_with_bus(
-        self, driver_with_bus: PCA9685, mock_bus: MagicMock
-    ) -> None:
+    def test_set_frequency_with_bus(self, driver_with_bus: PCA9685, mock_bus: MagicMock) -> None:
         """Test setting frequency with I2C bus."""
         initial_calls = mock_bus.write_register_byte.call_count
 
@@ -503,9 +493,7 @@ class TestPCA9685SleepWake:
         # Channel value should be preserved
         assert abs(driver_simulation.get_channel(0) - 0.5) < 0.01
 
-    def test_sleep_with_bus(
-        self, driver_with_bus: PCA9685, mock_bus: MagicMock
-    ) -> None:
+    def test_sleep_with_bus(self, driver_with_bus: PCA9685, mock_bus: MagicMock) -> None:
         """Test sleep with I2C bus."""
         driver_with_bus.sleep()
 
@@ -538,9 +526,7 @@ class TestPCA9685Configuration:
         driver_simulation.set_totem_pole(True)
         driver_simulation.set_totem_pole(False)
 
-    def test_configuration_with_bus(
-        self, driver_with_bus: PCA9685, mock_bus: MagicMock
-    ) -> None:
+    def test_configuration_with_bus(self, driver_with_bus: PCA9685, mock_bus: MagicMock) -> None:
         """Test configuration methods write to bus."""
         initial_calls = mock_bus.write_register_byte.call_count
 

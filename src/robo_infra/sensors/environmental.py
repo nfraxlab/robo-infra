@@ -860,9 +860,9 @@ class Light(Sensor):
             return 0.0
 
         # LDR resistance
-        ldr_resistance = self._config.series_resistor * (
-            self._config.reference_voltage - voltage
-        ) / voltage
+        ldr_resistance = (
+            self._config.series_resistor * (self._config.reference_voltage - voltage) / voltage
+        )
 
         # Approximate lux from resistance (logarithmic)
         # lux ≈ 500000 / R (very rough approximation)

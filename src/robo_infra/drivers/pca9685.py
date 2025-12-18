@@ -557,9 +557,7 @@ class PCA9685(Driver):
         )
 
         if self._bus is not None:
-            self._bus.write_register(
-                self._address, PCA9685Register.ALL_LED_ON_L, data
-            )
+            self._bus.write_register(self._address, PCA9685Register.ALL_LED_ON_L, data)
 
         # Update all cached values
         for ch in range(16):
@@ -620,9 +618,7 @@ class PCA9685(Driver):
 
         # Set prescale register
         if self._bus is not None:
-            self._bus.write_register_byte(
-                self._address, PCA9685Register.PRE_SCALE, prescale
-            )
+            self._bus.write_register_byte(self._address, PCA9685Register.PRE_SCALE, prescale)
 
         # Wake up if we weren't sleeping before
         if not was_sleeping:
@@ -660,14 +656,10 @@ class PCA9685(Driver):
 
         if self._bus is not None:
             # Read current MODE1
-            mode1 = self._bus.read_register_byte(
-                self._address, PCA9685Register.MODE1
-            )
+            mode1 = self._bus.read_register_byte(self._address, PCA9685Register.MODE1)
             # Set SLEEP bit
             mode1 |= PCA9685Mode1.SLEEP
-            self._bus.write_register_byte(
-                self._address, PCA9685Register.MODE1, mode1
-            )
+            self._bus.write_register_byte(self._address, PCA9685Register.MODE1, mode1)
 
         self._is_sleeping = True
         logger.debug("PCA9685 sleep")
@@ -685,15 +677,11 @@ class PCA9685(Driver):
 
         if self._bus is not None:
             # Read current MODE1
-            mode1 = self._bus.read_register_byte(
-                self._address, PCA9685Register.MODE1
-            )
+            mode1 = self._bus.read_register_byte(self._address, PCA9685Register.MODE1)
 
             # Clear SLEEP bit
             mode1 &= ~PCA9685Mode1.SLEEP
-            self._bus.write_register_byte(
-                self._address, PCA9685Register.MODE1, mode1
-            )
+            self._bus.write_register_byte(self._address, PCA9685Register.MODE1, mode1)
 
             # Wait for oscillator to stabilize
             time.sleep(PCA9685_RESTART_DELAY)
@@ -702,9 +690,7 @@ class PCA9685(Driver):
             # set it again to restart PWM
             if mode1 & PCA9685Mode1.RESTART:
                 mode1 |= PCA9685Mode1.RESTART
-                self._bus.write_register_byte(
-                    self._address, PCA9685Register.MODE1, mode1
-                )
+                self._bus.write_register_byte(self._address, PCA9685Register.MODE1, mode1)
 
         self._is_sleeping = False
         logger.debug("PCA9685 wake")
@@ -728,18 +714,14 @@ class PCA9685(Driver):
             return
 
         if self._bus is not None:
-            mode1 = self._bus.read_register_byte(
-                self._address, PCA9685Register.MODE1
-            )
+            mode1 = self._bus.read_register_byte(self._address, PCA9685Register.MODE1)
 
             if enabled:
                 mode1 |= PCA9685Mode1.ALLCALL
             else:
                 mode1 &= ~PCA9685Mode1.ALLCALL
 
-            self._bus.write_register_byte(
-                self._address, PCA9685Register.MODE1, mode1
-            )
+            self._bus.write_register_byte(self._address, PCA9685Register.MODE1, mode1)
 
         logger.debug("PCA9685 all_call=%s", enabled)
 
@@ -758,18 +740,14 @@ class PCA9685(Driver):
             return
 
         if self._bus is not None:
-            mode2 = self._bus.read_register_byte(
-                self._address, PCA9685Register.MODE2
-            )
+            mode2 = self._bus.read_register_byte(self._address, PCA9685Register.MODE2)
 
             if inverted:
                 mode2 |= PCA9685Mode2.INVRT
             else:
                 mode2 &= ~PCA9685Mode2.INVRT
 
-            self._bus.write_register_byte(
-                self._address, PCA9685Register.MODE2, mode2
-            )
+            self._bus.write_register_byte(self._address, PCA9685Register.MODE2, mode2)
 
         logger.debug("PCA9685 inverted=%s", inverted)
 
@@ -784,18 +762,14 @@ class PCA9685(Driver):
             return
 
         if self._bus is not None:
-            mode2 = self._bus.read_register_byte(
-                self._address, PCA9685Register.MODE2
-            )
+            mode2 = self._bus.read_register_byte(self._address, PCA9685Register.MODE2)
 
             if totem_pole:
                 mode2 |= PCA9685Mode2.OUTDRV
             else:
                 mode2 &= ~PCA9685Mode2.OUTDRV
 
-            self._bus.write_register_byte(
-                self._address, PCA9685Register.MODE2, mode2
-            )
+            self._bus.write_register_byte(self._address, PCA9685Register.MODE2, mode2)
 
         logger.debug("PCA9685 totem_pole=%s", totem_pole)
 
@@ -833,9 +807,7 @@ class PCA9685(Driver):
         if self._pca_config.all_call:
             mode1 |= PCA9685Mode1.ALLCALL
 
-        self._bus.write_register_byte(
-            self._address, PCA9685Register.MODE1, mode1
-        )
+        self._bus.write_register_byte(self._address, PCA9685Register.MODE1, mode1)
 
         # Clear all PWM outputs
         self.set_all_pwm(0, 0)
@@ -854,9 +826,7 @@ class PCA9685(Driver):
         if self._pca_config.all_call:
             mode1 |= PCA9685Mode1.ALLCALL
 
-        self._bus.write_register_byte(
-            self._address, PCA9685Register.MODE1, mode1
-        )
+        self._bus.write_register_byte(self._address, PCA9685Register.MODE1, mode1)
         self._is_sleeping = True
 
     def _configure_mode2(self) -> None:
@@ -873,9 +843,7 @@ class PCA9685(Driver):
         if self._pca_config.output_change_on_ack:
             mode2 |= PCA9685Mode2.OCH
 
-        self._bus.write_register_byte(
-            self._address, PCA9685Register.MODE2, mode2
-        )
+        self._bus.write_register_byte(self._address, PCA9685Register.MODE2, mode2)
 
     def __repr__(self) -> str:
         """String representation."""

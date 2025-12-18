@@ -238,6 +238,7 @@ class TestTB6612Lifecycle:
     def test_connect_already_connected_warns(self, connected_driver: TB6612, caplog):
         """Test connecting when already connected logs warning."""
         import logging
+
         with caplog.at_level(logging.WARNING):
             connected_driver.connect()
         assert "already connected" in caplog.text
@@ -255,6 +256,7 @@ class TestTB6612Lifecycle:
     def test_disconnect_already_disconnected_warns(self, driver: TB6612, caplog):
         """Test disconnecting when already disconnected logs warning."""
         import logging
+
         with caplog.at_level(logging.WARNING):
             driver.disconnect()
         assert "already disconnected" in caplog.text
@@ -300,6 +302,7 @@ class TestTB6612Standby:
         connected_driver.standby()
 
         from robo_infra.core.exceptions import DisabledError
+
         with pytest.raises(DisabledError, match="standby"):
             connected_driver.set_motor(0, 0.5, TB6612Direction.FORWARD)
 
@@ -550,6 +553,7 @@ class TestTB6612EnableDisable:
         connected_driver.disable_motor(0)
 
         from robo_infra.core.exceptions import DisabledError
+
         with pytest.raises(DisabledError):
             connected_driver.set_motor(0, 0.5, TB6612Direction.FORWARD)
 
@@ -639,6 +643,7 @@ class TestTB6612Validation:
     def test_require_connected(self, driver: TB6612):
         """Test operations require connection."""
         from robo_infra.core.exceptions import HardwareNotFoundError
+
         with pytest.raises(HardwareNotFoundError, match="not connected"):
             driver.set_motor(0, 0.5, TB6612Direction.FORWARD)
 
@@ -657,6 +662,7 @@ class TestTB6612Registration:
         import importlib
 
         import robo_infra.drivers.tb6612
+
         importlib.reload(robo_infra.drivers.tb6612)
 
         driver_cls = get_driver("tb6612")
@@ -668,6 +674,7 @@ class TestTB6612Registration:
         import importlib
 
         import robo_infra.drivers.tb6612
+
         importlib.reload(robo_infra.drivers.tb6612)
 
         driver_cls = get_driver("tb6612")

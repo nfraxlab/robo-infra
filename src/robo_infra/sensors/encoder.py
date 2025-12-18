@@ -151,9 +151,7 @@ class QuadratureConfig(BaseModel):
     unit: Unit = Unit.COUNT
 
     # Resolution
-    pulses_per_revolution: int = Field(
-        default=100, ge=1, description="Pulses per revolution (PPR)"
-    )
+    pulses_per_revolution: int = Field(default=100, ge=1, description="Pulses per revolution (PPR)")
     counts_per_pulse: int = Field(
         default=4, ge=1, le=4, description="Counts per pulse (1, 2, or 4 for edges)"
     )

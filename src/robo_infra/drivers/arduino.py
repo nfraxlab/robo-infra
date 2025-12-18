@@ -205,9 +205,7 @@ class ArduinoConfig:
     wait_for_ready: bool = True
     ready_timeout: float = 5.0
     simulation: bool = False
-    pwm_pins: dict[int, int] = field(
-        default_factory=lambda: {0: 3, 1: 5, 2: 6, 3: 9, 4: 10, 5: 11}
-    )
+    pwm_pins: dict[int, int] = field(default_factory=lambda: {0: 3, 1: 5, 2: 6, 3: 9, 4: 10, 5: 11})
     analog_pins: dict[int, int] = field(
         default_factory=lambda: {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5}  # A0-A5
     )
@@ -372,9 +370,7 @@ class ArduinoDriver(Driver):
         self._state = DriverState.CONNECTING
 
         if self._simulation_mode:
-            logger.warning(
-                "⚠️ SIMULATION MODE - ArduinoDriver not connected to real hardware"
-            )
+            logger.warning("⚠️ SIMULATION MODE - ArduinoDriver not connected to real hardware")
             self._state = DriverState.CONNECTED
             return
 
@@ -414,7 +410,11 @@ class ArduinoDriver(Driver):
                 self._wait_for_ready()
 
             self._state = DriverState.CONNECTED
-            logger.info("ArduinoDriver connected on %s at %d baud", port, self._arduino_config.serial.baudrate)
+            logger.info(
+                "ArduinoDriver connected on %s at %d baud",
+                port,
+                self._arduino_config.serial.baudrate,
+            )
 
         except Exception as e:
             self._state = DriverState.ERROR
@@ -495,9 +495,7 @@ class ArduinoDriver(Driver):
 
             return serial
         except ImportError as e:
-            raise ImportError(
-                "pyserial is required. Install with: pip install pyserial"
-            ) from e
+            raise ImportError("pyserial is required. Install with: pip install pyserial") from e
 
     def _detect_arduino_port(self) -> str | None:
         """Try to auto-detect Arduino serial port.
@@ -1152,15 +1150,17 @@ def list_arduino_ports() -> list[dict[str, Any]]:
 
         for port in list_ports.comports():
             is_arduino = port.vid in arduino_vids if port.vid else False
-            ports.append({
-                "device": port.device,
-                "description": port.description,
-                "hwid": port.hwid,
-                "vid": port.vid,
-                "pid": port.pid,
-                "serial_number": port.serial_number,
-                "is_arduino": is_arduino,
-            })
+            ports.append(
+                {
+                    "device": port.device,
+                    "description": port.description,
+                    "hwid": port.hwid,
+                    "vid": port.vid,
+                    "pid": port.pid,
+                    "serial_number": port.serial_number,
+                    "is_arduino": is_arduino,
+                }
+            )
 
         return ports
 
