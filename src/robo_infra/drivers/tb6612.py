@@ -51,7 +51,6 @@ Comparison to L298N:
 
 from __future__ import annotations
 
-import contextlib
 import logging
 from dataclasses import dataclass, field
 from enum import Enum, IntEnum
@@ -713,10 +712,14 @@ class TB6612(Driver):
         """
         channel = self._validate_motor_channel(channel)
 
-        # Stop the motor first
+        # Stop the motor first (best-effort, log failures)
         if self._state == DriverState.CONNECTED and not self._in_standby:
-            with contextlib.suppress(Exception):
+            try:
                 self.coast(channel)
+            except Exception as e:
+                logger.warning(
+                    "Failed to coast motor %d during disable: %s", channel, e
+                )
 
         self._motor_states[channel].enabled = False
         logger.debug("Motor %d disabled", channel)
