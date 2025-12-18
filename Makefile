@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: help install lint format typecheck test unit unitv cov clean clean-pycache sim
+.PHONY: help install lint format format-check type typecheck test unit unitv cov clean clean-pycache sim hw ci check docs docs-serve docs-build
 
 help: ## Show available commands
 	@echo "Available commands:"
@@ -11,8 +11,11 @@ help: ## Show available commands
 	@echo "Code Quality:"
 	@echo "  lint              Run ruff linter"
 	@echo "  format            Format code with ruff"
-	@echo "  typecheck         Run mypy type checker"
-	@echo "  check             Run all checks (lint + typecheck)"
+	@echo "  format-check      Check formatting (no changes)"
+	@echo "  type              Run mypy type checker"
+	@echo "  typecheck         Alias for type"
+	@echo "  check             Run all checks (lint + type)"
+	@echo "  ci                Run checks + tests (for CI pipelines)"
 	@echo ""
 	@echo "Testing:"
 	@echo "  test              Run all tests"
@@ -20,6 +23,11 @@ help: ## Show available commands
 	@echo "  unitv             Run unit tests (verbose)"
 	@echo "  cov               Run tests with coverage report"
 	@echo "  sim               Run simulation tests only"
+	@echo "  hw                Run hardware tests (requires hardware)"
+	@echo ""
+	@echo "Documentation:"
+	@echo "  docs              Serve docs locally with live reload"
+	@echo "  docs-build        Build docs for production"
 	@echo ""
 	@echo "Cleanup:"
 	@echo "  clean             Remove caches, build artifacts"
@@ -41,12 +49,21 @@ format:
 	@poetry run ruff format src tests
 	@poetry run ruff check --fix src tests
 
-typecheck:
-	@echo "[typecheck] Running mypy..."
+format-check:
+	@echo "[format-check] Checking formatting (no changes)..."
+	@poetry run ruff format --check src tests
+
+type:
+	@echo "[type] Running mypy..."
 	@poetry run mypy src
 
-check: lint typecheck
+typecheck: type
+
+check: lint type
 	@echo "[check] All checks passed"
+
+ci: check test
+	@echo "[ci] All checks + tests passed"
 
 # --- Testing ---
 test:
