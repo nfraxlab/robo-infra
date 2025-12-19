@@ -43,6 +43,9 @@ ignore = [
     "ARG001",  # ABCs have unused arguments
     "ARG002",
 ]
+"src/robo_infra/controllers/*.py" = [
+    "TC001",   # Controllers use runtime imports (not just type hints)
+]
 
 [lint.isort]
 known-first-party = ["robo_infra"]

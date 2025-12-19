@@ -45,6 +45,7 @@ pre-commit = ">=4.0"
 mkdocs = ">=1.6.0"
 mkdocs-material = ">=9.5.0"
 mkdocstrings = {extras = ["python"], version = ">=0.25.0"}
+bandit = "^1.9.2"
 
 [tool.poetry.group.hardware]
 optional = true
@@ -82,6 +83,7 @@ source = ["src/robo_infra"]
 branch = true
 
 [tool.coverage.report]
+fail_under = 75
 exclude_lines = [
     "pragma: no cover",
     "def __repr__",
@@ -90,3 +92,8 @@ exclude_lines = [
     "if __name__ == .__main__.:",
     "@abstractmethod",
 ]
+
+[tool.bandit]
+exclude_dirs = ["tests", "docs", "examples"]
+skips = []  # Add skips only with justification
+targets = ["src"]

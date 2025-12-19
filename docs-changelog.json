@@ -1,0 +1,29 @@
+{
+  "files": {
+    "getting-started.md": {
+      "created": "2025-12-01",
+      "lastUpdated": "2025-12-18",
+      "updateCount": 1,
+      "title": "Getting Started"
+    },
+    "error-handling.md": {
+      "created": "2025-12-01",
+      "lastUpdated": "2025-12-18",
+      "updateCount": 1,
+      "title": "Error Handling"
+    },
+    "index.md": {
+      "created": "2025-12-01",
+      "lastUpdated": "2025-12-18",
+      "updateCount": 1,
+      "title": "robo-infra Documentation"
+    },
+    "migration.md": {
+      "created": "2025-12-01",
+      "lastUpdated": "2025-12-18",
+      "updateCount": 1,
+      "title": "Migration Guide"
+    }
+  },
+  "history": []
+}

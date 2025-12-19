@@ -52,6 +52,40 @@ jobs:
       - name: Run ruff format check
         run: poetry run ruff format --check src tests
 
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --no-root
+
+      - name: Install project
+        run: poetry install --no-interaction
+
+      - name: Run bandit security scan
+        run: poetry run bandit -r src/ -c pyproject.toml -ll -ii
+
   type-check:
     name: Type Check
     runs-on: ubuntu-latest
@@ -121,8 +155,8 @@ jobs:
       - name: Install project
         run: poetry install --no-interaction
 
-      - name: Run tests
-        run: poetry run pytest -q
+      - name: Run tests with coverage
+        run: poetry run pytest -q --cov=src/robo_infra --cov-report=term-missing --cov-fail-under=75
 
   # Hardware tests run separately (requires actual hardware or simulation)
   test-simulation:
