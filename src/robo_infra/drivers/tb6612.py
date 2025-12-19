@@ -717,9 +717,7 @@ class TB6612(Driver):
             try:
                 self.coast(channel)
             except Exception as e:
-                logger.warning(
-                    "Failed to coast motor %d during disable: %s", channel, e
-                )
+                logger.warning("Failed to coast motor %d during disable: %s", channel, e)
 
         self._motor_states[channel].enabled = False
         logger.debug("Motor %d disabled", channel)

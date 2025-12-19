@@ -78,9 +78,7 @@ def custom_config() -> DifferentialDriveConfig:
 class TestDifferentialDriveInit:
     """Tests for DifferentialDrive initialization."""
 
-    def test_differential_init(
-        self, left_motor: DCMotor, right_motor: DCMotor
-    ) -> None:
+    def test_differential_init(self, left_motor: DCMotor, right_motor: DCMotor) -> None:
         """Test basic initialization."""
         rover = DifferentialDrive(
             name="test_rover",
@@ -162,9 +160,7 @@ class TestDifferentialDriveMovement:
         assert left == 1.0
         assert right == 1.0
 
-    def test_reverse_sets_both_motors_negative(
-        self, enabled_drive: DifferentialDrive
-    ) -> None:
+    def test_reverse_sets_both_motors_negative(self, enabled_drive: DifferentialDrive) -> None:
         """Test reverse() sets both motors to negative speed."""
         enabled_drive.reverse(0.5)
 
@@ -312,9 +308,7 @@ class TestDifferentialDriveTank:
         assert left == 0.3
         assert right == 0.7
 
-    def test_tank_drive_opposite_directions(
-        self, enabled_drive: DifferentialDrive
-    ) -> None:
+    def test_tank_drive_opposite_directions(self, enabled_drive: DifferentialDrive) -> None:
         """Test tank() with opposite wheel directions."""
         enabled_drive.tank(0.5, -0.5)
 
@@ -344,23 +338,17 @@ class TestDifferentialDriveTank:
 class TestDifferentialDriveSpeedHelpers:
     """Tests for DifferentialDrive speed helper methods."""
 
-    def test_clamp_speed_within_range(
-        self, differential_drive: DifferentialDrive
-    ) -> None:
+    def test_clamp_speed_within_range(self, differential_drive: DifferentialDrive) -> None:
         """Test _clamp_speed() within range returns unchanged."""
         assert differential_drive._clamp_speed(0.5) == 0.5
         assert differential_drive._clamp_speed(-0.5) == -0.5
 
-    def test_clamp_speed_above_max(
-        self, differential_drive: DifferentialDrive
-    ) -> None:
+    def test_clamp_speed_above_max(self, differential_drive: DifferentialDrive) -> None:
         """Test _clamp_speed() above max is clamped."""
         assert differential_drive._clamp_speed(1.5) == 1.0
         assert differential_drive._clamp_speed(10.0) == 1.0
 
-    def test_clamp_speed_below_min(
-        self, differential_drive: DifferentialDrive
-    ) -> None:
+    def test_clamp_speed_below_min(self, differential_drive: DifferentialDrive) -> None:
         """Test _clamp_speed() below min is clamped."""
         assert differential_drive._clamp_speed(-1.5) == -1.0
         assert differential_drive._clamp_speed(-10.0) == -1.0
@@ -383,9 +371,7 @@ class TestDifferentialDriveSpeedHelpers:
         assert left == -0.5  # Inverted
         assert right == 0.5  # Not inverted
 
-    def test_calculate_arc_speeds_straight(
-        self, differential_drive: DifferentialDrive
-    ) -> None:
+    def test_calculate_arc_speeds_straight(self, differential_drive: DifferentialDrive) -> None:
         """Test _calculate_arc_speeds() with infinite radius is straight."""
         left, right = differential_drive._calculate_arc_speeds(0.5, 10000)
 
@@ -401,18 +387,14 @@ class TestDifferentialDriveSpeedHelpers:
 class TestDifferentialDriveEnableDisable:
     """Tests for DifferentialDrive enable/disable."""
 
-    def test_enable_enables_motors(
-        self, differential_drive: DifferentialDrive
-    ) -> None:
+    def test_enable_enables_motors(self, differential_drive: DifferentialDrive) -> None:
         """Test enable() enables both motors."""
         differential_drive.enable()
 
         assert differential_drive.is_enabled
         assert differential_drive.dd_state == DifferentialDriveState.IDLE
 
-    def test_disable_disables_motors(
-        self, enabled_drive: DifferentialDrive
-    ) -> None:
+    def test_disable_disables_motors(self, enabled_drive: DifferentialDrive) -> None:
         """Test disable() disables both motors."""
         enabled_drive.forward(0.5)
         enabled_drive.disable()

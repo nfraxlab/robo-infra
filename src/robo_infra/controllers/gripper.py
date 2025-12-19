@@ -402,9 +402,7 @@ class Gripper(Controller):
         max_pos = max(self._gripper_config.open_position, self._gripper_config.closed_position)
 
         if position < min_pos or position > max_pos:
-            raise ValueError(
-                f"Position {position} out of range [{min_pos}, {max_pos}]"
-            )
+            raise ValueError(f"Position {position} out of range [{min_pos}, {max_pos}]")
 
         self._gripper_state = GripperState.MOVING
 

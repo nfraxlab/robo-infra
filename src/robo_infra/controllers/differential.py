@@ -403,9 +403,7 @@ class DifferentialDrive(Controller):
         self._current_left_speed = left
         self._current_right_speed = right
 
-    def _calculate_arc_speeds(
-        self, speed: float, radius: float
-    ) -> tuple[float, float]:
+    def _calculate_arc_speeds(self, speed: float, radius: float) -> tuple[float, float]:
         """Calculate wheel speeds for arc movement.
 
         Uses differential drive kinematics to calculate the required
@@ -541,9 +539,7 @@ class DifferentialDrive(Controller):
             self._set_motor_speeds(-speed, speed)
         self._dd_state = DifferentialDriveState.SPINNING
         direction = "clockwise" if clockwise else "counter-clockwise"
-        logger.debug(
-            "DifferentialDrive '%s' spinning %s at %.2f", self.name, direction, speed
-        )
+        logger.debug("DifferentialDrive '%s' spinning %s at %.2f", self.name, direction, speed)
 
     def arc(self, speed: float, radius: float) -> None:
         """Drive in an arc of the specified radius.
@@ -650,10 +646,7 @@ class DifferentialDrive(Controller):
 
     def __repr__(self) -> str:
         """String representation."""
-        return (
-            f"DifferentialDrive(name='{self.name}', "
-            f"state={self._dd_state.value})"
-        )
+        return f"DifferentialDrive(name='{self.name}', " f"state={self._dd_state.value})"
 
 
 __all__ = [

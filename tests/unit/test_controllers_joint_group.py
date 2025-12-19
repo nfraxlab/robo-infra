@@ -385,9 +385,7 @@ class TestJointGroupInterpolation:
         assert positions[-1]["shoulder"] == 100
         assert positions[-1]["elbow"] == 50
 
-    def test_interpolate_move_linear_progression(
-        self, enabled_joint_group: JointGroup
-    ) -> None:
+    def test_interpolate_move_linear_progression(self, enabled_joint_group: JointGroup) -> None:
         """Test _interpolate_move uses linear interpolation."""
         start = {"shoulder": 0}
         end = {"shoulder": 100}

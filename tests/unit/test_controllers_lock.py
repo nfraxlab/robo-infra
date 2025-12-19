@@ -64,9 +64,7 @@ def enabled_lock(lock: Lock) -> Lock:
 
 
 @pytest.fixture
-def lock_starts_unlocked(
-    lock_servo: Servo, lock_config_starts_unlocked: LockConfig
-) -> Lock:
+def lock_starts_unlocked(lock_servo: Servo, lock_config_starts_unlocked: LockConfig) -> Lock:
     """Create a Lock controller that starts unlocked."""
     return Lock(
         name="test_lock",
@@ -95,9 +93,7 @@ class TestLockInit:
         assert lock.lock_state == LockState.DISABLED
         assert not lock.is_enabled
 
-    def test_lock_init_with_config(
-        self, lock_servo: Servo, lock_config: LockConfig
-    ) -> None:
+    def test_lock_init_with_config(self, lock_servo: Servo, lock_config: LockConfig) -> None:
         """Test initialization with custom config."""
         lock = Lock(
             name="custom_lock",
@@ -116,9 +112,7 @@ class TestLockInit:
         assert enabled_lock.lock_state == LockState.LOCKED
         assert enabled_lock.state_str == "locked"
 
-    def test_lock_init_starts_unlocked(
-        self, lock_starts_unlocked: Lock
-    ) -> None:
+    def test_lock_init_starts_unlocked(self, lock_starts_unlocked: Lock) -> None:
         """Test that lock starts in unlocked state when configured."""
         lock_starts_unlocked.enable()
         assert lock_starts_unlocked.is_unlocked
@@ -289,9 +283,7 @@ class TestLockEnableDisable:
         lock.enable()
         assert lock.is_locked
 
-    def test_enable_sets_initial_state_unlocked(
-        self, lock_starts_unlocked: Lock
-    ) -> None:
+    def test_enable_sets_initial_state_unlocked(self, lock_starts_unlocked: Lock) -> None:
         """Test that enable sets initial unlocked state."""
         assert lock_starts_unlocked.lock_config.start_locked is False
         lock_starts_unlocked.enable()
