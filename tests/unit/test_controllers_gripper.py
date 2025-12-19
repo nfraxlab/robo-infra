@@ -331,11 +331,11 @@ class TestGripperConfig:
 
     def test_config_is_inverted_property(self) -> None:
         """Test config inverted detection."""
-        # Normal: open < closed
+        # Normal config: open < closed
         normal = GripperConfig(name="normal", open_position=0.0, closed_position=90.0)
         assert not normal.is_inverted
 
-        # Inverted: open > closed
+        # Inverted config: open > closed
         inverted = GripperConfig(name="inverted", open_position=90.0, closed_position=0.0)
         assert inverted.is_inverted
 
@@ -383,10 +383,10 @@ class TestGripperMethods:
 
 
 __all__ = [
+    "TestGripperConfig",
+    "TestGripperEnableDisable",
     "TestGripperInit",
+    "TestGripperMethods",
     "TestGripperOpenClose",
     "TestGripperState",
-    "TestGripperEnableDisable",
-    "TestGripperConfig",
-    "TestGripperMethods",
 ]

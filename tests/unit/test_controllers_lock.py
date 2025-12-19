@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
-
 import pytest
 
 from robo_infra.actuators.servo import Servo
@@ -330,11 +328,11 @@ class TestLockConfig:
 
     def test_config_is_inverted_property(self) -> None:
         """Test config inverted detection."""
-        # Normal: locked < unlocked
+        # Normal config: locked < unlocked
         normal = LockConfig(name="normal", locked_position=0.0, unlocked_position=90.0)
         assert not normal.is_inverted
 
-        # Inverted: locked > unlocked
+        # Inverted config: locked > unlocked
         inverted = LockConfig(name="inverted", locked_position=90.0, unlocked_position=0.0)
         assert inverted.is_inverted
 
@@ -373,11 +371,11 @@ class TestLockMethods:
 
 
 __all__ = [
-    "TestLockInit",
-    "TestLockUnlock",
-    "TestLockState",
     "TestLockAsync",
-    "TestLockEnableDisable",
     "TestLockConfig",
+    "TestLockEnableDisable",
+    "TestLockInit",
     "TestLockMethods",
+    "TestLockState",
+    "TestLockUnlock",
 ]
