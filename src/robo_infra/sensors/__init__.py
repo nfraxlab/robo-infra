@@ -1,5 +1,16 @@
 """Sensor implementations."""
 
+from robo_infra.sensors.camera import (
+    Camera,
+    CameraConfig,
+    CameraInfo,
+    CameraIntrinsics,
+    CameraState,
+    DepthFrame,
+    Frame,
+    PixelFormat,
+    SimulatedCamera,
+)
 from robo_infra.sensors.distance import IRDistance, ToF, Ultrasonic
 from robo_infra.sensors.electrical import (
     CurrentSensor,
@@ -49,6 +60,17 @@ from robo_infra.sensors.switches import (
 
 
 __all__ = [
+    # Camera
+    "Camera",
+    "CameraConfig",
+    "CameraInfo",
+    "CameraIntrinsics",
+    "CameraState",
+    "DepthFrame",
+    "Frame",
+    "PixelFormat",
+    "SimulatedCamera",
+    # Other sensors
     "IMU",
     "AbsoluteEncoder",
     "Accelerometer",

@@ -1,0 +1,676 @@
+"""Tests for vision/color.py - Color-based object detection."""
+
+from __future__ import annotations
+
+import time
+
+import numpy as np
+import pytest
+
+from robo_infra.sensors.camera import Frame, PixelFormat
+
+
+# =============================================================================
+# Test Helper
+# =============================================================================
+
+
+def create_test_frame(
+    width: int = 640,
+    height: int = 480,
+    format: PixelFormat = PixelFormat.RGB,
+    color: tuple[int, int, int] | None = None,
+) -> Frame:
+    """Create a test frame.
+    
+    Args:
+        width: Frame width.
+        height: Frame height.
+        format: Pixel format.
+        color: If specified, create solid color frame.
+    """
+    if color is not None:
+        if format == PixelFormat.GRAY:
+            data = np.full((height, width), color[0], dtype=np.uint8)
+        else:
+            data = np.full((height, width, 3), color, dtype=np.uint8)
+            if format == PixelFormat.BGR:
+                data = data[:, :, ::-1].copy()
+    else:
+        if format == PixelFormat.GRAY:
+            data = np.random.randint(0, 256, (height, width), dtype=np.uint8)
+        else:
+            data = np.random.randint(0, 256, (height, width, 3), dtype=np.uint8)
+
+    return Frame(
+        data=data,
+        timestamp=time.monotonic(),
+        width=width,
+        height=height,
+        format=format,
+        frame_number=0,
+    )
+
+
+def create_color_blob_frame(
+    width: int = 640,
+    height: int = 480,
+    blob_color: tuple[int, int, int] = (255, 0, 0),
+    blob_center: tuple[int, int] = (320, 240),
+    blob_radius: int = 50,
+    format: PixelFormat = PixelFormat.RGB,
+) -> Frame:
+    """Create a frame with a colored blob on black background."""
+    # Start with black background
+    data = np.zeros((height, width, 3), dtype=np.uint8)
+    
+    # Draw circular blob
+    y, x = np.ogrid[:height, :width]
+    cx, cy = blob_center
+    mask = (x - cx) ** 2 + (y - cy) ** 2 <= blob_radius ** 2
+    data[mask] = blob_color
+    
+    if format == PixelFormat.BGR:
+        data = data[:, :, ::-1].copy()
+    
+    return Frame(
+        data=data,
+        timestamp=time.monotonic(),
+        width=width,
+        height=height,
+        format=format,
+        frame_number=0,
+    )
+
+
+# =============================================================================
+# Test ColorRange
+# =============================================================================
+
+
+class TestColorRange:
+    """Tests for ColorRange dataclass."""
+
+    def test_color_range_creation(self):
+        """Test creating a ColorRange."""
+        from robo_infra.vision.color import ColorRange
+
+        cr = ColorRange((0, 100, 100), (10, 255, 255), "red")
+
+        assert cr.lower == (0, 100, 100)
+        assert cr.upper == (10, 255, 255)
+        assert cr.name == "red"
+
+    def test_color_range_validation(self):
+        """Test ColorRange validates bounds."""
+        from robo_infra.vision.color import ColorRange
+
+        # Hue out of range
+        with pytest.raises(ValueError):
+            ColorRange((180, 100, 100), (200, 255, 255))
+
+        # Saturation out of range
+        with pytest.raises(ValueError):
+            ColorRange((0, 300, 100), (10, 255, 255))
+
+    def test_color_range_contains(self):
+        """Test ColorRange.contains method."""
+        from robo_infra.vision.color import ColorRange
+
+        # Green range
+        cr = ColorRange((35, 100, 100), (85, 255, 255))
+
+        assert cr.contains((60, 150, 200))  # Green
+        assert not cr.contains((0, 150, 200))  # Red hue
+
+    def test_color_range_contains_wraparound(self):
+        """Test ColorRange.contains with hue wraparound (red)."""
+        from robo_infra.vision.color import ColorRange
+
+        # Red wraps around 0/180
+        cr = ColorRange((170, 100, 100), (10, 255, 255))
+
+        assert cr.contains((175, 150, 200))  # High red
+        assert cr.contains((5, 150, 200))  # Low red
+        assert not cr.contains((90, 150, 200))  # Green
+
+    def test_color_range_expand(self):
+        """Test ColorRange.expand method."""
+        from robo_infra.vision.color import ColorRange
+
+        cr = ColorRange((60, 100, 100), (80, 200, 200))
+        expanded = cr.expand(h_delta=10, s_delta=20, v_delta=30)
+
+        assert expanded.lower == (50, 80, 70)
+        assert expanded.upper == (90, 220, 230)
+
+    def test_color_range_expand_clamped(self):
+        """Test ColorRange.expand clamps to valid bounds."""
+        from robo_infra.vision.color import ColorRange
+
+        cr = ColorRange((5, 10, 10), (175, 250, 250))
+        expanded = cr.expand(h_delta=20, s_delta=20, v_delta=20)
+
+        assert expanded.lower[0] == 0  # Clamped to 0
+        assert expanded.upper[0] == 179  # Clamped to 179
+        assert expanded.upper[1] == 255  # Clamped to 255
+
+
+# =============================================================================
+# Test ColorBlob
+# =============================================================================
+
+
+class TestColorBlob:
+    """Tests for ColorBlob dataclass."""
+
+    def test_color_blob_creation(self):
+        """Test creating a ColorBlob."""
+        from robo_infra.vision.color import ColorBlob
+
+        contour = np.array([[100, 100], [200, 100], [200, 200], [100, 200]], dtype=np.int32)
+
+        blob = ColorBlob(
+            center=(150.0, 150.0),
+            area=10000.0,
+            bounding_box=(100, 100, 100, 100),
+            contour=contour,
+        )
+
+        assert blob.center == (150.0, 150.0)
+        assert blob.area == 10000.0
+
+    def test_color_blob_properties(self):
+        """Test ColorBlob properties."""
+        from robo_infra.vision.color import ColorBlob
+
+        contour = np.array([[100, 100], [200, 100], [200, 200], [100, 200]], dtype=np.int32)
+
+        blob = ColorBlob(
+            center=(150.0, 150.0),
+            area=10000.0,
+            bounding_box=(100, 100, 100, 100),
+            contour=contour,
+        )
+
+        assert blob.x == 100
+        assert blob.y == 100
+        assert blob.width == 100
+        assert blob.height == 100
+
+    def test_color_blob_radius(self):
+        """Test ColorBlob radius calculation."""
+        from robo_infra.vision.color import ColorBlob
+
+        contour = np.array([[0, 0], [100, 0], [100, 100], [0, 100]], dtype=np.int32)
+
+        # Area of 100 * pi = 314.159...
+        blob = ColorBlob(
+            center=(50.0, 50.0),
+            area=np.pi * 100,  # Area = pi * r^2, r=10
+            bounding_box=(0, 0, 100, 100),
+            contour=contour,
+        )
+
+        assert blob.radius == pytest.approx(10.0)
+
+
+# =============================================================================
+# Test Predefined Colors
+# =============================================================================
+
+
+class TestPredefinedColors:
+    """Tests for predefined color ranges."""
+
+    def test_list_available_colors(self):
+        """Test listing available colors."""
+        from robo_infra.vision.color import list_available_colors
+
+        colors = list_available_colors()
+
+        assert "red" in colors
+        assert "green" in colors
+        assert "blue" in colors
+        assert len(colors) >= 10
+
+    def test_predefined_colors_exist(self):
+        """Test predefined color ranges exist."""
+        from robo_infra.vision.color import PREDEFINED_COLORS
+
+        assert "red" in PREDEFINED_COLORS
+        assert "green" in PREDEFINED_COLORS
+        assert "blue" in PREDEFINED_COLORS
+        assert "yellow" in PREDEFINED_COLORS
+        assert "orange" in PREDEFINED_COLORS
+        assert "white" in PREDEFINED_COLORS
+        assert "black" in PREDEFINED_COLORS
+
+
+# =============================================================================
+# Test ColorDetector
+# =============================================================================
+
+
+class TestColorDetectorCreation:
+    """Tests for ColorDetector creation."""
+
+    def test_create_with_hsv_range(self):
+        """Test creating detector with HSV range."""
+        from robo_infra.vision.color import ColorDetector
+
+        detector = ColorDetector(
+            lower_hsv=(35, 100, 100),
+            upper_hsv=(85, 255, 255),
+            name="green",
+            simulation=True,
+        )
+
+        assert detector.name == "green"
+
+    def test_create_without_range_raises(self):
+        """Test creating detector without range raises error."""
+        from robo_infra.vision.color import ColorDetector
+
+        with pytest.raises(ValueError, match="Either provide"):
+            ColorDetector(name="test", simulation=True)
+
+    def test_from_color(self):
+        """Test creating detector from predefined color."""
+        from robo_infra.vision.color import ColorDetector
+
+        detector = ColorDetector.from_color("green", simulation=True)
+
+        assert detector.name == "green"
+
+    def test_from_color_invalid(self):
+        """Test creating detector from invalid color."""
+        from robo_infra.vision.color import ColorDetector
+
+        with pytest.raises(ValueError, match="Unknown color"):
+            ColorDetector.from_color("magenta")
+
+    def test_convenience_methods(self):
+        """Test convenience class methods."""
+        from robo_infra.vision.color import ColorDetector
+
+        # Test all color convenience methods
+        assert ColorDetector.red(simulation=True).name == "red"
+        assert ColorDetector.green(simulation=True).name == "green"
+        assert ColorDetector.blue(simulation=True).name == "blue"
+        assert ColorDetector.yellow(simulation=True).name == "yellow"
+        assert ColorDetector.orange(simulation=True).name == "orange"
+        assert ColorDetector.purple(simulation=True).name == "purple"
+        assert ColorDetector.pink(simulation=True).name == "pink"
+        assert ColorDetector.cyan(simulation=True).name == "cyan"
+        assert ColorDetector.white(simulation=True).name == "white"
+        assert ColorDetector.black(simulation=True).name == "black"
+
+
+class TestColorDetectorSimulated:
+    """Tests for ColorDetector in simulation mode."""
+
+    def test_detect_simulated(self):
+        """Test detection in simulation mode."""
+        from robo_infra.vision.color import ColorDetector
+
+        detector = ColorDetector.red(simulation=True)
+        frame = create_test_frame()
+
+        blobs = detector.detect(frame)
+
+        assert isinstance(blobs, list)
+        assert len(blobs) == 0  # Simulation returns empty
+
+    def test_get_mask_simulated(self):
+        """Test get_mask in simulation mode."""
+        from robo_infra.vision.color import ColorDetector
+
+        detector = ColorDetector.red(simulation=True)
+        frame = create_test_frame(640, 480)
+
+        mask = detector.get_mask(frame)
+
+        assert mask.format == PixelFormat.GRAY
+        assert mask.width == 640
+        assert mask.height == 480
+        # Simulation returns zero mask
+        assert np.all(mask.data == 0)
+
+    def test_draw_blobs_simulated(self):
+        """Test drawing blobs in simulation mode."""
+        from robo_infra.vision.color import ColorBlob, ColorDetector
+
+        detector = ColorDetector.red(simulation=True)
+        frame = create_test_frame()
+
+        contour = np.array([[100, 100], [200, 100], [200, 200], [100, 200]], dtype=np.int32)
+        blobs = [
+            ColorBlob(
+                center=(150.0, 150.0),
+                area=10000.0,
+                bounding_box=(100, 100, 100, 100),
+                contour=contour,
+            )
+        ]
+
+        result = detector.draw_blobs(frame, blobs)
+
+        assert result.width == frame.width
+
+
+class TestColorDetectorMocked:
+    """Tests for ColorDetector with mocked OpenCV."""
+
+    @pytest.fixture
+    def cv2(self):
+        """Get cv2 module, skip if not available."""
+        return pytest.importorskip("cv2")
+
+    def test_detect_no_blobs(self, cv2):
+        """Test detection on frame with no matching colors."""
+        from robo_infra.vision.color import ColorDetector
+
+        detector = ColorDetector.red()
+        # Pure blue frame, no red
+        frame = create_test_frame(color=(0, 0, 255))
+
+        blobs = detector.detect(frame)
+
+        assert len(blobs) == 0
+
+    def test_detect_with_blob(self, cv2):
+        """Test detection on frame with matching color."""
+        from robo_infra.vision.color import ColorDetector
+
+        detector = ColorDetector.red(min_area=50)
+        # Frame with red blob
+        frame = create_color_blob_frame(blob_color=(255, 0, 0), blob_radius=30)
+
+        blobs = detector.detect(frame)
+
+        # Should find the red blob
+        assert len(blobs) >= 1
+        if blobs:
+            assert blobs[0].area > 0
+
+    def test_detect_grayscale_warning(self, cv2, caplog):
+        """Test detection on grayscale frame logs warning."""
+        from robo_infra.vision.color import ColorDetector
+        import logging
+
+        detector = ColorDetector.red()
+        frame = create_test_frame(format=PixelFormat.GRAY)
+
+        with caplog.at_level(logging.WARNING):
+            blobs = detector.detect(frame)
+
+        assert len(blobs) == 0
+        assert "grayscale" in caplog.text
+
+    def test_detect_bgr_format(self, cv2):
+        """Test detection on BGR format frame."""
+        from robo_infra.vision.color import ColorDetector
+
+        detector = ColorDetector.green(min_area=50)
+        # Green blob in BGR format
+        frame = create_color_blob_frame(
+            blob_color=(0, 255, 0), blob_radius=30, format=PixelFormat.BGR
+        )
+
+        blobs = detector.detect(frame)
+
+        # Should find the green blob
+        assert len(blobs) >= 1
+
+    def test_get_mask(self, cv2):
+        """Test get_mask returns binary mask."""
+        from robo_infra.vision.color import ColorDetector
+
+        detector = ColorDetector.red()
+        frame = create_color_blob_frame(blob_color=(255, 0, 0))
+
+        mask = detector.get_mask(frame)
+
+        assert mask.format == PixelFormat.GRAY
+        # Should have some non-zero pixels
+        assert np.any(mask.data > 0)
+
+    def test_draw_blobs(self, cv2):
+        """Test drawing blobs on frame."""
+        from robo_infra.vision.color import ColorBlob, ColorDetector
+
+        detector = ColorDetector.red()
+        frame = create_test_frame()
+
+        contour = np.array([[100, 100], [200, 100], [200, 200], [100, 200]], dtype=np.int32)
+        blobs = [
+            ColorBlob(
+                center=(150.0, 150.0),
+                area=10000.0,
+                bounding_box=(100, 100, 100, 100),
+                contour=contour,
+                color_name="red",
+            )
+        ]
+
+        result = detector.draw_blobs(frame, blobs)
+
+        assert result.width == frame.width
+
+    def test_draw_blobs_options(self, cv2):
+        """Test draw_blobs with different options."""
+        from robo_infra.vision.color import ColorBlob, ColorDetector
+
+        detector = ColorDetector.red()
+        frame = create_test_frame()
+
+        contour = np.array([[100, 100], [200, 100], [200, 200], [100, 200]], dtype=np.int32)
+        blobs = [
+            ColorBlob(
+                center=(150.0, 150.0),
+                area=10000.0,
+                bounding_box=(100, 100, 100, 100),
+                contour=contour,
+            )
+        ]
+
+        result = detector.draw_blobs(
+            frame,
+            blobs,
+            draw_contours=True,
+            draw_bounding_box=True,
+            draw_center=True,
+            draw_label=True,
+        )
+
+        assert result.width == frame.width
+
+
+# =============================================================================
+# Test Color Space Utilities
+# =============================================================================
+
+
+class TestColorSpaceUtilities:
+    """Tests for color space utility functions."""
+
+    @pytest.fixture
+    def cv2(self):
+        """Get cv2 module, skip if not available."""
+        return pytest.importorskip("cv2")
+
+    def test_rgb_to_hsv(self, cv2):
+        """Test RGB to HSV conversion."""
+        from robo_infra.vision.color import rgb_to_hsv
+
+        # Red
+        h, s, v = rgb_to_hsv(255, 0, 0)
+        assert h == 0  # Red hue
+        assert s == 255
+        assert v == 255
+
+        # Green
+        h, s, v = rgb_to_hsv(0, 255, 0)
+        assert 50 <= h <= 70  # Green hue range
+
+    def test_hsv_to_rgb(self, cv2):
+        """Test HSV to RGB conversion."""
+        from robo_infra.vision.color import hsv_to_rgb
+
+        # Red
+        r, g, b = hsv_to_rgb(0, 255, 255)
+        assert r == 255
+        assert g == 0
+        assert b == 0
+
+    def test_rgb_hsv_roundtrip(self, cv2):
+        """Test RGB -> HSV -> RGB roundtrip."""
+        from robo_infra.vision.color import hsv_to_rgb, rgb_to_hsv
+
+        original = (100, 150, 200)
+        h, s, v = rgb_to_hsv(*original)
+        r, g, b = hsv_to_rgb(h, s, v)
+
+        assert r == pytest.approx(original[0], abs=2)
+        assert g == pytest.approx(original[1], abs=2)
+        assert b == pytest.approx(original[2], abs=2)
+
+    def test_sample_color_at_point(self, cv2):
+        """Test sampling color at a point."""
+        from robo_infra.vision.color import sample_color_at_point
+
+        # Create solid red frame
+        frame = create_test_frame(color=(255, 0, 0))
+
+        rgb, hsv = sample_color_at_point(frame, (320, 240), radius=5)
+
+        assert rgb == (255, 0, 0)
+        assert hsv[0] == 0  # Red hue
+
+    def test_auto_color_range(self, cv2):
+        """Test automatic color range detection."""
+        from robo_infra.vision.color import auto_color_range
+
+        # Create solid green frame
+        frame = create_test_frame(color=(0, 255, 0))
+
+        color_range = auto_color_range(frame, (320, 240))
+
+        # Should create a range around green
+        assert color_range.name == "sampled"
+        # Lower and upper should bracket the green hue
+        assert color_range.lower[0] < color_range.upper[0]
+
+    def test_get_dominant_color(self, cv2):
+        """Test getting dominant color."""
+        from robo_infra.vision.color import get_dominant_color
+
+        # Create mostly blue frame
+        data = np.full((480, 640, 3), (0, 0, 255), dtype=np.uint8)
+        frame = Frame(
+            data=data,
+            timestamp=time.monotonic(),
+            width=640,
+            height=480,
+            format=PixelFormat.RGB,
+            frame_number=0,
+        )
+
+        r, g, b = get_dominant_color(frame, k=1)
+
+        # Should be close to blue
+        assert b > r
+        assert b > g
+
+
+# =============================================================================
+# Test Filtering Options
+# =============================================================================
+
+
+class TestFilteringOptions:
+    """Tests for blob filtering options."""
+
+    @pytest.fixture
+    def cv2(self):
+        """Get cv2 module, skip if not available."""
+        return pytest.importorskip("cv2")
+
+    def test_min_area_filter(self, cv2):
+        """Test minimum area filtering."""
+        from robo_infra.vision.color import ColorDetector
+
+        # Small min_area should find small blobs
+        detector_small = ColorDetector.red(min_area=10)
+        # Large min_area should filter out small blobs
+        detector_large = ColorDetector.red(min_area=50000)
+
+        frame = create_color_blob_frame(blob_color=(255, 0, 0), blob_radius=20)
+
+        blobs_small = detector_small.detect(frame)
+        blobs_large = detector_large.detect(frame)
+
+        # Small min_area should find more blobs
+        assert len(blobs_small) >= len(blobs_large)
+
+    def test_max_blobs_limit(self, cv2):
+        """Test max blobs limit."""
+        from robo_infra.vision.color import ColorDetector
+
+        detector = ColorDetector.red(min_area=10, max_blobs=1)
+
+        # Create frame with multiple blobs
+        data = np.zeros((480, 640, 3), dtype=np.uint8)
+        # Add multiple red circles
+        for i in range(5):
+            y, x = np.ogrid[:480, :640]
+            cx, cy = 100 + i * 100, 240
+            mask = (x - cx) ** 2 + (y - cy) ** 2 <= 30 ** 2
+            data[mask] = (255, 0, 0)
+
+        frame = Frame(
+            data=data,
+            timestamp=time.monotonic(),
+            width=640,
+            height=480,
+            format=PixelFormat.RGB,
+            frame_number=0,
+        )
+
+        blobs = detector.detect(frame)
+
+        assert len(blobs) <= 1
+
+
+# =============================================================================
+# Test Color Ranges Property
+# =============================================================================
+
+
+class TestColorRangesProperty:
+    """Tests for color_ranges property."""
+
+    def test_get_color_ranges(self):
+        """Test getting color ranges."""
+        from robo_infra.vision.color import ColorDetector, ColorRange
+
+        cr = ColorRange((35, 100, 100), (85, 255, 255), "green")
+        detector = ColorDetector(color_ranges=[cr], simulation=True)
+
+        ranges = detector.color_ranges
+
+        assert len(ranges) == 1
+        assert ranges[0].name == "green"
+
+    def test_color_ranges_is_copy(self):
+        """Test that color_ranges returns a copy."""
+        from robo_infra.vision.color import ColorDetector, ColorRange
+
+        cr = ColorRange((35, 100, 100), (85, 255, 255), "green")
+        detector = ColorDetector(color_ranges=[cr], simulation=True)
+
+        ranges1 = detector.color_ranges
+        ranges2 = detector.color_ranges
+
+        assert ranges1 is not ranges2

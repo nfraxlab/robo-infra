@@ -8,6 +8,8 @@ This module provides motion control primitives including:
 - DH parameters for serial arm kinematics
 - Inverse kinematics solvers
 - Specialized arm types: SCARA, Delta, Stewart platform
+- Path planning with obstacle avoidance (RRT, linear, Cartesian)
+- Advanced trajectory profiles (S-curve, splines, blending)
 """
 
 from robo_infra.motion.delta import (
@@ -60,6 +62,20 @@ from robo_infra.motion.kinematics import (
     TwoLinkArm,
     UnreachablePositionError,
 )
+from robo_infra.motion.path_planning import (
+    BoxObstacle,
+    CartesianPathPlanner,
+    LinearPathPlanner,
+    Obstacle,
+    Path,
+    PathPlanner,
+    PathPoint,
+    PathSmoother,
+    PathStatus,
+    RRTPathPlanner,
+    SmoothingMethod,
+    SphereObstacle,
+)
 from robo_infra.motion.pid import PID, PIDConfig
 from robo_infra.motion.scara import (
     SCARAArm,
@@ -81,10 +97,19 @@ from robo_infra.motion.stewart import (
     create_stewart,
 )
 from robo_infra.motion.trajectory import (
+    BlendedTrajectory,
+    BlendSegment,
+    CubicTrajectory,
     LinearInterpolator,
     MultiAxisTrajectoryPoint,
+    QuinticTrajectory,
+    SCurveTrajectory,
+    SplineTrajectory,
     Trajectory,
+    TrajectoryConstraints,
+    TrajectoryGenerator,
     TrajectoryPoint,
+    TrajectoryProfile,
     TrapezoidalProfile,
 )
 from robo_infra.motion.transforms import (
@@ -113,12 +138,35 @@ __all__ = [
     # PID
     "PID",
     "PIDConfig",
-    # Trajectory
+    # Trajectory (basic)
     "LinearInterpolator",
     "MultiAxisTrajectoryPoint",
     "Trajectory",
     "TrajectoryPoint",
     "TrapezoidalProfile",
+    # Trajectory (advanced)
+    "BlendedTrajectory",
+    "BlendSegment",
+    "CubicTrajectory",
+    "QuinticTrajectory",
+    "SCurveTrajectory",
+    "SplineTrajectory",
+    "TrajectoryConstraints",
+    "TrajectoryGenerator",
+    "TrajectoryProfile",
+    # Path Planning
+    "BoxObstacle",
+    "CartesianPathPlanner",
+    "LinearPathPlanner",
+    "Obstacle",
+    "Path",
+    "PathPlanner",
+    "PathPoint",
+    "PathSmoother",
+    "PathStatus",
+    "RRTPathPlanner",
+    "SmoothingMethod",
+    "SphereObstacle",
     # Transforms
     "EulerOrder",
     "Rotation",

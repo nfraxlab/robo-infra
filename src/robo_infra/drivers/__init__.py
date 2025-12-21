@@ -7,6 +7,11 @@ This package provides driver implementations for common hardware:
 - TB6612: Dual motor driver (more efficient than L298N)
 - GPIODriver: Direct GPIO control with software PWM
 - ArduinoDriver: Serial communication with Arduino/microcontrollers
+- TMC2209: UART-based stepper motor driver
+- A4988/DRV8825: Step/direction stepper drivers
+- ODriveDriver: ODrive brushless motor controller
+- VESCDriver: VESC brushless motor controller
+- DynamixelDriver: Dynamixel smart servo controller
 """
 
 from robo_infra.drivers.arduino import (
@@ -62,6 +67,44 @@ from robo_infra.drivers.tb6612 import (
     TB6612MotorConfig,
     TB6612MotorState,
 )
+from robo_infra.drivers.tmc2209 import (
+    DRVStatusBits,
+    GCONFBits,
+    TMC2209Config,
+    TMC2209Driver,
+    TMC2209Register,
+)
+from robo_infra.drivers.step_dir import (
+    A4988Driver,
+    DRV8825Driver,
+    StepDirConfig,
+    StepDirDriver,
+)
+from robo_infra.drivers.odrive import (
+    AxisState,
+    ControlMode,
+    EncoderMode,
+    InputMode,
+    MotorType,
+    ODriveConfig,
+    ODriveDriver,
+)
+from robo_infra.drivers.vesc import (
+    VESCConfig,
+    VESCControlMode,
+    VESCDriver,
+    VESCFaultCode,
+    VESCPacketID,
+    VESCState,
+)
+from robo_infra.drivers.dynamixel import (
+    ControlTable,
+    DynamixelConfig,
+    DynamixelDriver,
+    HardwareErrorStatus,
+    Instruction,
+    OperatingMode,
+)
 
 
 __all__ = [
@@ -106,4 +149,37 @@ __all__ = [
     "get_arduino_driver",
     "get_gpio_driver",
     "list_arduino_ports",
+    # TMC2209 stepper driver
+    "DRVStatusBits",
+    "GCONFBits",
+    "TMC2209Config",
+    "TMC2209Driver",
+    "TMC2209Register",
+    # Step/Dir drivers (A4988, DRV8825)
+    "A4988Driver",
+    "DRV8825Driver",
+    "StepDirConfig",
+    "StepDirDriver",
+    # ODrive brushless motor controller
+    "AxisState",
+    "ControlMode",
+    "EncoderMode",
+    "InputMode",
+    "MotorType",
+    "ODriveConfig",
+    "ODriveDriver",
+    # VESC brushless motor controller
+    "VESCConfig",
+    "VESCControlMode",
+    "VESCDriver",
+    "VESCFaultCode",
+    "VESCPacketID",
+    "VESCState",
+    # Dynamixel smart servo
+    "ControlTable",
+    "DynamixelConfig",
+    "DynamixelDriver",
+    "HardwareErrorStatus",
+    "Instruction",
+    "OperatingMode",
 ]
