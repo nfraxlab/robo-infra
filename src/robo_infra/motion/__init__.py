@@ -7,8 +7,19 @@ This module provides motion control primitives including:
 - 3D transforms and rotations
 - DH parameters for serial arm kinematics
 - Inverse kinematics solvers
+- Specialized arm types: SCARA, Delta, Stewart platform
 """
 
+from robo_infra.motion.delta import (
+    DeltaJoints,
+    DeltaLimits,
+    DeltaRobot,
+    DeltaSingularityType,
+    DeltaWorkspace,
+    create_delta,
+    create_flsun_q5,
+    create_kossel_mini,
+)
 from robo_infra.motion.dh_parameters import (
     DHChain,
     DHConvention,
@@ -50,6 +61,25 @@ from robo_infra.motion.kinematics import (
     UnreachablePositionError,
 )
 from robo_infra.motion.pid import PID, PIDConfig
+from robo_infra.motion.scara import (
+    SCARAArm,
+    SCARAConfiguration,
+    SCARAJoints,
+    SCARALimits,
+    create_epson_ls3,
+    create_epson_ls6,
+    create_scara,
+)
+from robo_infra.motion.stewart import (
+    StewartJoints,
+    StewartLimits,
+    StewartPlatform,
+    StewartPose,
+    StewartSingularityType,
+    create_flight_simulator,
+    create_precision_positioner,
+    create_stewart,
+)
 from robo_infra.motion.trajectory import (
     LinearInterpolator,
     MultiAxisTrajectoryPoint,
@@ -123,4 +153,30 @@ __all__ = [
     "JacobianIKSolver",
     "create_ik_solver",
     "solve_ik",
+    # SCARA Arm
+    "SCARAArm",
+    "SCARAConfiguration",
+    "SCARAJoints",
+    "SCARALimits",
+    "create_epson_ls3",
+    "create_epson_ls6",
+    "create_scara",
+    # Delta Robot
+    "DeltaJoints",
+    "DeltaLimits",
+    "DeltaRobot",
+    "DeltaSingularityType",
+    "DeltaWorkspace",
+    "create_delta",
+    "create_flsun_q5",
+    "create_kossel_mini",
+    # Stewart Platform
+    "StewartJoints",
+    "StewartLimits",
+    "StewartPlatform",
+    "StewartPose",
+    "StewartSingularityType",
+    "create_flight_simulator",
+    "create_precision_positioner",
+    "create_stewart",
 ]
