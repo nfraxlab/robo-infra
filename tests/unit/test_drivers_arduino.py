@@ -306,15 +306,27 @@ class TestArduinoDriverConnection:
 
     def test_connect_serial_not_found(self) -> None:
         """Test connection failure when serial port not found."""
-        with patch("robo_infra.drivers.arduino.ArduinoDriver._get_serial_module") as mock_serial:
-            mock_serial_class = Mock()
-            mock_serial_class.Serial.side_effect = FileNotFoundError("No such file or directory")
-            mock_serial.return_value = mock_serial_class
+        import os
+        from unittest.mock import patch
 
-            driver = ArduinoDriver(port="/dev/nonexistent")
+        # Ensure simulation mode is OFF so we actually try to connect
+        with patch.dict(os.environ, {"ROBO_SIMULATION": ""}, clear=False):
+            # Remove ROBO_SIMULATION if set by other tests
+            env = os.environ.copy()
+            env.pop("ROBO_SIMULATION", None)
+            with patch.dict(os.environ, env, clear=True), patch(
+                "robo_infra.drivers.arduino.ArduinoDriver._get_serial_module"
+            ) as mock_serial:
+                mock_serial_class = Mock()
+                mock_serial_class.Serial.side_effect = FileNotFoundError(
+                    "No such file or directory"
+                )
+                mock_serial.return_value = mock_serial_class
 
-            with pytest.raises(HardwareNotFoundError):
-                driver.connect()
+                driver = ArduinoDriver(port="/dev/nonexistent")
+
+                with pytest.raises(HardwareNotFoundError):
+                    driver.connect()
 
 
 # =============================================================================
@@ -862,14 +874,20 @@ class TestFirmataMode:
 
     def test_firmata_import_error(self) -> None:
         """Test graceful handling when Firmata not installed."""
-        config = ArduinoConfig(protocol=ArduinoProtocol.FIRMATA)
-        driver = ArduinoDriver(config=config)
+        import os
 
-        with (
-            patch.dict("sys.modules", {"pyfirmata": None, "pyfirmata2": None}),
-            pytest.raises((ImportError, CommunicationError)),
-        ):
-            driver.connect()
+        # Ensure simulation mode is OFF so we actually try to connect
+        env = os.environ.copy()
+        env.pop("ROBO_SIMULATION", None)
+        with patch.dict(os.environ, env, clear=True):
+            config = ArduinoConfig(protocol=ArduinoProtocol.FIRMATA)
+            driver = ArduinoDriver(config=config)
+
+            with (
+                patch.dict("sys.modules", {"pyfirmata": None, "pyfirmata2": None}),
+                pytest.raises((ImportError, CommunicationError)),
+            ):
+                driver.connect()
 
     def test_firmata_config(self) -> None:
         """Test Firmata configuration is recognized."""

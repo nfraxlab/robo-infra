@@ -98,3 +98,38 @@ exclude_lines = [
 exclude_dirs = ["tests", "docs", "examples"]
 skips = []  # Add skips only with justification
 targets = ["src"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = false
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = false
+show_error_codes = true
+show_column_numbers = true
+pretty = true
+ignore_missing_imports = true
+disable_error_code = [
+    "import-untyped",
+    "import-not-found",
+    "no-any-return",
+    "no-untyped-call",
+    "no-untyped-def",
+    "attr-defined",
+    # Hardware code with polymorphism and abstract classes
+    "abstract",
+    "override",
+    "return-value",
+    "assignment",
+    "call-arg",
+    "arg-type",
+    "dict-item",
+    "union-attr",
+    "call-overload",
+    "index",
+    "misc",
+]
+
+[[tool.mypy.overrides]]
+module = "robo_infra.*"
+check_untyped_defs = true

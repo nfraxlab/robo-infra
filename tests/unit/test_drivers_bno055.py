@@ -168,4 +168,4 @@ class TestBNO055Driver:
         config = BNO055Config()
 
         assert config.address == 0x28
-        assert config.mode == OperationMode.NDOF
+        assert config.mode == BNO055OperationMode.NDOF

@@ -517,18 +517,22 @@ class TestCANBusErrors:
 
     def test_send_when_closed(self) -> None:
         """Test sending when bus is closed."""
+        from robo_infra.core.exceptions import CommunicationError
+
         config = CANConfig(channel="vcan0")
         bus = SimulatedCANBus(config)
         # Bus is closed, send should raise CommunicationError
-        with pytest.raises((RuntimeError, OSError)):
+        with pytest.raises((RuntimeError, OSError, CommunicationError)):
             bus.send(0x100, b"\x01")
 
     def test_recv_when_closed(self) -> None:
         """Test receiving when bus is closed."""
+        from robo_infra.core.exceptions import CommunicationError
+
         config = CANConfig(channel="vcan0")
         bus = SimulatedCANBus(config)
         # Should raise or return None
-        with pytest.raises((RuntimeError, OSError)):
+        with pytest.raises((RuntimeError, OSError, CommunicationError)):
             bus.recv(timeout=0.01)
 
 

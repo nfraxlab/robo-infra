@@ -14,6 +14,7 @@ import math
 
 import pytest
 
+from robo_infra.core.types import Quaternion, Vector3
 from robo_infra.motion.fusion import (
     DEG_TO_RAD,
     RAD_TO_DEG,
@@ -22,7 +23,6 @@ from robo_infra.motion.fusion import (
     MahonyConfig,
     MahonyFilter,
     Orientation,
-    OrientationFilter,
     euler_to_quaternion,
     get_orientation_filter,
     quaternion_conjugate,
@@ -30,7 +30,6 @@ from robo_infra.motion.fusion import (
     quaternion_normalize,
     quaternion_to_euler,
 )
-from robo_infra.core.types import Quaternion, Vector3
 
 
 # =============================================================================

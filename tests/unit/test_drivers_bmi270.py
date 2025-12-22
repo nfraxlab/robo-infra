@@ -10,23 +10,21 @@ Tests cover:
 
 from __future__ import annotations
 
-import pytest
-
+from robo_infra.core.types import Vector3
 from robo_infra.drivers.bmi270 import (
+    AccelBWP,
+    AccelODR,
+    AccelRange,
     BMI270Config,
     BMI270Driver,
     BMI270Reading,
     BMI270Register,
     BMI270Status,
-    AccelODR,
-    AccelBWP,
-    AccelRange,
-    GyroODR,
     GyroBWP,
+    GyroODR,
     GyroRange,
     PowerMode,
 )
-from robo_infra.core.types import Vector3
 
 
 # =============================================================================
