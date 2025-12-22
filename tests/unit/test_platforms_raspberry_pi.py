@@ -11,17 +11,16 @@ Tests cover:
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
 from robo_infra.core.pin import PinMode, PinState
 from robo_infra.platforms.raspberry_pi import (
     GPIO_CHIP_PI5,
-    GPIOBackend,
     HARDWARE_PWM_PINS_STANDARD,
     PI_MODELS,
+    GPIOBackend,
     PinNumbering,
     RaspberryPiDigitalPin,
     RaspberryPiPlatform,
@@ -468,12 +467,11 @@ class TestModelDetection:
         model_file = tmp_path / "model"
         model_file.write_text("Raspberry Pi 4 Model B Rev 1.4\x00")
 
-        with patch.object(Path, "exists", return_value=True):
-            with patch.object(
-                Path, "read_text", return_value="Raspberry Pi 4 Model B Rev 1.4\x00"
-            ):
-                model = mock_rpi_platform._detect_model()
-                assert "Pi 4" in model or "Raspberry" in model
+        with patch.object(Path, "exists", return_value=True), patch.object(
+            Path, "read_text", return_value="Raspberry Pi 4 Model B Rev 1.4\x00"
+        ):
+            model = mock_rpi_platform._detect_model()
+            assert "Pi 4" in model or "Raspberry" in model
 
 
 # =============================================================================
@@ -513,7 +511,7 @@ class TestConstants:
 
     def test_gpio_chip_paths(self):
         """Test GPIO chip path constants."""
-        assert GPIO_CHIP_PI5 == Path("/dev/gpiochip4")
+        assert Path("/dev/gpiochip4") == GPIO_CHIP_PI5
 
 
 # =============================================================================

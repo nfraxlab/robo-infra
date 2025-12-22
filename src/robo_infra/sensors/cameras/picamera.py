@@ -138,7 +138,7 @@ class PiCameraConfig(CameraConfig):
     # Image quality for JPEG (1-100)
     jpeg_quality: int = 85
 
-    # Rotation in degrees (0, 90, 180, 270)
+    # Rotation in degrees: 0, 90, 180, or 270
     rotation: int = 0
 
     # Preview settings
@@ -731,8 +731,7 @@ class PiCamera(Camera):
             return
 
         if self._library == "picamera2":
-            # Convert distance to lens position (approximate)
-            # lens_position = 1 / distance_m (simplified)
+            # Convert distance to lens position (approximate: 1 / distance)
             lens_pos = max(0.0, min(32.0, 1.0 / distance_m))
             self._picam.set_controls({"LensPosition": lens_pos})
 

@@ -36,7 +36,6 @@ from __future__ import annotations
 import contextlib
 import logging
 import os
-import re
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
@@ -193,12 +192,12 @@ class LinuxDigitalPin(DigitalPin):
         self._pull = pull
         self._active_low = active_low
         self._line_name = line_name or f"gpio{chip}_{line}"
-        
+
         # Backend handles
         self._gpiod_line: Any = None
         self._gpiod_chip: Any = None
         self._sysfs_path: Path | None = None
-        
+
         # Call parent with proper arguments
         super().__init__(
             number=line,
@@ -297,20 +296,19 @@ class LinuxDigitalPin(DigitalPin):
         # Set active_low
         if self._active_low:
             active_low_path = self._sysfs_path / "active_low"
-            with contextlib.suppress(OSError):
-                with open(active_low_path, "w") as f:
-                    f.write("1")
+            with contextlib.suppress(OSError), open(active_low_path, "w") as f:
+                f.write("1")
 
     def setup(self) -> None:
         """Initialize the pin hardware."""
         if self._initialized:
             return
-        
+
         if self._backend != GPIOBackend.SIMULATION:
             self._setup_hardware()
         else:
             logger.debug("Simulation: Setting up GPIO line %d", self._line)
-        
+
         self._initialized = True
 
     def _write_state(self, value: bool) -> None:
@@ -333,7 +331,7 @@ class LinuxDigitalPin(DigitalPin):
             return bool(value)
         elif self._sysfs_path is not None:
             value_path = self._sysfs_path / "value"
-            with open(value_path, "r") as f:
+            with open(value_path) as f:
                 value = int(f.read().strip())
                 return bool(value)
         return self._state == PinState.HIGH
@@ -348,7 +346,7 @@ class LinuxDigitalPin(DigitalPin):
 
     def read(self) -> bool:
         """Read pin state.
-        
+
         Returns:
             True if HIGH (or LOW if inverted), False otherwise
         """
@@ -360,7 +358,7 @@ class LinuxDigitalPin(DigitalPin):
 
     def write(self, value: bool) -> None:
         """Write a digital value to the pin.
-        
+
         Args:
             value: True for HIGH, False for LOW (inverted if self.inverted)
         """
@@ -380,9 +378,8 @@ class LinuxDigitalPin(DigitalPin):
         elif self._sysfs_path is not None:
             # Unexport GPIO
             gpio_num = self._line
-            with contextlib.suppress(OSError):
-                with open(SYSFS_UNEXPORT, "w") as f:
-                    f.write(str(gpio_num))
+            with contextlib.suppress(OSError), open(SYSFS_UNEXPORT, "w") as f:
+                f.write(str(gpio_num))
         self._initialized = False
 
     @property
@@ -427,7 +424,7 @@ class LinuxPWMPin(PWMPin):
         self._running = False
         self._pwm_path: Path | None = None
         self._period_ns = int(1_000_000_000 / frequency)  # Period in nanoseconds
-        
+
         # Call parent with proper arguments
         super().__init__(
             number=channel,
@@ -469,12 +466,12 @@ class LinuxPWMPin(PWMPin):
         """Initialize the PWM pin hardware."""
         if self._initialized:
             return
-        
+
         if self._backend != GPIOBackend.SIMULATION:
             self._setup_hardware()
         else:
             logger.debug("Simulation: Setting up PWM chip%d/pwm%d", self._chip, self._channel)
-        
+
         self._initialized = True
 
     def _set_period(self, period_ns: int) -> None:
@@ -495,7 +492,7 @@ class LinuxPWMPin(PWMPin):
 
     def set_duty_cycle(self, duty: float) -> None:
         """Set the PWM duty cycle.
-        
+
         Args:
             duty: Duty cycle from 0.0 (0%) to 1.0 (100%)
         """
@@ -507,7 +504,7 @@ class LinuxPWMPin(PWMPin):
 
     def set_frequency(self, frequency: int) -> None:
         """Set the PWM frequency.
-        
+
         Args:
             frequency: Frequency in Hz
         """
@@ -555,9 +552,8 @@ class LinuxPWMPin(PWMPin):
         if self._pwm_path is not None:
             chip_path = PWM_SYSFS_PATH / f"pwmchip{self._chip}"
             unexport_path = chip_path / "unexport"
-            with contextlib.suppress(OSError):
-                with open(unexport_path, "w") as f:
-                    f.write(str(self._channel))
+            with contextlib.suppress(OSError), open(unexport_path, "w") as f:
+                f.write(str(self._channel))
         self._initialized = False
 
     @property
@@ -849,7 +845,7 @@ class LinuxGenericPlatform(BasePlatform):
             for i in range(5)
             if Path(f"/dev/ttyS{i}").exists()
         ]
-        
+
         return PlatformInfo(
             platform_type=PlatformType.LINUX_GENERIC,
             model=f"Linux Generic ({self._sbc_type.value})",
@@ -1105,7 +1101,7 @@ class LinuxGenericPlatform(BasePlatform):
             for i in range(5)
             if Path(f"/dev/ttyS{i}").exists()
         ]
-        
+
         return PlatformInfo(
             platform_type=PlatformType.LINUX_GENERIC,
             model=self._sbc_type.value,
@@ -1123,7 +1119,7 @@ class LinuxGenericPlatform(BasePlatform):
         pull = kwargs.get("pull")
         initial = kwargs.get("initial")
         active_low = kwargs.get("active_low", False)
-        
+
         return self.get_pin(
             pin_id,
             chip=chip,

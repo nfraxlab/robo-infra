@@ -7,9 +7,9 @@ motor control modes, and telemetry.
 from __future__ import annotations
 
 import os
-from unittest.mock import MagicMock, patch
 
 import pytest
+
 
 # Set simulation mode for tests
 os.environ["ROBO_SIMULATION"] = "true"
@@ -216,9 +216,9 @@ class TestVESCDriverTelemetry:
         driver.set_duty_cycle(0.5)
         driver._sim_state.v_in = 24.0
         driver._sim_state.temp_mos = 35.0
-        
+
         state = driver.get_state()
-        
+
         assert state.duty_cycle == 0.5
         assert state.v_in == 24.0
         assert state.temp_mos == 35.0
@@ -245,7 +245,7 @@ class TestVESCDriverTelemetry:
         """Test getting temperatures."""
         driver._sim_state.temp_mos = 40.0
         driver._sim_state.temp_motor = 55.0
-        
+
         mos_temp, motor_temp = driver.get_temperature()
         assert mos_temp == 40.0
         assert motor_temp == 55.0
@@ -324,9 +324,9 @@ class TestVESCDriverStatus:
         driver.set_duty_cycle(0.3)
         driver._sim_state.v_in = 24.0
         driver._sim_state.temp_mos = 35.0
-        
+
         status = driver.get_status()
-        
+
         assert status["connected"] is True
         assert status["simulation"] is True
         assert status["voltage"] == 24.0

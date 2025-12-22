@@ -87,9 +87,11 @@ class TestPointCloud:
 
     def test_to_open3d_import_error(self, sample_pointcloud):
         """Test Open3D conversion when not installed."""
-        with patch.dict("sys.modules", {"open3d": None}):
-            with pytest.raises(ImportError, match="Open3D required"):
-                sample_pointcloud.to_open3d()
+        with (
+            patch.dict("sys.modules", {"open3d": None}),
+            pytest.raises(ImportError, match="Open3D required"),
+        ):
+            sample_pointcloud.to_open3d()
 
 
 # =============================================================================
@@ -358,10 +360,12 @@ class TestRealSenseDiscovery:
 
     def test_is_available_no_library(self):
         """Test availability check when library not installed."""
-        with patch.dict("sys.modules", {"pyrealsense2": None}):
-            with patch("builtins.__import__", side_effect=ImportError):
-                result = RealSenseCamera.is_available()
-                assert result is False
+        with (
+            patch.dict("sys.modules", {"pyrealsense2": None}),
+            patch("builtins.__import__", side_effect=ImportError),
+        ):
+            result = RealSenseCamera.is_available()
+            assert result is False
 
 
 # =============================================================================

@@ -191,6 +191,45 @@ class Vector3:
 
 
 @dataclass(slots=True)
+class Quaternion:
+    """Quaternion for 3D orientation representation.
+
+    Uses Hamilton convention (w, x, y, z) where:
+    - w is the scalar (real) part
+    - (x, y, z) is the vector (imaginary) part
+    """
+
+    w: float = 1.0
+    x: float = 0.0
+    y: float = 0.0
+    z: float = 0.0
+
+    def magnitude(self) -> float:
+        """Calculate the magnitude (norm) of the quaternion."""
+        return math.sqrt(self.w**2 + self.x**2 + self.y**2 + self.z**2)
+
+    def normalized(self) -> Quaternion:
+        """Return a unit quaternion in the same direction."""
+        mag = self.magnitude()
+        if mag == 0:
+            return Quaternion(1.0, 0.0, 0.0, 0.0)
+        return Quaternion(self.w / mag, self.x / mag, self.y / mag, self.z / mag)
+
+    def conjugate(self) -> Quaternion:
+        """Return the conjugate of this quaternion."""
+        return Quaternion(self.w, -self.x, -self.y, -self.z)
+
+    def to_tuple(self) -> tuple[float, float, float, float]:
+        """Convert to tuple (w, x, y, z)."""
+        return (self.w, self.x, self.y, self.z)
+
+    @classmethod
+    def identity(cls) -> Quaternion:
+        """Return identity quaternion (no rotation)."""
+        return cls(1.0, 0.0, 0.0, 0.0)
+
+
+@dataclass(slots=True)
 class Reading:
     """A sensor reading with metadata."""
 

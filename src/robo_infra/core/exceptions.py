@@ -105,3 +105,15 @@ class DisabledError(RoboInfraError):
         self.component = component
         message = f"Component '{component}' is disabled"
         super().__init__(message)
+
+
+class ConfigurationError(RoboInfraError):
+    """Raised when configuration is invalid or missing."""
+
+    def __init__(self, setting: str, reason: str | None = None) -> None:
+        self.setting = setting
+        self.reason = reason
+        message = f"Configuration error for '{setting}'"
+        if reason:
+            message += f": {reason}"
+        super().__init__(message)

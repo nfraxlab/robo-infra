@@ -48,7 +48,6 @@ import os
 import time
 from abc import ABC
 from dataclasses import dataclass
-from enum import IntEnum
 from typing import TYPE_CHECKING
 
 from robo_infra.core.driver import (

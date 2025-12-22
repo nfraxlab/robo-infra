@@ -15,6 +15,17 @@ Example:
     >>> i2c = platform.get_bus("i2c", bus=1)
 """
 
+from robo_infra.platforms.arduino import (
+    ARDUINO_USB_IDS,
+    BOARD_CAPABILITIES,
+    ArduinoAnalogPin,
+    ArduinoBoard,
+    ArduinoDigitalPin,
+    ArduinoPlatform,
+    ArduinoPWMPin,
+    ArduinoServoPin,
+    FirmataCommand,
+)
 from robo_infra.platforms.base import (
     BasePlatform,
     Platform,
@@ -27,6 +38,33 @@ from robo_infra.platforms.base import (
     get_platform,
     register_platform,
     reset_platform,
+)
+from robo_infra.platforms.beaglebone import (
+    ADC_PINS as BB_ADC_PINS,
+)
+from robo_infra.platforms.beaglebone import (
+    ADC_RESOLUTION as BB_ADC_RESOLUTION,
+)
+from robo_infra.platforms.beaglebone import (
+    ADC_VREF as BB_ADC_VREF,
+)
+from robo_infra.platforms.beaglebone import (
+    BB_CAPABILITIES,
+    P8_GPIO_MAP,
+    P9_GPIO_MAP,
+    BBIOBackend,
+    BeagleBoneADCPin,
+    BeagleBoneCapabilities,
+    BeagleBoneDigitalPin,
+    BeagleBoneModel,
+    BeagleBonePlatform,
+    BeagleBonePWMPin,
+    DeviceTreeOverlayManager,
+    PRUInterface,
+    PRUState,
+)
+from robo_infra.platforms.beaglebone import (
+    PWM_PINS as BB_PWM_PINS,
 )
 from robo_infra.platforms.detection import (
     detect_arduino,
@@ -45,39 +83,6 @@ from robo_infra.platforms.detection import (
     detect_windows,
     get_platform_info,
 )
-from robo_infra.platforms.jetson import (
-    HARDWARE_PWM_PINS as JETSON_HARDWARE_PWM_PINS,
-)
-from robo_infra.platforms.jetson import (
-    JETSON_MODELS,
-    JetsonDigitalPin,
-    JetsonModel,
-    JetsonPinNumbering,
-    JetsonPlatform,
-    JetsonPowerMode,
-    JetsonPWMPin,
-)
-from robo_infra.platforms.raspberry_pi import (
-    HARDWARE_PWM_PINS_PI5,
-    HARDWARE_PWM_PINS_STANDARD,
-    PI_MODELS,
-    GPIOBackend,
-    PinNumbering,
-    RaspberryPiDigitalPin,
-    RaspberryPiPlatform,
-    RaspberryPiPWMPin,
-)
-from robo_infra.platforms.arduino import (
-    ARDUINO_USB_IDS,
-    BOARD_CAPABILITIES,
-    ArduinoAnalogPin,
-    ArduinoBoard,
-    ArduinoDigitalPin,
-    ArduinoPlatform,
-    ArduinoPWMPin,
-    ArduinoServoPin,
-    FirmataCommand,
-)
 from robo_infra.platforms.esp32 import (
     ESP32_CAPABILITIES,
     ESP32AnalogPin,
@@ -91,27 +96,22 @@ from robo_infra.platforms.esp32 import (
     ESP32TouchPin,
     MicroPythonREPL,
 )
-from robo_infra.platforms.beaglebone import (
-    ADC_PINS as BB_ADC_PINS,
-    ADC_RESOLUTION as BB_ADC_RESOLUTION,
-    ADC_VREF as BB_ADC_VREF,
-    BB_CAPABILITIES,
-    P8_GPIO_MAP,
-    P9_GPIO_MAP,
-    PWM_PINS as BB_PWM_PINS,
-    BBIOBackend,
-    BeagleBoneADCPin,
-    BeagleBoneCapabilities,
-    BeagleBoneDigitalPin,
-    BeagleBoneModel,
-    BeagleBonePlatform,
-    BeagleBonePWMPin,
-    DeviceTreeOverlayManager,
-    PRUInterface,
-    PRUState,
+from robo_infra.platforms.jetson import (
+    HARDWARE_PWM_PINS as JETSON_HARDWARE_PWM_PINS,
+)
+from robo_infra.platforms.jetson import (
+    JETSON_MODELS,
+    JetsonDigitalPin,
+    JetsonModel,
+    JetsonPinNumbering,
+    JetsonPlatform,
+    JetsonPowerMode,
+    JetsonPWMPin,
 )
 from robo_infra.platforms.linux_generic import (
     GPIOBackend as LinuxGPIOBackend,
+)
+from robo_infra.platforms.linux_generic import (
     GPIOChipInfo,
     GPIOEdge,
     GPIOLineInfo,
@@ -121,20 +121,28 @@ from robo_infra.platforms.linux_generic import (
     LinuxSBCCapabilities,
     LinuxSBCType,
 )
+from robo_infra.platforms.raspberry_pi import (
+    HARDWARE_PWM_PINS_PI5,
+    HARDWARE_PWM_PINS_STANDARD,
+    PI_MODELS,
+    GPIOBackend,
+    PinNumbering,
+    RaspberryPiDigitalPin,
+    RaspberryPiPlatform,
+    RaspberryPiPWMPin,
+)
 
 
 __all__ = [
     # Arduino constants
     "ARDUINO_USB_IDS",
-    "BOARD_CAPABILITIES",
     # BeagleBone constants
     "BB_ADC_PINS",
     "BB_ADC_RESOLUTION",
     "BB_ADC_VREF",
     "BB_CAPABILITIES",
     "BB_PWM_PINS",
-    "P8_GPIO_MAP",
-    "P9_GPIO_MAP",
+    "BOARD_CAPABILITIES",
     # ESP32 constants
     "ESP32_CAPABILITIES",
     # Raspberry Pi constants
@@ -143,28 +151,27 @@ __all__ = [
     # Jetson constants
     "JETSON_HARDWARE_PWM_PINS",
     "JETSON_MODELS",
+    "P8_GPIO_MAP",
+    "P9_GPIO_MAP",
     "PI_MODELS",
-    # Base classes and protocols
-    "BasePlatform",
     # Arduino specific
     "ArduinoAnalogPin",
     "ArduinoBoard",
     "ArduinoDigitalPin",
-    "ArduinoPlatform",
     "ArduinoPWMPin",
+    "ArduinoPlatform",
     "ArduinoServoPin",
-    "FirmataCommand",
     # BeagleBone specific
     "BBIOBackend",
+    # Base classes and protocols
+    "BasePlatform",
     "BeagleBoneADCPin",
     "BeagleBoneCapabilities",
     "BeagleBoneDigitalPin",
     "BeagleBoneModel",
-    "BeagleBonePlatform",
     "BeagleBonePWMPin",
+    "BeagleBonePlatform",
     "DeviceTreeOverlayManager",
-    "PRUInterface",
-    "PRUState",
     # ESP32 specific
     "ESP32AnalogPin",
     "ESP32Chip",
@@ -172,22 +179,16 @@ __all__ = [
     "ESP32DACPin",
     "ESP32DigitalPin",
     "ESP32HallSensor",
-    "ESP32Platform",
     "ESP32PWMPin",
+    "ESP32Platform",
     "ESP32TouchPin",
-    "MicroPythonREPL",
+    "FirmataCommand",
+    # Raspberry Pi specific
+    "GPIOBackend",
     # Linux Generic specific
     "GPIOChipInfo",
     "GPIOEdge",
     "GPIOLineInfo",
-    "LinuxDigitalPin",
-    "LinuxGenericPlatform",
-    "LinuxGPIOBackend",
-    "LinuxPWMPin",
-    "LinuxSBCCapabilities",
-    "LinuxSBCType",
-    # Raspberry Pi specific
-    "GPIOBackend",
     # Jetson specific
     "JetsonDigitalPin",
     "JetsonModel",
@@ -195,6 +196,15 @@ __all__ = [
     "JetsonPinNumbering",
     "JetsonPlatform",
     "JetsonPowerMode",
+    "LinuxDigitalPin",
+    "LinuxGPIOBackend",
+    "LinuxGenericPlatform",
+    "LinuxPWMPin",
+    "LinuxSBCCapabilities",
+    "LinuxSBCType",
+    "MicroPythonREPL",
+    "PRUInterface",
+    "PRUState",
     "PinNumbering",
     "Platform",
     "PlatformCapability",

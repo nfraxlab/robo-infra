@@ -7,9 +7,9 @@ register configuration, motor current control, and StallGuard.
 from __future__ import annotations
 
 import os
-from unittest.mock import MagicMock, patch
 
 import pytest
+
 
 # Set simulation mode for tests
 os.environ["ROBO_SIMULATION"] = "true"
@@ -68,7 +68,7 @@ class TestTMC2209DriverLifecycle:
     def test_init_with_config(self) -> None:
         """Test driver initialization with custom config."""
         config = TMC2209Config(address=2, run_current=1.2)
-        driver = TMC2209Driver(config=config)
+        TMC2209Driver(config=config)
         # Config is applied during initialization
 
     def test_connect_simulation(self) -> None:

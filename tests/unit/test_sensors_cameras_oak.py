@@ -358,17 +358,21 @@ class TestOAKDiscovery:
 
     def test_list_devices_no_library(self):
         """Test listing devices when library not installed."""
-        with patch.dict("sys.modules", {"depthai": None}):
-            with patch("builtins.__import__", side_effect=ImportError):
-                OAKCamera.list_devices()
-                # Should return empty list, not raise
+        with (
+            patch.dict("sys.modules", {"depthai": None}),
+            patch("builtins.__import__", side_effect=ImportError),
+        ):
+            OAKCamera.list_devices()
+            # Should return empty list, not raise
 
     def test_is_available_no_library(self):
         """Test availability check when library not installed."""
-        with patch.dict("sys.modules", {"depthai": None}):
-            with patch("builtins.__import__", side_effect=ImportError):
-                result = OAKCamera.is_available()
-                assert result is False
+        with (
+            patch.dict("sys.modules", {"depthai": None}),
+            patch("builtins.__import__", side_effect=ImportError),
+        ):
+            result = OAKCamera.is_available()
+            assert result is False
 
 
 # =============================================================================

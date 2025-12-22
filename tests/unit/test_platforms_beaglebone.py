@@ -2,9 +2,6 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-from unittest.mock import MagicMock, patch
-
 import pytest
 
 from robo_infra.core.pin import PinMode, PinState
@@ -13,24 +10,19 @@ from robo_infra.platforms.beaglebone import (
     ADC_RESOLUTION,
     ADC_VREF,
     BB_CAPABILITIES,
+    P8_GPIO_MAP,
+    P9_GPIO_MAP,
+    PWM_PINS,
     BBIOBackend,
     BeagleBoneADCPin,
-    BeagleBoneCapabilities,
     BeagleBoneDigitalPin,
     BeagleBoneModel,
     BeagleBonePlatform,
     BeagleBonePWMPin,
     DeviceTreeOverlayManager,
-    P8_GPIO_MAP,
-    P9_GPIO_MAP,
     PRUInterface,
     PRUState,
-    PWM_PINS,
 )
-
-
-if TYPE_CHECKING:
-    pass
 
 
 # =============================================================================
@@ -126,7 +118,7 @@ class TestPWMPins:
 
     def test_pwm_module_format(self) -> None:
         """Test PWM module info format."""
-        for pin, (module, channel) in PWM_PINS.items():
+        for _pin, (module, channel) in PWM_PINS.items():
             assert module.startswith("ehrpwm") or module.startswith("ecap")
             assert channel in ("A", "B", "0")
 
@@ -332,7 +324,7 @@ class TestBeagleBonePWMPin:
             backend=BBIOBackend.SIMULATION,
         )
         pin.setup()
-        with pytest.raises(ValueError, match="must be 0.0-1.0"):
+        with pytest.raises(ValueError, match=r"must be 0\.0-1\.0"):
             pin.set_duty_cycle(1.5)
 
     def test_frequency_method(self) -> None:
@@ -550,7 +542,7 @@ class TestBeagleBonePlatform:
     def test_platform_info(self) -> None:
         """Test platform info."""
         from robo_infra.platforms.base import PlatformType
-        
+
         platform = BeagleBonePlatform(simulation=True)
         info = platform.get_info()
         assert "BeagleBone" in info.model

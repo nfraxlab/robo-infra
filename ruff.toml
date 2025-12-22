@@ -32,6 +32,14 @@ ignore = [
     "PLC0415", # import not at top of file (intentional lazy imports for optional deps)
     "ARG001",  # unused function argument (common in ABCs)
     "ARG002",  # unused method argument (common in ABCs)
+    "ERA001",  # commented-out code (too many false positives for format docs)
+    "SIM105",  # use contextlib.suppress (not always clearer)
+    "SIM108",  # use ternary (not always clearer)
+    "PTH123",  # Path.open() vs open() (not required)
+    "PTH110",  # Path.exists() vs os.path.exists() (not required)
+    "PLW2901", # redefined-loop-name (intentional in some cases)
+    "RUF012",  # mutable class attr should be ClassVar (false positives)
+    "PLW1641", # missing __hash__ (mutable dataclasses intentionally unhashable)
 ]
 
 [lint.per-file-ignores]

@@ -7,9 +7,9 @@ control modes, and motion control.
 from __future__ import annotations
 
 import os
-from unittest.mock import MagicMock, patch
 
 import pytest
+
 
 # Set simulation mode for tests
 os.environ["ROBO_SIMULATION"] = "true"
@@ -298,9 +298,9 @@ class TestODriveDriverStatus:
         """Test getting overall status."""
         driver.set_position(0, 10.0)
         driver.set_velocity(1, 5.0)
-        
+
         status = driver.get_status()
-        
+
         assert status["connected"] is True
         assert status["simulation"] is True
         assert status["bus_voltage"] == 24.0

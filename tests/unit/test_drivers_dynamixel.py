@@ -7,9 +7,9 @@ servo control, sync operations, and telemetry.
 from __future__ import annotations
 
 import os
-from unittest.mock import MagicMock, patch
 
 import pytest
+
 
 # Set simulation mode for tests
 os.environ["ROBO_SIMULATION"] = "true"
@@ -364,9 +364,9 @@ class TestDynamixelDriverStatus:
     def test_get_status(self, driver: DynamixelDriver) -> None:
         """Test getting overall status."""
         driver.set_goal_position(1, 1500)
-        
+
         status = driver.get_status()
-        
+
         assert status["connected"] is True
         assert status["simulation"] is True
         assert status["baudrate"] == 1000000

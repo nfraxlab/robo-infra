@@ -430,12 +430,12 @@ class TestPIDConfigValidation:
 
     def test_config_output_max_greater_than_min(self) -> None:
         """Test that output_max must be greater than output_min."""
-        with pytest.raises(ValueError, match="output_max.*must be greater"):
+        with pytest.raises(ValueError, match=r"output_max.*must be greater"):
             PIDConfig(output_min=10.0, output_max=-10.0)
 
     def test_config_integral_max_greater_than_min(self) -> None:
         """Test that integral_max must be greater than integral_min."""
-        with pytest.raises(ValueError, match="integral_max.*must be greater"):
+        with pytest.raises(ValueError, match=r"integral_max.*must be greater"):
             PIDConfig(integral_min=10.0, integral_max=-10.0)
 
     def test_config_derivative_filter_range(self) -> None:

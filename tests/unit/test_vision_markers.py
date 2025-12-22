@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import os
 import time
 
 import numpy as np
@@ -320,7 +319,7 @@ class TestArUcoDetectorSimulated:
 
     def test_create_detector_with_enum(self):
         """Test creating detector with enum."""
-        from robo_infra.vision.markers import ArUcoDictionary, ArUcoDetector
+        from robo_infra.vision.markers import ArUcoDetector, ArUcoDictionary
 
         detector = ArUcoDetector(
             dictionary=ArUcoDictionary.DICT_6X6_250, simulation=True
@@ -342,8 +341,8 @@ class TestArUcoDetectorSimulated:
 
     def test_estimate_pose_simulated(self):
         """Test pose estimation in simulation mode."""
-        from robo_infra.vision.markers import ArUcoDetector, ArUcoMarker
         from robo_infra.sensors.camera import CameraIntrinsics
+        from robo_infra.vision.markers import ArUcoDetector, ArUcoMarker
 
         detector = ArUcoDetector(simulation=True)
 

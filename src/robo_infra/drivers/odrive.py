@@ -49,7 +49,7 @@ import os
 import time
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from robo_infra.core.driver import (
     Driver,

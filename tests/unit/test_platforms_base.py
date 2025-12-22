@@ -9,7 +9,6 @@ Tests cover:
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
@@ -36,13 +35,9 @@ from robo_infra.platforms.detection import (
     detect_esp32,
     detect_jetson,
     detect_linux_generic,
-    detect_macos,
     detect_orange_pi,
-    detect_pico,
     detect_platform,
     detect_raspberry_pi,
-    detect_rock_pi,
-    detect_windows,
     get_platform_info,
 )
 
@@ -430,25 +425,26 @@ class TestRaspberryPiDetection:
         model_file = tmp_path / "model"
         model_file.write_text("Raspberry Pi 4 Model B Rev 1.4\x00")
 
-        with patch(
-            "robo_infra.platforms.detection.Path",
-            return_value=model_file,
+        with (
+            patch(
+                "robo_infra.platforms.detection.Path",
+                return_value=model_file,
+            ),
+            patch.object(Path, "exists", return_value=True),
+            patch.object(
+                Path,
+                "read_text",
+                return_value="Raspberry Pi 4 Model B Rev 1.4\x00",
+            ),
         ):
-            # Mock the path existence check
-            with patch.object(Path, "exists", return_value=True):
-                with patch.object(
-                    Path,
-                    "read_text",
-                    return_value="Raspberry Pi 4 Model B Rev 1.4\x00",
-                ):
-                    is_pi, model = detect_raspberry_pi()
-                    assert is_pi is True
-                    assert "Raspberry Pi" in model
+            is_pi, model = detect_raspberry_pi()
+            assert is_pi is True
+            assert "Raspberry Pi" in model
 
     def test_detect_raspberry_pi_not_present(self):
         """Test detection returns False when not on Pi."""
         with patch.object(Path, "exists", return_value=False):
-            is_pi, model = detect_raspberry_pi()
+            is_pi, _model = detect_raspberry_pi()
             assert is_pi is False
 
 
@@ -460,16 +456,18 @@ class TestJetsonDetection:
         tegra_path = tmp_path / "nv_tegra_release"
         tegra_path.write_text("# R32 (release), REVISION: 6.1")
 
-        with patch.object(Path, "exists", side_effect=lambda: True):
-            with patch.object(Path, "read_text", return_value="NVIDIA Jetson Nano\x00"):
-                is_jetson, model = detect_jetson()
-                # Will be True if file exists
-                # Note: actual detection depends on file paths
+        with (
+            patch.object(Path, "exists", side_effect=lambda: True),
+            patch.object(Path, "read_text", return_value="NVIDIA Jetson Nano\x00"),
+        ):
+            _is_jetson, _model = detect_jetson()
+            # Will be True if file exists
+            # Note: actual detection depends on file paths
 
     def test_detect_jetson_not_present(self):
         """Test detection returns False when not on Jetson."""
         with patch.object(Path, "exists", return_value=False):
-            is_jetson, model = detect_jetson()
+            is_jetson, _model = detect_jetson()
             assert is_jetson is False
 
 
@@ -479,7 +477,7 @@ class TestBeagleBoneDetection:
     def test_detect_beaglebone_not_present(self):
         """Test detection returns False when not on BeagleBone."""
         with patch.object(Path, "exists", return_value=False):
-            is_bb, model = detect_beaglebone()
+            is_bb, _model = detect_beaglebone()
             assert is_bb is False
 
 
@@ -489,7 +487,7 @@ class TestOrangePiDetection:
     def test_detect_orangepi_not_present(self):
         """Test detection returns False when not on Orange Pi."""
         with patch.object(Path, "exists", return_value=False):
-            is_opi, model = detect_orange_pi()
+            is_opi, _model = detect_orange_pi()
             assert is_opi is False
 
 
@@ -512,10 +510,9 @@ class TestArduinoDetection:
         with patch(
             "robo_infra.platforms.detection._list_usb_devices",
             return_value=[],
-        ):
-            with patch.object(Path, "glob", return_value=[]):
-                is_arduino, model = detect_arduino()
-                assert is_arduino is False
+        ), patch.object(Path, "glob", return_value=[]):
+            is_arduino, _model = detect_arduino()
+            assert is_arduino is False
 
 
 class TestESP32Detection:
@@ -537,7 +534,7 @@ class TestESP32Detection:
             "robo_infra.platforms.detection._list_usb_devices",
             return_value=[],
         ):
-            is_esp, model = detect_esp32()
+            is_esp, _model = detect_esp32()
             assert is_esp is False
 
 
@@ -552,13 +549,13 @@ class TestLinuxGenericDetection:
             pytest.skip("Linux-only test")
 
         with patch.object(Path, "glob", return_value=[Path("/dev/gpiochip0")]):
-            is_linux, desc = detect_linux_generic()
+            _is_linux, _desc = detect_linux_generic()
             # Result depends on actual platform
 
     def test_detect_linux_no_gpio(self):
         """Test detection on Linux without GPIO chips."""
         with patch.object(Path, "glob", return_value=[]):
-            is_linux, desc = detect_linux_generic()
+            is_linux, _desc = detect_linux_generic()
             assert is_linux is False
 
 
@@ -582,22 +579,26 @@ class TestPlatformDetection:
         monkeypatch.delenv("ROBO_PLATFORM", raising=False)
         monkeypatch.delenv("ROBO_SIMULATION", raising=False)
 
-        with patch("robo_infra.platforms.detection.sys.platform", "darwin"):
-            with patch.object(Path, "exists", return_value=False):
-                with patch.object(Path, "glob", return_value=[]):
-                    platform_type = detect_platform()
-                    assert platform_type == PlatformType.SIMULATION
+        with (
+            patch("robo_infra.platforms.detection.sys.platform", "darwin"),
+            patch.object(Path, "exists", return_value=False),
+            patch.object(Path, "glob", return_value=[]),
+        ):
+            platform_type = detect_platform()
+            assert platform_type == PlatformType.SIMULATION
 
     def test_detect_platform_windows(self, monkeypatch):
         """Test Windows detection returns simulation."""
         monkeypatch.delenv("ROBO_PLATFORM", raising=False)
         monkeypatch.delenv("ROBO_SIMULATION", raising=False)
 
-        with patch("robo_infra.platforms.detection.sys.platform", "win32"):
-            with patch.object(Path, "exists", return_value=False):
-                with patch.object(Path, "glob", return_value=[]):
-                    platform_type = detect_platform()
-                    assert platform_type == PlatformType.SIMULATION
+        with (
+            patch("robo_infra.platforms.detection.sys.platform", "win32"),
+            patch.object(Path, "exists", return_value=False),
+            patch.object(Path, "glob", return_value=[]),
+        ):
+            platform_type = detect_platform()
+            assert platform_type == PlatformType.SIMULATION
 
 
 class TestGetPlatformInfo:

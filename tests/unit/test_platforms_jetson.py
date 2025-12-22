@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import os
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -68,7 +67,7 @@ class TestJetsonModel:
 
     def test_all_models_defined(self) -> None:
         """Test all expected models are defined."""
-        expected = ["NANO", "NANO_2GB", "TX1", "TX2", "TX2_NX", 
+        expected = ["NANO", "NANO_2GB", "TX1", "TX2", "TX2_NX",
                     "XAVIER_NX", "AGX_XAVIER", "ORIN_NANO", "ORIN_NX", "AGX_ORIN"]
         for model in expected:
             assert hasattr(JetsonModel, model)
@@ -172,7 +171,7 @@ class TestJetsonDigitalPin:
     def test_numbering_scheme(self) -> None:
         """Test different numbering schemes."""
         pin = JetsonDigitalPin(
-            17, 
+            17,
             numbering=JetsonPinNumbering.BCM,
             simulation=True,
         )
@@ -266,7 +265,7 @@ class TestJetsonPWMPin:
         """Test hardware PWM pin detection."""
         hw_pin = JetsonPWMPin(32, simulation=True)
         assert hw_pin._hardware_pwm is True
-        
+
         sw_pin = JetsonPWMPin(17, simulation=True)
         assert sw_pin._hardware_pwm is False
 
@@ -422,7 +421,7 @@ class TestModelDetection:
         """Test model detection for Orin."""
         mock_exists.return_value = True
         mock_read.return_value = "NVIDIA Jetson AGX Orin"
-        
+
         with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
             platform = JetsonPlatform()
             # Force re-detection
@@ -489,9 +488,9 @@ class TestEdgeCases:
         with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
             platform = JetsonPlatform()
             pin = platform.get_pin(
-                32, 
-                mode=PinMode.PWM, 
-                frequency=100, 
+                32,
+                mode=PinMode.PWM,
+                frequency=100,
                 duty_cycle=0.5
             )
             assert isinstance(pin, JetsonPWMPin)

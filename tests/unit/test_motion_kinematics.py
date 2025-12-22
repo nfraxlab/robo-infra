@@ -73,7 +73,7 @@ class TestJointAngle:
 
     def test_joint_angle_invalid_limits_raises(self) -> None:
         """Test that invalid limits raise ValueError."""
-        with pytest.raises(ValueError, match="min_angle.*must be <= max_angle"):
+        with pytest.raises(ValueError, match=r"min_angle.*must be <= max_angle"):
             JointAngle(angle=0.0, min_angle=2.0, max_angle=1.0)
 
     def test_joint_angle_repr(self) -> None:
@@ -197,7 +197,7 @@ class TestJointLimits:
 
     def test_invalid_limits_raises(self) -> None:
         """Test that invalid limits raise ValueError."""
-        with pytest.raises(ValueError, match="min_angle.*must be <= max_angle"):
+        with pytest.raises(ValueError, match=r"min_angle.*must be <= max_angle"):
             JointLimits(min_angle=2.0, max_angle=1.0)
 
 

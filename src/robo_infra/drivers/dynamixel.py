@@ -51,10 +51,8 @@ from __future__ import annotations
 import logging
 import os
 import struct
-import time
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import TYPE_CHECKING, Any
 
 from robo_infra.core.bus import SerialBus, SerialConfig
 from robo_infra.core.driver import (
@@ -63,11 +61,8 @@ from robo_infra.core.driver import (
     DriverState,
     register_driver,
 )
-from robo_infra.core.exceptions import CommunicationError, HardwareNotFoundError
+from robo_infra.core.exceptions import CommunicationError
 
-
-if TYPE_CHECKING:
-    pass
 
 logger = logging.getLogger(__name__)
 

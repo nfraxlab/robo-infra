@@ -432,8 +432,8 @@ class TestEndpointResponses:
         data = response.json()
         assert "shoulder" in data
         assert "elbow" in data
-        assert isinstance(data["shoulder"], (int, float))
-        assert isinstance(data["elbow"], (int, float))
+        assert isinstance(data["shoulder"], int | float)
+        assert isinstance(data["elbow"], int | float)
 
     def test_get_sensors_returns_all_readings(
         self,

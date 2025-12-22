@@ -7,9 +7,9 @@ including GPIO control, microstepping, and position tracking.
 from __future__ import annotations
 
 import os
-from unittest.mock import MagicMock, patch
 
 import pytest
+
 
 # Set simulation mode for tests
 os.environ["ROBO_SIMULATION"] = "true"
@@ -18,7 +18,6 @@ from robo_infra.drivers.step_dir import (
     A4988Driver,
     DRV8825Driver,
     StepDirConfig,
-    StepDirDriver,
 )
 
 

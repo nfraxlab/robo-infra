@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -20,10 +19,6 @@ from robo_infra.platforms.linux_generic import (
     LinuxSBCCapabilities,
     LinuxSBCType,
 )
-
-
-if TYPE_CHECKING:
-    pass
 
 
 # =============================================================================
@@ -292,10 +287,10 @@ class TestLinuxPWMPin:
             backend=GPIOBackend.SIMULATION,
         )
         pin.setup()
-        with pytest.raises(ValueError, match="must be 0.0-1.0"):
+        with pytest.raises(ValueError, match=r"must be 0\.0-1\.0"):
             pin.set_duty_cycle(1.5)
 
-        with pytest.raises(ValueError, match="must be 0.0-1.0"):
+        with pytest.raises(ValueError, match=r"must be 0\.0-1\.0"):
             pin.set_duty_cycle(-0.1)
 
     def test_frequency_method(self) -> None:

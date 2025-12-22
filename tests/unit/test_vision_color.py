@@ -22,7 +22,7 @@ def create_test_frame(
     color: tuple[int, int, int] | None = None,
 ) -> Frame:
     """Create a test frame.
-    
+
     Args:
         width: Frame width.
         height: Frame height.
@@ -36,11 +36,10 @@ def create_test_frame(
             data = np.full((height, width, 3), color, dtype=np.uint8)
             if format == PixelFormat.BGR:
                 data = data[:, :, ::-1].copy()
+    elif format == PixelFormat.GRAY:
+        data = np.random.randint(0, 256, (height, width), dtype=np.uint8)
     else:
-        if format == PixelFormat.GRAY:
-            data = np.random.randint(0, 256, (height, width), dtype=np.uint8)
-        else:
-            data = np.random.randint(0, 256, (height, width, 3), dtype=np.uint8)
+        data = np.random.randint(0, 256, (height, width, 3), dtype=np.uint8)
 
     return Frame(
         data=data,
@@ -63,16 +62,16 @@ def create_color_blob_frame(
     """Create a frame with a colored blob on black background."""
     # Start with black background
     data = np.zeros((height, width, 3), dtype=np.uint8)
-    
+
     # Draw circular blob
     y, x = np.ogrid[:height, :width]
     cx, cy = blob_center
     mask = (x - cx) ** 2 + (y - cy) ** 2 <= blob_radius ** 2
     data[mask] = blob_color
-    
+
     if format == PixelFormat.BGR:
         data = data[:, :, ::-1].copy()
-    
+
     return Frame(
         data=data,
         timestamp=time.monotonic(),
@@ -396,8 +395,9 @@ class TestColorDetectorMocked:
 
     def test_detect_grayscale_warning(self, cv2, caplog):
         """Test detection on grayscale frame logs warning."""
-        from robo_infra.vision.color import ColorDetector
         import logging
+
+        from robo_infra.vision.color import ColorDetector
 
         detector = ColorDetector.red()
         frame = create_test_frame(format=PixelFormat.GRAY)

@@ -110,7 +110,7 @@ class TestESP32Capabilities:
 
     def test_default_capabilities(self) -> None:
         """Test default capabilities is ESP32."""
-        assert DEFAULT_ESP_CAPABILITIES == ESP32_CAPABILITIES[ESP32Chip.ESP32]
+        assert ESP32_CAPABILITIES[ESP32Chip.ESP32] == DEFAULT_ESP_CAPABILITIES
 
 
 # =============================================================================

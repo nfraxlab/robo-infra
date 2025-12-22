@@ -281,7 +281,7 @@ class TestMagnetometer:
         config = MagnetometerConfig(declination=10.0)
 
         bus = SimulatedI2CBus()
-        bus.add_device(0x1E, registers={i: 0 for i in range(6)})
+        bus.add_device(0x1E, registers=dict.fromkeys(range(6), 0))
         bus.open()
 
         mag = Magnetometer(bus=bus, config=config)

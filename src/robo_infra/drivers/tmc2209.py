@@ -45,7 +45,7 @@ import logging
 import os
 import struct
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import IntEnum, IntFlag
 from typing import TYPE_CHECKING
 
@@ -55,7 +55,7 @@ from robo_infra.core.driver import (
     DriverState,
     register_driver,
 )
-from robo_infra.core.exceptions import CommunicationError, HardwareNotFoundError
+from robo_infra.core.exceptions import CommunicationError
 
 
 if TYPE_CHECKING:
@@ -657,10 +657,7 @@ class TMC2209Driver(Driver):
         crc = 0
         for byte in data:
             for _ in range(8):
-                if (crc >> 7) ^ (byte & 0x01):
-                    crc = ((crc << 1) ^ 0x07) & 0xFF
-                else:
-                    crc = (crc << 1) & 0xFF
+                crc = (crc << 1 ^ 7) & 255 if crc >> 7 ^ byte & 1 else crc << 1 & 255
                 byte >>= 1
         return crc
 

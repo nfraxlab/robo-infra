@@ -407,7 +407,7 @@ class BeagleBoneDigitalPin(DigitalPin):
         self._gpio_num = self._resolve_gpio_number(pin_name)
         self._bbio_gpio: Any = None
         self._gpiod_line: Any = None
-        
+
         # Call parent with proper arguments
         super().__init__(
             number=self._gpio_num,
@@ -438,7 +438,7 @@ class BeagleBoneDigitalPin(DigitalPin):
         """Setup hardware GPIO."""
         if self._backend == BBIOBackend.ADAFRUIT_BBIO:
             try:
-                import Adafruit_BBIO.GPIO as GPIO
+                from Adafruit_BBIO import GPIO
 
                 direction = GPIO.OUT if self.mode == PinMode.OUTPUT else GPIO.IN
                 pull_ud = None
@@ -493,12 +493,12 @@ class BeagleBoneDigitalPin(DigitalPin):
         """Initialize the pin hardware."""
         if self._initialized:
             return
-        
+
         if self._backend != BBIOBackend.SIMULATION:
             self._setup_hardware()
         else:
             logger.debug("Simulation: Setting up digital pin %s", self._pin_name)
-        
+
         self._initialized = True
 
     def _write_state(self, value: bool) -> None:
@@ -530,7 +530,7 @@ class BeagleBoneDigitalPin(DigitalPin):
 
     def read(self) -> bool:
         """Read pin state.
-        
+
         Returns:
             True if HIGH (or LOW if inverted), False otherwise
         """
@@ -539,7 +539,7 @@ class BeagleBoneDigitalPin(DigitalPin):
 
     def write(self, value: bool) -> None:
         """Write a digital value to the pin.
-        
+
         Args:
             value: True for HIGH, False for LOW (inverted if self.inverted)
         """
@@ -600,10 +600,10 @@ class BeagleBonePWMPin(PWMPin):
             )
 
         self._pwm_module, self._pwm_channel = PWM_PINS[pin_name]
-        
+
         # Use channel number from PWM_PINS as the pin number
         channel_num = int(self._pwm_channel.replace("A", "0").replace("B", "1"))
-        
+
         # Call parent with proper arguments
         super().__init__(
             number=channel_num,
@@ -616,7 +616,7 @@ class BeagleBonePWMPin(PWMPin):
         """Setup hardware PWM."""
         if self._backend == BBIOBackend.ADAFRUIT_BBIO:
             try:
-                import Adafruit_BBIO.PWM as PWM
+                from Adafruit_BBIO import PWM
 
                 # Start PWM with initial duty cycle (Adafruit_BBIO uses 0-100)
                 PWM.start(self._pin_name, self._duty_cycle * 100, self._frequency)
@@ -638,17 +638,17 @@ class BeagleBonePWMPin(PWMPin):
         """Initialize the PWM pin hardware."""
         if self._initialized:
             return
-        
+
         if self._backend != BBIOBackend.SIMULATION:
             self._setup_hardware()
         else:
             logger.debug("Simulation: Setting up PWM pin %s", self._pin_name)
-        
+
         self._initialized = True
 
     def set_duty_cycle(self, duty: float) -> None:
         """Set the PWM duty cycle.
-        
+
         Args:
             duty: Duty cycle from 0.0 (0%) to 1.0 (100%)
         """
@@ -660,7 +660,7 @@ class BeagleBonePWMPin(PWMPin):
 
     def set_frequency(self, frequency: int) -> None:
         """Set the PWM frequency.
-        
+
         Args:
             frequency: Frequency in Hz
         """
@@ -732,13 +732,13 @@ class BeagleBoneADCPin(AnalogPin):
             raise ValueError(
                 f"Invalid ADC channel {channel}. Valid channels: 0-6"
             )
-        
+
         self._channel = channel
         self._pin_name = ADC_PINS[channel]
         self._backend = backend
         self._bbio_adc: Any = None
         self._simulated_value = 0.5  # 50% of range
-        
+
         # Call parent with proper arguments
         super().__init__(
             number=channel,
@@ -751,7 +751,7 @@ class BeagleBoneADCPin(AnalogPin):
         """Setup hardware ADC."""
         if self._backend == BBIOBackend.ADAFRUIT_BBIO:
             try:
-                import Adafruit_BBIO.ADC as ADC
+                from Adafruit_BBIO import ADC
 
                 ADC.setup()
                 self._bbio_adc = ADC
@@ -766,12 +766,12 @@ class BeagleBoneADCPin(AnalogPin):
         """Initialize the ADC pin hardware."""
         if self._initialized:
             return
-        
+
         if self._backend != BBIOBackend.SIMULATION:
             self._setup_hardware()
         else:
             logger.debug("Simulation: Setting up ADC channel %d", self._channel)
-        
+
         self._initialized = True
 
     def cleanup(self) -> None:
@@ -1262,10 +1262,7 @@ class BeagleBonePlatform(BasePlatform):
             BeagleBoneDigitalPin instance
         """
         # Convert GPIO number to pin name if needed
-        if isinstance(pin_id, int):
-            pin_name = self._gpio_to_pin_name(pin_id)
-        else:
-            pin_name = pin_id.upper()
+        pin_name = self._gpio_to_pin_name(pin_id) if isinstance(pin_id, int) else pin_id.upper()
 
         # Validate pin name format
         if not re.match(r"P[89]_\d+", pin_name):
@@ -1476,7 +1473,7 @@ class BeagleBonePlatform(BasePlatform):
 
     def _detect_info(self) -> PlatformInfo:
         """Detect platform information."""
-        caps = self._capabilities or BB_CAPABILITIES[BeagleBoneModel.UNKNOWN]
+        self._capabilities or BB_CAPABILITIES[BeagleBoneModel.UNKNOWN]
         return PlatformInfo(
             platform_type=PlatformType.BEAGLEBONE,
             model=f"BeagleBone {self._model.value}",
@@ -1492,13 +1489,13 @@ class BeagleBonePlatform(BasePlatform):
         mode = kwargs.get("mode", PinMode.INPUT)
         pull = kwargs.get("pull")
         initial = kwargs.get("initial")
-        
+
         return self.get_pin(pin_id, mode=mode, pull=pull, initial=initial)
 
     def _create_bus(self, bus_type: str, **kwargs: Any) -> Bus:
         """Create a platform-specific bus."""
         from robo_infra.core.bus import I2CBus, SPIBus, UARTBus
-        
+
         if bus_type.lower() == "i2c":
             bus_num = kwargs.get("bus", 1)
             if self._simulation:
@@ -1547,7 +1544,7 @@ class BeagleBonePlatform(BasePlatform):
         # Cleanup ADC (Adafruit_BBIO cleanup)
         if self._backend == BBIOBackend.ADAFRUIT_BBIO:
             with contextlib.suppress(Exception):
-                import Adafruit_BBIO.ADC as ADC
+                from Adafruit_BBIO import ADC
                 ADC.cleanup()
 
         logger.info("BeagleBone platform cleanup complete")

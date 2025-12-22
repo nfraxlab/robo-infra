@@ -44,11 +44,12 @@ class TestHelperFunctions:
 
     def test_get_camera_library_no_library(self):
         """Test library detection when neither is available."""
-        with patch.dict("sys.modules", {"picamera2": None, "picamera": None}):
-            # Force import errors
-            with patch("builtins.__import__", side_effect=ImportError):
-                result = _get_camera_library()
-                assert result is None
+        with (
+            patch.dict("sys.modules", {"picamera2": None, "picamera": None}),
+            patch("builtins.__import__", side_effect=ImportError),
+        ):
+            result = _get_camera_library()
+            assert result is None
 
 
 # =============================================================================
