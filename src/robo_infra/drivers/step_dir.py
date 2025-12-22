@@ -85,6 +85,7 @@ class StepDirConfig:
         step_delay_us: Delay between steps in microseconds.
         invert_dir: Invert direction signal.
         invert_enable: Invert enable signal (default True = active low).
+        name: Optional name for the driver.
     """
 
     step_pin: int = 0
@@ -96,6 +97,7 @@ class StepDirConfig:
     step_delay_us: int = 100
     invert_dir: bool = False
     invert_enable: bool = True
+    name: str = "StepDirDriver"
 
 
 # =============================================================================
