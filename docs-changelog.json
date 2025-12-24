@@ -33,17 +33,29 @@
     "ai-integration.md": {
       "created": "2025-12-24",
       "lastUpdated": "2025-12-24",
-      "updateCount": 1,
+      "updateCount": 2,
       "title": "AI Integration Guide"
     },
     "api-integration.md": {
       "created": "2025-12-24",
       "lastUpdated": "2025-12-24",
-      "updateCount": 1,
+      "updateCount": 2,
       "title": "API Integration Guide"
     }
   },
   "history": [
+    {
+      "date": "2025-12-24",
+      "file": "api-integration.md",
+      "type": "updated",
+      "title": "API Integration Guide"
+    },
+    {
+      "date": "2025-12-24",
+      "file": "ai-integration.md",
+      "type": "updated",
+      "title": "AI Integration Guide"
+    },
     {
       "date": "2025-12-24",
       "file": "api-integration.md",
