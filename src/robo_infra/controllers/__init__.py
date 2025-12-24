@@ -1,5 +1,14 @@
 """High-level controller implementations."""
 
+from robo_infra.controllers.conveyor import (
+    Conveyor,
+    ConveyorConfig,
+    ConveyorDirection,
+    ConveyorState,
+    ConveyorStatus,
+    conveyor_status,
+    create_conveyor,
+)
 from robo_infra.controllers.differential import (
     DifferentialDrive,
     DifferentialDriveConfig,
@@ -67,6 +76,14 @@ from robo_infra.controllers.mavlink import (
     MAVType,
     create_mavlink_controller,
 )
+from robo_infra.controllers.pan_tilt import (
+    PanTilt,
+    PanTiltConfig,
+    PanTiltState,
+    PanTiltStatus,
+    create_pan_tilt,
+    pan_tilt_status,
+)
 from robo_infra.controllers.quadcopter import (
     Attitude,
     FlightMode,
@@ -83,9 +100,26 @@ from robo_infra.controllers.quadcopter import (
     mix_motors,
     normalize_motor_outputs,
 )
+from robo_infra.controllers.turntable import (
+    RotationDirection,
+    Turntable,
+    TurntableConfig,
+    TurntableState,
+    TurntableStatus,
+    create_turntable,
+    turntable_status,
+)
 
 
 __all__ = [
+    # Conveyor Controller
+    "Conveyor",
+    "ConveyorConfig",
+    "ConveyorDirection",
+    "ConveyorState",
+    "ConveyorStatus",
+    "conveyor_status",
+    "create_conveyor",
     # Quadcopter Controller
     "Attitude",
     # MAVLink Controller
@@ -141,6 +175,11 @@ __all__ = [
     "MAVType",
     "MotorOutputs",
     "MotorPosition",
+    # PanTilt Controller
+    "PanTilt",
+    "PanTiltConfig",
+    "PanTiltState",
+    "PanTiltStatus",
     "Position3D",
     "Quadcopter",
     "QuadcopterConfig",
@@ -148,17 +187,27 @@ __all__ = [
     "QuadcopterStatus",
     "Quadruped",
     "QuadrupedConfig",
+    # Turntable Controller
+    "RotationDirection",
+    "Turntable",
+    "TurntableConfig",
+    "TurntableState",
+    "TurntableStatus",
     "Velocity",
     "calculate_foot_trajectory",
     "create_hexapod",
     "create_leg",
     "create_mavlink_controller",
+    "create_pan_tilt",
     "create_quadcopter",
     "create_quadruped",
+    "create_turntable",
     "forward_kinematics_3dof",
     "get_hexapod_phases",
     "get_quadruped_phases",
     "inverse_kinematics_3dof",
     "mix_motors",
     "normalize_motor_outputs",
+    "pan_tilt_status",
+    "turntable_status",
 ]
