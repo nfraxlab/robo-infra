@@ -10,10 +10,41 @@ from robo_infra.controllers.gripper import (
     GripperConfig,
     GripperState,
 )
+from robo_infra.controllers.hexapod import (
+    BodyAxis,
+    BodyPose,
+    GaitParameters,
+    GaitType,
+    Hexapod,
+    HexapodConfig,
+    LeggedRobotState,
+    LeggedRobotStatus,
+    Quadruped,
+    QuadrupedConfig,
+    calculate_foot_trajectory,
+    create_hexapod,
+    create_quadruped,
+    get_hexapod_phases,
+    get_quadruped_phases,
+)
 from robo_infra.controllers.joint_group import (
     JointGroup,
     JointGroupConfig,
     JointGroupState,
+)
+from robo_infra.controllers.leg import (
+    FootPosition,
+    JointAngles,
+    JointType,
+    Leg,
+    LegConfig,
+    LegDimensions,
+    LegPosition,
+    LegState,
+    LegStatus,
+    create_leg,
+    forward_kinematics_3dof,
+    inverse_kinematics_3dof,
 )
 from robo_infra.controllers.lock import (
     Lock,
@@ -55,27 +86,50 @@ from robo_infra.controllers.quadcopter import (
 
 
 __all__ = [
+    # Quadcopter Controller
+    "Attitude",
+    # MAVLink Controller
+    "AutopilotType",
+    # Hexapod/Legged Robot
+    "BodyAxis",
+    "BodyPose",
     # Differential Drive
     "DifferentialDrive",
     "DifferentialDriveConfig",
     "DifferentialDriveState",
+    "FlightMode",
+    "FlightModeArduCopter",
+    "FlightModePX4",
+    # Leg Controller
+    "FootPosition",
+    "FrameType",
+    "GPSFixType",
+    "GaitParameters",
+    "GaitType",
     # Gripper
     "Gripper",
     "GripperConfig",
     "GripperState",
+    "Hexapod",
+    "HexapodConfig",
+    "JointAngles",
     # Joint Group
     "JointGroup",
     "JointGroupConfig",
     "JointGroupState",
+    "JointType",
+    "Leg",
+    "LegConfig",
+    "LegDimensions",
+    "LegPosition",
+    "LegState",
+    "LegStatus",
+    "LeggedRobotState",
+    "LeggedRobotStatus",
     # Lock
     "Lock",
     "LockConfig",
     "LockState",
-    # MAVLink Controller
-    "AutopilotType",
-    "FlightModeArduCopter",
-    "FlightModePX4",
-    "GPSFixType",
     "MAVLinkAttitude",
     "MAVLinkBattery",
     "MAVLinkConfig",
@@ -85,11 +139,6 @@ __all__ = [
     "MAVLinkState",
     "MAVLinkStatus",
     "MAVType",
-    "create_mavlink_controller",
-    # Quadcopter Controller
-    "Attitude",
-    "FlightMode",
-    "FrameType",
     "MotorOutputs",
     "MotorPosition",
     "Position3D",
@@ -97,8 +146,19 @@ __all__ = [
     "QuadcopterConfig",
     "QuadcopterState",
     "QuadcopterStatus",
+    "Quadruped",
+    "QuadrupedConfig",
     "Velocity",
+    "calculate_foot_trajectory",
+    "create_hexapod",
+    "create_leg",
+    "create_mavlink_controller",
     "create_quadcopter",
+    "create_quadruped",
+    "forward_kinematics_3dof",
+    "get_hexapod_phases",
+    "get_quadruped_phases",
+    "inverse_kinematics_3dof",
     "mix_motors",
     "normalize_motor_outputs",
 ]

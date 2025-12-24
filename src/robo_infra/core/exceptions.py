@@ -26,17 +26,50 @@ class LimitsExceededError(RoboInfraError):
 
     def __init__(
         self,
-        value: float,
-        min_limit: float,
-        max_limit: float,
+        value_or_message: float | str | None = None,
+        min_limit: float | None = None,
+        max_limit: float | None = None,
         name: str | None = None,
+        *,
+        value: float | None = None,
     ) -> None:
-        self.value = value
-        self.min_limit = min_limit
-        self.max_limit = max_limit
-        self.name = name
-        name_str = f" for {name}" if name else ""
-        message = f"Value {value} exceeds limits [{min_limit}, {max_limit}]{name_str}"
+        # Support both positional and keyword 'value' argument
+        if value is not None:
+            # Keyword-arg format: LimitsExceededError(value=10, min_limit=0, ...)
+            self.value = value
+            self.min_limit = min_limit
+            self.max_limit = max_limit
+            self.name = name
+            name_str = f" for {name}" if name else ""
+            message = (
+                f"Value {value} exceeds limits "
+                f"[{min_limit}, {max_limit}]{name_str}"
+            )
+        elif isinstance(value_or_message, str):
+            # Simple message format: LimitsExceededError("some message")
+            self.value = None
+            self.min_limit = min_limit
+            self.max_limit = max_limit
+            self.name = name
+            message = value_or_message
+        elif value_or_message is not None:
+            # Positional format: LimitsExceededError(10.0, 0.0, 5.0, "name")
+            self.value = value_or_message
+            self.min_limit = min_limit
+            self.max_limit = max_limit
+            self.name = name
+            name_str = f" for {name}" if name else ""
+            message = (
+                f"Value {value_or_message} exceeds limits "
+                f"[{min_limit}, {max_limit}]{name_str}"
+            )
+        else:
+            # Fallback
+            self.value = None
+            self.min_limit = min_limit
+            self.max_limit = max_limit
+            self.name = name
+            message = "Value exceeds limits"
         super().__init__(message)
 
 
@@ -116,4 +149,11 @@ class ConfigurationError(RoboInfraError):
         message = f"Configuration error for '{setting}'"
         if reason:
             message += f": {reason}"
+        super().__init__(message)
+
+
+class KinematicsError(RoboInfraError):
+    """Raised when kinematic calculations fail (e.g., position unreachable)."""
+
+    def __init__(self, message: str) -> None:
         super().__init__(message)
