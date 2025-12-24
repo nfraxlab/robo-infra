@@ -29,9 +29,33 @@
       "lastUpdated": "2025-12-21",
       "updateCount": 1,
       "title": "Platform Support"
+    },
+    "ai-integration.md": {
+      "created": "2025-12-24",
+      "lastUpdated": "2025-12-24",
+      "updateCount": 1,
+      "title": "AI Integration Guide"
+    },
+    "api-integration.md": {
+      "created": "2025-12-24",
+      "lastUpdated": "2025-12-24",
+      "updateCount": 1,
+      "title": "API Integration Guide"
     }
   },
   "history": [
+    {
+      "date": "2025-12-24",
+      "file": "api-integration.md",
+      "type": "new",
+      "title": "API Integration Guide"
+    },
+    {
+      "date": "2025-12-24",
+      "file": "ai-integration.md",
+      "type": "new",
+      "title": "AI Integration Guide"
+    },
     {
       "date": "2025-12-21",
       "file": "platforms.md",
