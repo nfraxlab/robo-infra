@@ -213,33 +213,32 @@ class TestRoverWithAITools:
         assert isinstance(tools, list)
 
     def test_tools_have_required_properties(self, rover: DifferentialDrive) -> None:
-        """Test that generated tools have name, description, parameters."""
+        """Test that generated tools are callable with __name__ and __doc__."""
         tools = controller_to_tools(rover)
 
         for tool in tools:
-            assert "name" in tool
-            assert "description" in tool
-            assert "parameters" in tool
-            assert tool["name"].startswith("test_rover")
+            assert callable(tool)
+            assert hasattr(tool, "__name__")
+            assert hasattr(tool, "__doc__")
+            assert tool.__name__.startswith("test_rover")
 
     def test_move_tool_exists(self, rover: DifferentialDrive) -> None:
         """Test that move tool is generated."""
         tools = controller_to_tools(rover)
-        tool_names = [t["name"] for t in tools]
+        tool_names = [t.__name__ for t in tools]
 
         assert "test_rover_move" in tool_names
 
     def test_call_move_tool_handler(self, rover: DifferentialDrive) -> None:
-        """Test calling the move tool handler with motor speeds."""
+        """Test calling the move tool with motor speeds."""
         tools = controller_to_tools(rover)
 
         # Find move tool
-        move_tool = next(t for t in tools if t["name"] == "test_rover_move")
-        handler = move_tool["handler"]
+        move_tool = next(t for t in tools if t.__name__ == "test_rover_move")
 
-        # Call handler with target motor speeds (actuators are "left" and "right")
+        # Call tool with target motor speeds (actuators are "left" and "right")
         target = {"left": 0.6, "right": 0.6}
-        handler(target)
+        move_tool(targets=target)
 
         # Verify motors set via actuator get() (not rover.current_speed which tracks tank() calls)
         left_motor_val = rover.left_motor.get()
@@ -250,21 +249,21 @@ class TestRoverWithAITools:
     def test_home_tool_exists(self, rover: DifferentialDrive) -> None:
         """Test that home tool is generated."""
         tools = controller_to_tools(rover)
-        tool_names = [t["name"] for t in tools]
+        tool_names = [t.__name__ for t in tools]
 
         assert "test_rover_home" in tool_names
 
     def test_call_home_tool_stops_rover(self, rover: DifferentialDrive) -> None:
-        """Test calling the home tool handler stops the rover."""
+        """Test calling the home tool stops the rover."""
         tools = controller_to_tools(rover)
 
         # Start moving
         rover.forward(0.8)
         assert rover.current_speed[0] != 0
 
-        # Find home tool and call handler (home = stop for differential drive)
-        home_tool = next(t for t in tools if t["name"] == "test_rover_home")
-        home_tool["handler"]()
+        # Find home tool and call it (home = stop for differential drive)
+        home_tool = next(t for t in tools if t.__name__ == "test_rover_home")
+        home_tool()
 
         # Verify rover stopped
         left_speed, right_speed = rover.current_speed
@@ -274,20 +273,20 @@ class TestRoverWithAITools:
     def test_stop_tool_exists(self, rover: DifferentialDrive) -> None:
         """Test that stop (emergency) tool is generated."""
         tools = controller_to_tools(rover)
-        tool_names = [t["name"] for t in tools]
+        tool_names = [t.__name__ for t in tools]
 
         assert "test_rover_stop" in tool_names
 
     def test_call_stop_tool_handler(self, rover: DifferentialDrive) -> None:
-        """Test calling the stop tool handler."""
+        """Test calling the stop tool."""
         tools = controller_to_tools(rover)
 
         # Start moving
         rover.forward(1.0)
 
-        # Find stop tool and call handler
-        stop_tool = next(t for t in tools if t["name"] == "test_rover_stop")
-        stop_tool["handler"]()
+        # Find stop tool and call it
+        stop_tool = next(t for t in tools if t.__name__ == "test_rover_stop")
+        stop_tool()
 
         # Verify rover stopped
         left_speed, right_speed = rover.current_speed
@@ -368,7 +367,7 @@ class TestRoverWithUltrasonicSensor:
         rover.add_sensor("front", ultrasonic_sensor)
 
         tools = controller_to_tools(rover)
-        tool_names = [t["name"] for t in tools]
+        tool_names = [t.__name__ for t in tools]
 
         # Should have a sensors tool
         assert "test_rover_sensors" in tool_names
@@ -509,9 +508,9 @@ class TestFullE2EFlow:
         app.include_router(router, prefix="/rover")
         client = TestClient(app)
 
-        # Drive via AI tool handler (set motor speeds directly)
-        move_tool = next(t for t in tools if t["name"] == "test_rover_move")
-        move_tool["handler"]({"left": 0.8, "right": 0.8})
+        # Drive via AI tool (set motor speeds directly)
+        move_tool = next(t for t in tools if t.__name__ == "test_rover_move")
+        move_tool(targets={"left": 0.8, "right": 0.8})
 
         # Read via API
         response = client.get("/rover/actuators")
@@ -542,8 +541,8 @@ class TestFullE2EFlow:
         client = TestClient(app)
 
         # Read sensors via AI tool
-        sensors_tool = next(t for t in tools if t["name"] == "test_rover_sensors")
-        sensor_readings = sensors_tool["handler"]()
+        sensors_tool = next(t for t in tools if t.__name__ == "test_rover_sensors")
+        sensor_readings = sensors_tool()
 
         # Read sensors via API
         response = client.get("/rover/sensors")

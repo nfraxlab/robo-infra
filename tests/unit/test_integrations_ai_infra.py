@@ -1,12 +1,18 @@
 """Unit tests for ai-infra integration module.
 
 Tests for converting robo-infra controllers, actuators, and sensors to
-ai-infra compatible tools (LLM function calling).
+ai-infra compatible function tools (LLM function calling).
+
+The new format uses callable Python functions with:
+- __name__: Tool name for LLM
+- __doc__: Tool description/docstring
+- Function itself is callable with typed parameters
 """
 
 from __future__ import annotations
 
-import json
+import inspect
+from typing import Callable
 
 import pytest
 
@@ -16,10 +22,18 @@ from robo_infra.core.sensor import SimulatedSensor, Unit
 from robo_infra.core.types import Limits
 from robo_infra.integrations.ai_infra import (
     actuator_to_tool,
+    actuator_to_tools,
+    controller_to_schema_tools,
     controller_to_tools,
+    create_disable_tool,
+    create_enable_tool,
+    create_home_tool,
+    create_move_tool,
     create_movement_tool,
     create_safety_tools,
+    create_sensors_tool,
     create_status_tool,
+    create_stop_tool,
 )
 
 
@@ -112,32 +126,44 @@ def homed_controller(enabled_controller: SimulatedController) -> SimulatedContro
     return enabled_controller
 
 
-# --- Tests for controller_to_tools ---
+# --- Tests for controller_to_tools (New Function Format) ---
 
 
 class TestControllerToTools:
-    """Tests for controller_to_tools function."""
+    """Tests for controller_to_tools function (new format)."""
 
-    def test_returns_list_of_tools(
+    def test_returns_list_of_callables(
         self,
         mock_controller: SimulatedController,
     ) -> None:
-        """controller_to_tools should return a list of tool dictionaries."""
+        """controller_to_tools should return a list of callable functions."""
         tools = controller_to_tools(mock_controller)
         assert isinstance(tools, list)
         assert len(tools) > 0
+        for tool in tools:
+            assert callable(tool)
 
-    def test_tool_structure(
+    def test_tools_have_names(
         self,
         mock_controller: SimulatedController,
     ) -> None:
-        """Each tool should have name, description, parameters, and handler."""
+        """Each tool should have a __name__ attribute."""
         tools = controller_to_tools(mock_controller)
         for tool in tools:
-            assert "name" in tool
-            assert "description" in tool
-            assert "parameters" in tool
-            assert "handler" in tool
+            assert hasattr(tool, "__name__")
+            assert isinstance(tool.__name__, str)
+            assert len(tool.__name__) > 0
+
+    def test_tools_have_docstrings(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """Each tool should have a __doc__ attribute (docstring)."""
+        tools = controller_to_tools(mock_controller)
+        for tool in tools:
+            assert hasattr(tool, "__doc__")
+            assert tool.__doc__ is not None
+            assert len(tool.__doc__) > 0
 
     def test_tool_names_include_controller_name(
         self,
@@ -146,7 +172,7 @@ class TestControllerToTools:
         """Tool names should be prefixed with controller name."""
         tools = controller_to_tools(mock_controller)
         for tool in tools:
-            assert tool["name"].startswith("test_arm_")
+            assert tool.__name__.startswith("test_arm_")
 
     def test_expected_tools_generated(
         self,
@@ -154,7 +180,7 @@ class TestControllerToTools:
     ) -> None:
         """Should generate move, home, stop, status, sensors, enable, disable."""
         tools = controller_to_tools(mock_controller)
-        tool_names = {tool["name"] for tool in tools}
+        tool_names = {tool.__name__ for tool in tools}
 
         expected_suffixes = ["move", "home", "stop", "status", "sensors", "enable", "disable"]
         for suffix in expected_suffixes:
@@ -167,7 +193,7 @@ class TestControllerToTools:
     ) -> None:
         """Should include a move tool for positioning."""
         tools = controller_to_tools(mock_controller)
-        tool_names = [tool["name"] for tool in tools]
+        tool_names = [tool.__name__ for tool in tools]
         assert "test_arm_move" in tool_names
 
     def test_has_home_tool(
@@ -176,7 +202,7 @@ class TestControllerToTools:
     ) -> None:
         """Should include a home tool for homing sequence."""
         tools = controller_to_tools(mock_controller)
-        tool_names = [tool["name"] for tool in tools]
+        tool_names = [tool.__name__ for tool in tools]
         assert "test_arm_home" in tool_names
 
     def test_has_stop_tool(
@@ -185,7 +211,7 @@ class TestControllerToTools:
     ) -> None:
         """Should include a stop tool for emergency stop."""
         tools = controller_to_tools(mock_controller)
-        tool_names = [tool["name"] for tool in tools]
+        tool_names = [tool.__name__ for tool in tools]
         assert "test_arm_stop" in tool_names
 
     def test_has_status_tool(
@@ -194,400 +220,432 @@ class TestControllerToTools:
     ) -> None:
         """Should include a status tool for querying state."""
         tools = controller_to_tools(mock_controller)
-        tool_names = [tool["name"] for tool in tools]
+        tool_names = [tool.__name__ for tool in tools]
         assert "test_arm_status" in tool_names
 
-    def test_tool_has_name_property(
+    def test_move_tool_has_type_hints(
         self,
         mock_controller: SimulatedController,
     ) -> None:
-        """Each tool must have a non-empty name string."""
+        """Move tool should have type hints for ai-infra schema generation."""
         tools = controller_to_tools(mock_controller)
-        for tool in tools:
-            assert isinstance(tool["name"], str)
-            assert len(tool["name"]) > 0
+        move_tool = next(t for t in tools if t.__name__ == "test_arm_move")
 
-    def test_tool_has_description_property(
+        # Check signature has type hints
+        sig = inspect.signature(move_tool)
+        assert len(sig.parameters) > 0  # Has at least one parameter
+
+    def test_status_tool_returns_dict(
         self,
         mock_controller: SimulatedController,
     ) -> None:
-        """Each tool must have a non-empty description string."""
+        """Status tool return type should be dict."""
         tools = controller_to_tools(mock_controller)
-        for tool in tools:
-            assert isinstance(tool["description"], str)
-            assert len(tool["description"]) > 0
+        status_tool = next(t for t in tools if t.__name__ == "test_arm_status")
 
-    def test_tool_has_parameters_schema(
-        self,
-        mock_controller: SimulatedController,
-    ) -> None:
-        """Each tool must have a parameters dict (JSON schema)."""
-        tools = controller_to_tools(mock_controller)
-        for tool in tools:
-            assert isinstance(tool["parameters"], dict)
-
-    def test_tool_parameters_valid_json_schema(
-        self,
-        mock_controller: SimulatedController,
-    ) -> None:
-        """Tool parameters should be valid JSON schema structure."""
-        tools = controller_to_tools(mock_controller)
-        for tool in tools:
-            params = tool["parameters"]
-            # JSON schema should have type or be empty for no-arg tools
-            if params:
-                # Should be serializable to JSON
-                json_str = json.dumps(params)
-                assert json_str is not None
-                # If has properties, should have type: object
-                if "properties" in params:
-                    assert params.get("type") == "object"
-
-    def test_tool_handler_is_callable(
-        self,
-        mock_controller: SimulatedController,
-    ) -> None:
-        """Each tool handler must be callable."""
-        tools = controller_to_tools(mock_controller)
-        for tool in tools:
-            assert callable(tool["handler"])
+        # Call it and verify return type
+        result = status_tool()
+        assert isinstance(result, dict)
 
 
-# --- Tests for actuator_to_tool ---
+# --- Tests for actuator_to_tools (New Function Format) ---
 
 
-class TestActuatorToTool:
-    """Tests for actuator_to_tool function."""
+class TestActuatorToTools:
+    """Tests for actuator_to_tools function (new format)."""
 
-    def test_returns_tool_dict(
+    def test_returns_list_of_callables(
         self,
         simple_actuator: SimulatedActuator,
     ) -> None:
-        """actuator_to_tool should return a single tool dictionary."""
-        tool = actuator_to_tool(simple_actuator)
+        """actuator_to_tools should return a list of callable functions."""
+        tools = actuator_to_tools(simple_actuator)
+        assert isinstance(tools, list)
+        assert len(tools) > 0
+        for tool in tools:
+            assert callable(tool)
+
+    def test_returns_four_tools(
+        self,
+        simple_actuator: SimulatedActuator,
+    ) -> None:
+        """Should return 4 tools: set, get, enable, disable."""
+        tools = actuator_to_tools(simple_actuator)
+        assert len(tools) == 4
+
+    def test_tool_names_match_actuator(
+        self,
+        simple_actuator: SimulatedActuator,
+    ) -> None:
+        """Tool names should incorporate actuator name."""
+        tools = actuator_to_tools(simple_actuator)
+        tool_names = {tool.__name__ for tool in tools}
+
+        expected = {
+            "test_servo_set",
+            "test_servo_get",
+            "test_servo_enable",
+            "test_servo_disable",
+        }
+        assert tool_names == expected
+
+    def test_tools_have_docstrings(
+        self,
+        simple_actuator: SimulatedActuator,
+    ) -> None:
+        """Each tool should have a docstring."""
+        tools = actuator_to_tools(simple_actuator)
+        for tool in tools:
+            assert tool.__doc__ is not None
+            assert len(tool.__doc__) > 0
+
+    def test_docstrings_include_limits(
+        self,
+        simple_actuator: SimulatedActuator,
+    ) -> None:
+        """Tool docstrings should include actuator limits for LLM context."""
+        tools = actuator_to_tools(simple_actuator)
+        set_tool = next(t for t in tools if t.__name__ == "test_servo_set")
+
+        # Docstring should mention the limits (0-180)
+        assert "0" in set_tool.__doc__
+        assert "180" in set_tool.__doc__
+
+    def test_set_tool_has_value_parameter(
+        self,
+        simple_actuator: SimulatedActuator,
+    ) -> None:
+        """Set tool should have a value parameter."""
+        tools = actuator_to_tools(simple_actuator)
+        set_tool = next(t for t in tools if t.__name__ == "test_servo_set")
+
+        sig = inspect.signature(set_tool)
+        assert "value" in sig.parameters
+
+    def test_get_tool_returns_dict(
+        self,
+        simple_actuator: SimulatedActuator,
+    ) -> None:
+        """Get tool should return a dict with value and status."""
+        simple_actuator.enable()
+        tools = actuator_to_tools(simple_actuator)
+        get_tool = next(t for t in tools if t.__name__ == "test_servo_get")
+
+        result = get_tool()
+        assert isinstance(result, dict)
+        assert "value" in result
+        assert "is_enabled" in result
+
+
+# --- Tests for Individual Tool Creators ---
+
+
+class TestIndividualToolCreators:
+    """Tests for individual create_*_tool functions."""
+
+    def test_create_move_tool(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """create_move_tool should return a callable function."""
+        tool = create_move_tool(mock_controller)
+        assert callable(tool)
+        assert "move" in tool.__name__
+        assert tool.__doc__ is not None
+
+    def test_create_home_tool(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """create_home_tool should return a callable function."""
+        tool = create_home_tool(mock_controller)
+        assert callable(tool)
+        assert "home" in tool.__name__
+        assert tool.__doc__ is not None
+
+    def test_create_stop_tool(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """create_stop_tool should return a callable function."""
+        tool = create_stop_tool(mock_controller)
+        assert callable(tool)
+        assert "stop" in tool.__name__
+        assert tool.__doc__ is not None
+
+    def test_create_status_tool(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """create_status_tool should return a callable function."""
+        tool = create_status_tool(mock_controller)
+        assert callable(tool)
+        assert "status" in tool.__name__
+        assert tool.__doc__ is not None
+
+    def test_create_sensors_tool(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """create_sensors_tool should return a callable function."""
+        tool = create_sensors_tool(mock_controller)
+        assert callable(tool)
+        assert "sensors" in tool.__name__
+        assert tool.__doc__ is not None
+
+    def test_create_enable_tool(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """create_enable_tool should return a callable function."""
+        tool = create_enable_tool(mock_controller)
+        assert callable(tool)
+        assert "enable" in tool.__name__
+        assert tool.__doc__ is not None
+
+    def test_create_disable_tool(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """create_disable_tool should return a callable function."""
+        tool = create_disable_tool(mock_controller)
+        assert callable(tool)
+        assert "disable" in tool.__name__
+        assert tool.__doc__ is not None
+
+
+# --- Tests for Pydantic Schema Tools ---
+
+
+class TestControllerToSchemaTools:
+    """Tests for controller_to_schema_tools function."""
+
+    def test_returns_list_of_callables(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """controller_to_schema_tools should return a list of callable functions."""
+        tools = controller_to_schema_tools(mock_controller)
+        assert isinstance(tools, list)
+        assert len(tools) > 0
+        for tool in tools:
+            assert callable(tool)
+
+    def test_tools_have_names(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """Each tool should have a __name__ attribute."""
+        tools = controller_to_schema_tools(mock_controller)
+        for tool in tools:
+            assert hasattr(tool, "__name__")
+            assert isinstance(tool.__name__, str)
+
+    def test_tools_have_docstrings(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """Each tool should have a docstring."""
+        tools = controller_to_schema_tools(mock_controller)
+        for tool in tools:
+            assert tool.__doc__ is not None
+
+
+# --- Tests for Deprecated Functions ---
+
+
+class TestDeprecatedFunctions:
+    """Tests for deprecated functions (old dict format)."""
+
+    def test_actuator_to_tool_returns_dict(
+        self,
+        simple_actuator: SimulatedActuator,
+    ) -> None:
+        """actuator_to_tool (deprecated) should return a tool dict."""
+        with pytest.warns(DeprecationWarning):
+            tool = actuator_to_tool(simple_actuator)
         assert isinstance(tool, dict)
-
-    def test_tool_has_required_fields(
-        self,
-        simple_actuator: SimulatedActuator,
-    ) -> None:
-        """Tool should have name, description, parameters, handler."""
-        tool = actuator_to_tool(simple_actuator)
         assert "name" in tool
         assert "description" in tool
         assert "parameters" in tool
         assert "handler" in tool
 
-    def test_tool_name_matches_actuator(
-        self,
-        simple_actuator: SimulatedActuator,
-    ) -> None:
-        """Tool name should incorporate actuator name."""
-        tool = actuator_to_tool(simple_actuator)
-        assert "test_servo" in tool["name"]
-
-    def test_tool_includes_limits_in_description(
-        self,
-        simple_actuator: SimulatedActuator,
-    ) -> None:
-        """Tool description should include actuator limits for LLM context."""
-        tool = actuator_to_tool(simple_actuator)
-        description = tool["description"]
-        # Description should mention the limits (0-180 degrees)
-        assert "0" in description or "min" in description.lower()
-        assert "180" in description or "max" in description.lower()
-
-    def test_tool_includes_unit_in_description(
-        self,
-        simple_actuator: SimulatedActuator,
-    ) -> None:
-        """Tool description should mention the actuator or its limits."""
-        tool = actuator_to_tool(simple_actuator)
-        description = tool["description"].lower()
-        # Description should be informative about the actuator
-        # Either mentions unit, limits, or actuator name
-        has_context = (
-            "degree" in description
-            or "position" in description
-            or "test_servo" in description
-            or "0" in description
-        )
-        assert has_context, f"Description lacks context: {description}"
-
-    def test_tool_parameters_has_value_property(
-        self,
-        simple_actuator: SimulatedActuator,
-    ) -> None:
-        """Tool parameters should include a value property for setting position."""
-        tool = actuator_to_tool(simple_actuator)
-        params = tool["parameters"]
-        assert "properties" in params
-        # Should have some way to set the value
-        props = params["properties"]
-        assert len(props) > 0
-
-    def test_tool_handler_is_callable(
-        self,
-        simple_actuator: SimulatedActuator,
-    ) -> None:
-        """Tool handler must be callable."""
-        tool = actuator_to_tool(simple_actuator)
-        assert callable(tool["handler"])
-
-    def test_tool_parameters_serializable_to_json(
-        self,
-        simple_actuator: SimulatedActuator,
-    ) -> None:
-        """Tool parameters should be JSON serializable for LLM API."""
-        tool = actuator_to_tool(simple_actuator)
-        json_str = json.dumps(tool["parameters"])
-        assert json_str is not None
-        # Should be able to parse it back
-        parsed = json.loads(json_str)
-        assert parsed == tool["parameters"]
-
-
-# --- Tests for create_movement_tool ---
-
-
-class TestCreateMovementTool:
-    """Tests for create_movement_tool function."""
-
-    def test_creates_tool_with_positions(
+    def test_create_movement_tool_returns_dict(
         self,
         mock_controller: SimulatedController,
     ) -> None:
-        """Should create a tool with predefined positions."""
+        """create_movement_tool (deprecated) should return a tool dict."""
         positions = {
             "home": {"shoulder": 90.0, "elbow": 60.0},
-            "extended": {"shoulder": 180.0, "elbow": 0.0},
         }
-        tool = create_movement_tool("arm_positions", mock_controller, positions)
+        with pytest.warns(DeprecationWarning):
+            tool = create_movement_tool("arm_positions", mock_controller, positions)
         assert isinstance(tool, dict)
         assert tool["name"] == "arm_positions"
 
-    def test_tool_has_position_parameter(
+    def test_create_safety_tools_returns_list_of_dicts(
         self,
         mock_controller: SimulatedController,
     ) -> None:
-        """Tool parameters should include position selection."""
-        positions = {
-            "home": {"shoulder": 90.0, "elbow": 60.0},
-        }
-        tool = create_movement_tool("arm_positions", mock_controller, positions)
-        params = tool["parameters"]
-        assert "properties" in params
-
-
-# --- Tests for create_status_tool ---
-
-
-class TestCreateStatusTool:
-    """Tests for create_status_tool function."""
-
-    def test_creates_status_tool(
-        self,
-        mock_controller: SimulatedController,
-    ) -> None:
-        """Should create a status query tool."""
-        tool = create_status_tool(mock_controller)
-        assert isinstance(tool, dict)
-        assert "status" in tool["name"]
-
-    def test_status_tool_has_handler(
-        self,
-        mock_controller: SimulatedController,
-    ) -> None:
-        """Status tool should have a callable handler."""
-        tool = create_status_tool(mock_controller)
-        assert callable(tool["handler"])
-
-
-# --- Tests for create_safety_tools ---
-
-
-class TestCreateSafetyTools:
-    """Tests for create_safety_tools function."""
-
-    def test_returns_list_of_tools(
-        self,
-        mock_controller: SimulatedController,
-    ) -> None:
-        """Should return a list of safety-related tools."""
-        tools = create_safety_tools(mock_controller)
+        """create_safety_tools (deprecated) should return a list of tool dicts."""
+        with pytest.warns(DeprecationWarning):
+            tools = create_safety_tools(mock_controller)
         assert isinstance(tools, list)
         assert len(tools) >= 1
-
-    def test_includes_emergency_stop(
-        self,
-        mock_controller: SimulatedController,
-    ) -> None:
-        """Should include an emergency stop tool."""
-        tools = create_safety_tools(mock_controller)
-        tool_names = [tool["name"] for tool in tools]
-        # At least one tool should be related to stopping
-        has_stop_tool = any("stop" in name.lower() or "emergency" in name.lower() for name in tool_names)
-        assert has_stop_tool, f"No stop tool found in: {tool_names}"
+        for tool in tools:
+            assert isinstance(tool, dict)
+            assert "name" in tool
 
 
-# --- Tests for Tool Handlers ---
+# --- Tests for Tool Handler Execution ---
 
 
 class TestToolHandlers:
-    """Tests for tool handler execution."""
+    """Tests for tool function execution."""
 
-    def test_move_tool_handler_calls_controller(
+    def test_move_tool_calls_controller(
         self,
         homed_controller: SimulatedController,
     ) -> None:
-        """Move tool handler should call the controller's move_to method."""
+        """Move tool should call the controller's move_to method."""
         tools = controller_to_tools(homed_controller)
-        move_tool = next(t for t in tools if t["name"] == "test_arm_move")
-        handler = move_tool["handler"]
+        move_tool = next(t for t in tools if t.__name__ == "test_arm_move")
 
-        # Call the handler with valid positions
-        handler({"shoulder": 45.0})
+        # Call the tool with valid positions
+        move_tool(targets={"shoulder": 45.0})
 
         # Verify the actuator was moved
         assert homed_controller.get_actuator("shoulder").get() == 45.0
 
-    def test_move_tool_handler_with_valid_positions(
+    def test_move_tool_with_multiple_positions(
         self,
         homed_controller: SimulatedController,
     ) -> None:
-        """Move tool handler should accept multiple actuator positions."""
+        """Move tool should accept multiple actuator positions."""
         tools = controller_to_tools(homed_controller)
-        move_tool = next(t for t in tools if t["name"] == "test_arm_move")
-        handler = move_tool["handler"]
+        move_tool = next(t for t in tools if t.__name__ == "test_arm_move")
 
         # Move multiple actuators
-        handler({"shoulder": 120.0, "elbow": 30.0})
+        move_tool(targets={"shoulder": 120.0, "elbow": 30.0})
 
         # Verify both actuators moved
         assert homed_controller.get_actuator("shoulder").get() == 120.0
         assert homed_controller.get_actuator("elbow").get() == 30.0
 
-    def test_move_tool_handler_with_invalid_joint_raises(
+    def test_move_tool_with_invalid_joint_raises(
         self,
         homed_controller: SimulatedController,
     ) -> None:
-        """Move tool handler should raise error for unknown actuator names."""
+        """Move tool should raise error for unknown actuator names."""
         tools = controller_to_tools(homed_controller)
-        move_tool = next(t for t in tools if t["name"] == "test_arm_move")
-        handler = move_tool["handler"]
+        move_tool = next(t for t in tools if t.__name__ == "test_arm_move")
 
         # Try to move a non-existent actuator
         with pytest.raises((KeyError, ValueError)):
-            handler({"nonexistent_joint": 45.0})
+            move_tool(targets={"nonexistent_joint": 45.0})
 
-    def test_home_tool_handler_calls_home(
+    def test_home_tool_calls_home(
         self,
         enabled_controller: SimulatedController,
     ) -> None:
-        """Home tool handler should call the controller's home method."""
+        """Home tool should call the controller's home method."""
         tools = controller_to_tools(enabled_controller)
-        home_tool = next(t for t in tools if t["name"] == "test_arm_home")
-        handler = home_tool["handler"]
+        home_tool = next(t for t in tools if t.__name__ == "test_arm_home")
 
         # Call home
-        handler()
+        home_tool()
 
         # Verify controller is homed
         assert enabled_controller.status().is_homed
 
-    def test_stop_tool_handler_calls_stop(
+    def test_stop_tool_calls_stop(
         self,
         homed_controller: SimulatedController,
     ) -> None:
-        """Stop tool handler should call the controller's stop method."""
+        """Stop tool should call the controller's stop method."""
         tools = controller_to_tools(homed_controller)
-        stop_tool = next(t for t in tools if t["name"] == "test_arm_stop")
-        handler = stop_tool["handler"]
+        stop_tool = next(t for t in tools if t.__name__ == "test_arm_stop")
 
         # Call stop
-        handler()
+        stop_tool()
 
         # Controller should be in stopped state
         from robo_infra.core.controller import ControllerState
 
         assert homed_controller.status().state == ControllerState.STOPPED
 
-    def test_status_tool_handler_returns_dict(
+    def test_status_tool_returns_dict(
         self,
         mock_controller: SimulatedController,
     ) -> None:
-        """Status tool handler should return a dictionary with state info."""
+        """Status tool should return a dictionary with state info."""
         tools = controller_to_tools(mock_controller)
-        status_tool = next(t for t in tools if t["name"] == "test_arm_status")
-        handler = status_tool["handler"]
+        status_tool = next(t for t in tools if t.__name__ == "test_arm_status")
 
-        result = handler()
+        result = status_tool()
 
         assert isinstance(result, dict)
         assert "state" in result
         assert "is_enabled" in result
         assert "is_homed" in result
 
-    def test_actuator_tool_handler_sets_value(
+    def test_actuator_set_tool_sets_value(
         self,
         simple_actuator: SimulatedActuator,
     ) -> None:
-        """Actuator tool handler should set the actuator value."""
+        """Actuator set tool should set the actuator value."""
         simple_actuator.enable()
-        tool = actuator_to_tool(simple_actuator)
-        handler = tool["handler"]
+        tools = actuator_to_tools(simple_actuator)
+        set_tool = next(t for t in tools if t.__name__ == "test_servo_set")
 
-        # Set a value via the handler
-        handler(value=45.0)
+        # Set a value via the tool
+        set_tool(value=45.0)
 
         # Verify the value was set
         assert simple_actuator.get() == 45.0
 
-    def test_sensor_tool_handler_reads_value(
+    def test_sensor_tool_reads_values(
         self,
         mock_controller: SimulatedController,
     ) -> None:
-        """Sensors tool handler should return sensor readings."""
+        """Sensors tool should return sensor readings."""
         mock_controller.enable()
         tools = controller_to_tools(mock_controller)
-        sensors_tool = next(t for t in tools if t["name"] == "test_arm_sensors")
-        handler = sensors_tool["handler"]
+        sensors_tool = next(t for t in tools if t.__name__ == "test_arm_sensors")
 
-        result = handler()
+        result = sensors_tool()
 
         # Should return sensor readings
         assert isinstance(result, dict)
 
-    def test_enable_tool_handler_enables_controller(
+    def test_enable_tool_enables_controller(
         self,
         mock_controller: SimulatedController,
     ) -> None:
-        """Enable tool handler should enable the controller."""
+        """Enable tool should enable the controller."""
         tools = controller_to_tools(mock_controller)
-        enable_tool = next(t for t in tools if t["name"] == "test_arm_enable")
-        handler = enable_tool["handler"]
+        enable_tool = next(t for t in tools if t.__name__ == "test_arm_enable")
 
         # Initially not enabled
         assert not mock_controller.status().is_enabled
 
-        handler()
+        enable_tool()
 
         # Now enabled
         assert mock_controller.status().is_enabled
 
-    def test_disable_tool_handler_disables_controller(
+    def test_disable_tool_disables_controller(
         self,
         enabled_controller: SimulatedController,
     ) -> None:
-        """Disable tool handler should disable the controller."""
+        """Disable tool should disable the controller."""
         tools = controller_to_tools(enabled_controller)
-        disable_tool = next(t for t in tools if t["name"] == "test_arm_disable")
-        handler = disable_tool["handler"]
+        disable_tool = next(t for t in tools if t.__name__ == "test_arm_disable")
 
         # Initially enabled
         assert enabled_controller.status().is_enabled
 
-        handler()
+        disable_tool()
 
         # Now disabled
         assert not enabled_controller.status().is_enabled
@@ -616,14 +674,9 @@ class TestEdgeCases:
 
         # Should still have tools (home, stop, status, sensors, enable, disable)
         assert len(tools) >= 5
-        tool_names = [t["name"] for t in tools]
+        tool_names = [t.__name__ for t in tools]
         assert "empty_arm_status" in tool_names
         assert "empty_arm_sensors" in tool_names
-        # Move tool parameters should be empty
-        move_tool = next((t for t in tools if t["name"] == "empty_arm_move"), None)
-        if move_tool:
-            props = move_tool["parameters"].get("properties", {})
-            assert len(props) == 0
 
     def test_controller_with_no_sensors(self) -> None:
         """Controller with no sensors should not have sensors tool."""
@@ -639,7 +692,7 @@ class TestEdgeCases:
 
         tools = controller_to_tools(controller)
 
-        tool_names = [t["name"] for t in tools]
+        tool_names = [t.__name__ for t in tools]
         # Should have move, home, stop, status, enable, disable
         assert "no_sensors_move" in tool_names
         assert "no_sensors_status" in tool_names
@@ -648,7 +701,7 @@ class TestEdgeCases:
 
     def test_tool_generation_with_special_characters_in_name(self) -> None:
         """Controller names with special chars should be handled."""
-        # Create controller with spaces and special chars
+        # Create controller with dashes and underscores
         controller = SimulatedController(name="robot-arm_v2")
         controller.add_actuator(
             "joint-1",
@@ -663,95 +716,8 @@ class TestEdgeCases:
         # Should still generate tools
         assert len(tools) > 0
         # Tool names should incorporate the controller name
-        tool_names = [t["name"] for t in tools]
+        tool_names = [t.__name__ for t in tools]
         assert any("robot-arm_v2" in name for name in tool_names)
-
-    def test_tools_are_serializable_to_json(
-        self,
-        mock_controller: SimulatedController,
-    ) -> None:
-        """All tool definitions (except handler) should be JSON serializable."""
-        tools = controller_to_tools(mock_controller)
-
-        for tool in tools:
-            # Extract serializable parts (not handler which is a lambda)
-            serializable = {
-                "name": tool["name"],
-                "description": tool["description"],
-                "parameters": tool["parameters"],
-            }
-            # Should not raise
-            json_str = json.dumps(serializable)
-            assert json_str is not None
-            # Should round-trip
-            parsed = json.loads(json_str)
-            assert parsed["name"] == tool["name"]
-
-    def test_actuator_tools_are_serializable_to_json(
-        self,
-        simple_actuator: SimulatedActuator,
-    ) -> None:
-        """Actuator tool definitions (except handler) should be JSON serializable."""
-        tool = actuator_to_tool(simple_actuator)
-
-        serializable = {
-            "name": tool["name"],
-            "description": tool["description"],
-            "parameters": tool["parameters"],
-        }
-        json_str = json.dumps(serializable)
-        assert json_str is not None
-
-    def test_movement_tool_positions_serializable(
-        self,
-        mock_controller: SimulatedController,
-    ) -> None:
-        """Movement tool with positions should be JSON serializable."""
-        positions = {
-            "home": {"shoulder": 90.0, "elbow": 60.0},
-            "extended": {"shoulder": 180.0, "elbow": 0.0},
-            "folded": {"shoulder": 0.0, "elbow": 120.0},
-        }
-        tool = create_movement_tool("arm_poses", mock_controller, positions)
-
-        serializable = {
-            "name": tool["name"],
-            "description": tool["description"],
-            "parameters": tool["parameters"],
-        }
-        json_str = json.dumps(serializable)
-        assert json_str is not None
-
-    def test_safety_tools_serializable(
-        self,
-        mock_controller: SimulatedController,
-    ) -> None:
-        """Safety tools should be JSON serializable."""
-        tools = create_safety_tools(mock_controller)
-
-        for tool in tools:
-            serializable = {
-                "name": tool["name"],
-                "description": tool["description"],
-                "parameters": tool["parameters"],
-            }
-            json_str = json.dumps(serializable)
-            assert json_str is not None
-
-    def test_status_tool_serializable(
-        self,
-        mock_controller: SimulatedController,
-    ) -> None:
-        """Status tool should be JSON serializable."""
-        tool = create_status_tool(mock_controller)
-
-        serializable = {
-            "name": tool["name"],
-            "description": tool["description"],
-            "parameters": tool["parameters"],
-        }
-        json_str = json.dumps(serializable)
-        assert json_str is not None
 
     def test_empty_controller_generates_tools(self) -> None:
         """Completely empty controller should still generate basic tools."""
@@ -759,11 +725,193 @@ class TestEdgeCases:
 
         tools = controller_to_tools(controller)
 
-        # Should have at least: home, stop, status, enable, disable
+        # Should have at least: move (even if empty), home, stop, status, enable, disable
         assert len(tools) >= 5
-        tool_names = [t["name"] for t in tools]
+        tool_names = [t.__name__ for t in tools]
         assert "empty_home" in tool_names
         assert "empty_stop" in tool_names
         assert "empty_status" in tool_names
         assert "empty_enable" in tool_names
         assert "empty_disable" in tool_names
+
+    def test_tools_have_proper_signatures(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """Tools should have proper function signatures for ai-infra."""
+        tools = controller_to_tools(mock_controller)
+
+        for tool in tools:
+            sig = inspect.signature(tool)
+            # All parameters should have names (no positional-only)
+            for param_name, param in sig.parameters.items():
+                assert param_name != ""
+                # Check annotations exist where expected
+                if param_name == "targets":
+                    assert param.annotation != inspect.Parameter.empty
+
+
+# --- ai-infra Compatibility Tests ---
+
+
+class TestAIInfraCompatibility:
+    """Tests verifying tools work with ai-infra Agent format."""
+
+    def test_tools_are_callable(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """All tools should be callable (required by ai-infra Agent)."""
+        tools = controller_to_tools(mock_controller)
+        for tool in tools:
+            assert callable(tool)
+
+    def test_tools_have_name_attribute(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """All tools should have __name__ (used for tool name in ai-infra)."""
+        tools = controller_to_tools(mock_controller)
+        for tool in tools:
+            assert hasattr(tool, "__name__")
+            assert isinstance(tool.__name__, str)
+            assert len(tool.__name__) > 0
+
+    def test_tools_have_doc_attribute(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """All tools should have __doc__ (used for tool description in ai-infra)."""
+        tools = controller_to_tools(mock_controller)
+        for tool in tools:
+            assert hasattr(tool, "__doc__")
+            assert tool.__doc__ is not None
+            assert len(tool.__doc__) > 0
+
+    def test_can_get_function_signature(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """ai-infra uses inspect.signature to generate schemas."""
+        tools = controller_to_tools(mock_controller)
+        for tool in tools:
+            # Should not raise
+            sig = inspect.signature(tool)
+            assert sig is not None
+
+    def test_tool_returns_string_or_dict(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """Tools should return string or dict (serializable for LLM)."""
+        mock_controller.enable()
+        mock_controller.home()
+        tools = controller_to_tools(mock_controller)
+
+        for tool in tools:
+            # Get required params
+            sig = inspect.signature(tool)
+            kwargs = {}
+            for param_name, param in sig.parameters.items():
+                if param.default == inspect.Parameter.empty:
+                    # Required param - provide a value
+                    if param_name == "targets":
+                        kwargs["targets"] = {"shoulder": 90.0}
+
+            result = tool(**kwargs)
+            assert isinstance(result, (str, dict))
+
+
+# --- Tests for ai-infra generic utility re-exports ---
+
+
+class TestAiInfraReExports:
+    """Tests verifying ai-infra generic utilities are properly re-exported."""
+
+    def test_tools_from_object_is_exported(self) -> None:
+        """tools_from_object should be re-exported from robo-infra."""
+        from robo_infra.integrations.ai_infra import tools_from_object
+
+        assert callable(tools_from_object)
+
+    def test_tool_exclude_is_exported(self) -> None:
+        """tool_exclude should be re-exported from robo-infra."""
+        from robo_infra.integrations.ai_infra import tool_exclude
+
+        assert callable(tool_exclude)
+
+
+class TestToolsFromObjectUsage:
+    """Tests for using tools_from_object generic utility."""
+
+    def test_tools_from_object_creates_tools(self) -> None:
+        """tools_from_object should create tools from object methods."""
+        from robo_infra.integrations.ai_infra import tools_from_object
+
+        class Calculator:
+            def add(self, a: float, b: float) -> float:
+                """Add two numbers."""
+                return a + b
+
+            def multiply(self, a: float, b: float) -> float:
+                """Multiply two numbers."""
+                return a * b
+
+        tools = tools_from_object(Calculator(), prefix="calc")
+
+        # Should have 2 tools
+        assert len(tools) == 2
+
+        # Tools should be callable
+        for tool in tools:
+            assert callable(tool)
+            assert hasattr(tool, "__name__")
+            assert hasattr(tool, "__doc__")
+
+    def test_tools_from_object_with_method_filter(self) -> None:
+        """tools_from_object should filter to specific methods."""
+        from robo_infra.integrations.ai_infra import tools_from_object
+
+        class MathService:
+            def add(self, a: float, b: float) -> float:
+                return a + b
+
+            def subtract(self, a: float, b: float) -> float:
+                return a - b
+
+            def multiply(self, a: float, b: float) -> float:
+                return a * b
+
+        tools = tools_from_object(
+            MathService(),
+            methods=["add", "subtract"],
+            prefix="math",
+        )
+
+        # Should only have 2 tools (add and subtract)
+        assert len(tools) == 2
+        tool_names = [t.__name__ for t in tools]
+        assert "math_add" in tool_names
+        assert "math_subtract" in tool_names
+        assert "math_multiply" not in tool_names
+
+    def test_tool_exclude_decorator(self) -> None:
+        """tool_exclude should exclude methods from tool generation."""
+        from robo_infra.integrations.ai_infra import tool_exclude, tools_from_object
+
+        class Service:
+            def public_action(self) -> str:
+                return "public"
+
+            @tool_exclude
+            def internal_helper(self) -> str:
+                return "internal"
+
+        tools = tools_from_object(Service(), prefix="svc")
+        tool_names = [t.__name__ for t in tools]
+
+        # public_action should be included
+        assert any("public_action" in name for name in tool_names)
+        # internal_helper should be excluded
+        assert not any("internal_helper" in name for name in tool_names)
+

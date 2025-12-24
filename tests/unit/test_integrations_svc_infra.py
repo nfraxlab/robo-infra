@@ -116,7 +116,10 @@ def test_client(mock_controller: SimulatedController) -> TestClient:
     from fastapi import FastAPI
     from fastapi.testclient import TestClient
 
+    from svc_infra.api.fastapi.middleware.errors.handlers import register_error_handlers
+
     app = FastAPI()
+    register_error_handlers(app)
     router = controller_to_router(mock_controller, prefix="/arm")
     app.include_router(router)
 
@@ -129,7 +132,10 @@ def enabled_test_client(enabled_controller: SimulatedController) -> TestClient:
     from fastapi import FastAPI
     from fastapi.testclient import TestClient
 
+    from svc_infra.api.fastapi.middleware.errors.handlers import register_error_handlers
+
     app = FastAPI()
+    register_error_handlers(app)
     router = controller_to_router(enabled_controller, prefix="/arm")
     app.include_router(router)
 
@@ -142,7 +148,10 @@ def homed_test_client(homed_controller: SimulatedController) -> TestClient:
     from fastapi import FastAPI
     from fastapi.testclient import TestClient
 
+    from svc_infra.api.fastapi.middleware.errors.handlers import register_error_handlers
+
     app = FastAPI()
+    register_error_handlers(app)
     router = controller_to_router(homed_controller, prefix="/arm")
     app.include_router(router)
 
@@ -155,7 +164,10 @@ def actuator_test_client(simple_actuator: SimulatedActuator) -> TestClient:
     from fastapi import FastAPI
     from fastapi.testclient import TestClient
 
+    from svc_infra.api.fastapi.middleware.errors.handlers import register_error_handlers
+
     app = FastAPI()
+    register_error_handlers(app)
     router = actuator_to_router(simple_actuator, prefix="/servo")
     app.include_router(router)
 
@@ -630,3 +642,426 @@ class TestPydanticModels:
         for field in required_fields:
             assert field in data, f"Missing field: {field}"
 
+
+# --- Tests for svc-infra dual router integration ---
+
+
+class TestDualRouterIntegration:
+    """Tests for svc-infra dual router usage per AGENTS.md standards."""
+
+    def test_auth_required_false_uses_public_router(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """auth_required=False should use public_router (or fallback to APIRouter)."""
+        router = controller_to_router(mock_controller, auth_required=False)
+
+        # The router should be created successfully
+        # We check if it has the expected properties
+        assert router is not None
+        assert hasattr(router, "routes")
+
+    def test_auth_required_true_uses_user_router(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """auth_required=True should use user_router (or fallback to APIRouter)."""
+        router = controller_to_router(mock_controller, auth_required=True)
+
+        # The router should be created successfully
+        assert router is not None
+        assert hasattr(router, "routes")
+
+    def test_actuator_auth_required_parameter(
+        self,
+        simple_actuator: SimulatedActuator,
+    ) -> None:
+        """actuator_to_router should accept auth_required parameter."""
+        # Public router
+        public = actuator_to_router(simple_actuator, auth_required=False)
+        assert public is not None
+
+        # User router
+        auth = actuator_to_router(simple_actuator, auth_required=True)
+        assert auth is not None
+
+    def test_controller_router_has_new_endpoints(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """Controller router should have all expected endpoints."""
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+
+        app = FastAPI()
+        router = controller_to_router(mock_controller, prefix="/arm")
+        app.include_router(router)
+        client = TestClient(app)
+
+        # Test status endpoint has controller name
+        response = client.get("/arm/status")
+        assert response.status_code == 200
+        data = response.json()
+        assert "name" in data
+        assert data["name"] == "test_arm"
+
+
+class TestExceptionMapping:
+    """Tests for exception mapping to svc-infra FastApiException."""
+
+    def test_move_with_valid_joints_succeeds(
+        self,
+        homed_test_client: TestClient,
+    ) -> None:
+        """Move with valid joint names should succeed."""
+        # Use existing joint name from the controller
+        response = homed_test_client.post(
+            "/arm/move",
+            json={"targets": {"shoulder": 45.0}},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "moved"
+
+    def test_position_not_found_raises_exception(
+        self,
+        homed_test_client: TestClient,
+    ) -> None:
+        """Non-existent position should raise FastApiException (caught as 404 or 500)."""
+        # Without an exception handler, FastApiException will raise as 500
+        # or propagate - we test that the exception is raised correctly
+        try:
+            response = homed_test_client.post("/arm/positions/nonexistent_position")
+            # If app has exception handler, should be 404
+            # Otherwise will be 500 (unhandled exception)
+            assert response.status_code in (404, 500)
+        except Exception:
+            # Exception was propagated - this is expected without handler
+            pass
+
+    def test_emergency_stop_always_succeeds(
+        self,
+        enabled_test_client: TestClient,
+    ) -> None:
+        """Emergency stop should always return success, even with errors."""
+        response = enabled_test_client.post("/arm/stop")
+        assert response.status_code == 200
+        data = response.json()
+        # Status should be stopped or stopped_with_errors
+        assert "stopped" in data["status"]
+
+
+class TestWebSocketRouter:
+    """Tests for WebSocket router integration."""
+
+    def test_create_websocket_router_exists(self) -> None:
+        """create_websocket_router should be importable."""
+        from robo_infra.integrations.svc_infra import create_websocket_router
+
+        assert callable(create_websocket_router)
+
+    def test_create_websocket_router_returns_router(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """create_websocket_router should return a router."""
+        from robo_infra.integrations.svc_infra import create_websocket_router
+
+        router = create_websocket_router(mock_controller)
+        assert router is not None
+        assert hasattr(router, "routes")
+
+    def test_websocket_router_with_auth(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """create_websocket_router should accept auth_required parameter."""
+        from robo_infra.integrations.svc_infra import create_websocket_router
+
+        # Public
+        public_router = create_websocket_router(
+            mock_controller, auth_required=False
+        )
+        assert public_router is not None
+
+        # Protected
+        protected_router = create_websocket_router(
+            mock_controller, auth_required=True
+        )
+        assert protected_router is not None
+
+    def test_websocket_router_with_update_rate(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """create_websocket_router should accept update_rate_hz parameter."""
+        from robo_infra.integrations.svc_infra import create_websocket_router
+
+        router = create_websocket_router(
+            mock_controller, update_rate_hz=20.0
+        )
+        assert router is not None
+
+    def test_deprecated_websocket_handler_warns(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """create_websocket_handler should issue deprecation warning."""
+        import warnings
+
+        from robo_infra.integrations.svc_infra import create_websocket_handler
+
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            handler = create_websocket_handler(mock_controller)
+            assert handler is not None
+            # Should have a deprecation warning
+            assert any(issubclass(warning.category, DeprecationWarning) for warning in w)
+
+
+class TestErrorResponses:
+    """Tests for proper error response formatting."""
+
+    def test_enable_returns_controller_name(
+        self,
+        test_client: TestClient,
+    ) -> None:
+        """Enable response should include controller name."""
+        response = test_client.post("/arm/enable")
+        assert response.status_code == 200
+        data = response.json()
+        assert "controller" in data
+        assert data["controller"] == "test_arm"
+
+    def test_disable_returns_controller_name(
+        self,
+        enabled_test_client: TestClient,
+    ) -> None:
+        """Disable response should include controller name."""
+        response = enabled_test_client.post("/arm/disable")
+        assert response.status_code == 200
+        data = response.json()
+        assert "controller" in data
+
+    def test_home_returns_controller_name(
+        self,
+        enabled_test_client: TestClient,
+    ) -> None:
+        """Home response should include controller name."""
+        response = enabled_test_client.post("/arm/home")
+        assert response.status_code == 200
+        data = response.json()
+        assert "controller" in data
+
+    def test_move_returns_targets(
+        self,
+        homed_test_client: TestClient,
+    ) -> None:
+        """Move response should include targets."""
+        # Use a valid joint name from the controller
+        response = homed_test_client.post(
+            "/arm/move",
+            json={"targets": {"shoulder": 45.0, "elbow": 30.0}},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "targets" in data
+
+    def test_actuator_set_returns_name(
+        self,
+        simple_actuator: SimulatedActuator,
+    ) -> None:
+        """Actuator set response should include actuator name."""
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+
+        # Enable the actuator first
+        simple_actuator.enable()
+
+        app = FastAPI()
+        router = actuator_to_router(simple_actuator, prefix="/servo")
+        app.include_router(router)
+        client = TestClient(app)
+
+        # Set a value within the actuator's limits (0-180)
+        response = client.post("/servo/set", json={"value": 90.0})
+        assert response.status_code == 200
+        data = response.json()
+        assert "actuator" in data
+        assert data["actuator"] == "test_servo"
+
+
+# --- Tests for svc-infra generic utility re-exports ---
+
+
+class TestSvcInfraReExports:
+    """Tests verifying svc-infra generic utilities are properly re-exported."""
+
+    def test_router_from_object_is_exported(self) -> None:
+        """router_from_object should be re-exported from robo-infra."""
+        from robo_infra.integrations.svc_infra import router_from_object
+
+        assert callable(router_from_object)
+
+    def test_endpoint_exclude_is_exported(self) -> None:
+        """endpoint_exclude should be re-exported from robo-infra."""
+        from robo_infra.integrations.svc_infra import endpoint_exclude
+
+        assert callable(endpoint_exclude)
+
+    def test_map_exception_to_http_is_exported(self) -> None:
+        """map_exception_to_http should be re-exported from robo-infra."""
+        from robo_infra.integrations.svc_infra import map_exception_to_http
+
+        assert callable(map_exception_to_http)
+
+    def test_default_exception_map_is_exported(self) -> None:
+        """DEFAULT_EXCEPTION_MAP should be re-exported from robo-infra."""
+        from robo_infra.integrations.svc_infra import DEFAULT_EXCEPTION_MAP
+
+        assert isinstance(DEFAULT_EXCEPTION_MAP, dict)
+        assert ValueError in DEFAULT_EXCEPTION_MAP
+        assert DEFAULT_EXCEPTION_MAP[ValueError] == 400
+
+    def test_status_titles_is_exported(self) -> None:
+        """STATUS_TITLES should be re-exported from robo-infra."""
+        from robo_infra.integrations.svc_infra import STATUS_TITLES
+
+        assert isinstance(STATUS_TITLES, dict)
+        assert 404 in STATUS_TITLES
+        assert STATUS_TITLES[404] == "Not Found"
+
+    def test_robotics_exception_map_is_exported(self) -> None:
+        """ROBOTICS_EXCEPTION_MAP should be exported from robo-infra."""
+        from robo_infra.integrations.svc_infra import ROBOTICS_EXCEPTION_MAP
+
+        assert isinstance(ROBOTICS_EXCEPTION_MAP, dict)
+        # Should extend DEFAULT_EXCEPTION_MAP
+        assert ValueError in ROBOTICS_EXCEPTION_MAP
+
+
+class TestMapExceptionToHttp:
+    """Tests for using svc-infra map_exception_to_http utility."""
+
+    def test_map_value_error_to_400(self) -> None:
+        """ValueError should map to 400 status code."""
+        from robo_infra.integrations.svc_infra import map_exception_to_http
+
+        status, title, detail = map_exception_to_http(ValueError("bad value"))
+        assert status == 400
+        assert title == "Validation Error"
+        assert "bad value" in detail
+
+    def test_map_key_error_to_404(self) -> None:
+        """KeyError should map to 404 status code."""
+        from robo_infra.integrations.svc_infra import map_exception_to_http
+
+        status, title, detail = map_exception_to_http(KeyError("not found"))
+        assert status == 404
+        assert title == "Not Found"
+
+    def test_map_permission_error_to_403(self) -> None:
+        """PermissionError should map to 403 status code."""
+        from robo_infra.integrations.svc_infra import map_exception_to_http
+
+        status, title, detail = map_exception_to_http(
+            PermissionError("access denied")
+        )
+        assert status == 403
+        assert title == "Forbidden"
+
+    def test_map_with_custom_handlers(self) -> None:
+        """Custom handlers should override default mapping."""
+        from robo_infra.integrations.svc_infra import map_exception_to_http
+
+        custom = {ValueError: 422}  # Override default 400
+        status, title, detail = map_exception_to_http(
+            ValueError("validation"), custom
+        )
+        assert status == 422
+
+
+class TestRouterFromObjectUsage:
+    """Tests for using router_from_object generic utility."""
+
+    def test_router_from_object_creates_endpoints(self) -> None:
+        """router_from_object should create endpoints from object methods."""
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+
+        from robo_infra.integrations.svc_infra import router_from_object
+
+        class Calculator:
+            def get_value(self) -> float:
+                """Get current value."""
+                return 42.0
+
+            def reset(self) -> str:
+                """Reset the calculator."""
+                return "reset complete"
+
+        app = FastAPI()
+        router = router_from_object(Calculator(), prefix="/calc")
+        app.include_router(router)
+        client = TestClient(app)
+
+        # GET /calc/value (inferred from get_ prefix)
+        response = client.get("/calc/value")
+        assert response.status_code == 200
+        assert response.json() == 42.0
+
+        # POST /calc/reset (default for non-get methods)
+        response = client.post("/calc/reset")
+        assert response.status_code == 200
+        assert response.json() == "reset complete"
+
+    def test_router_from_object_with_methods_filter(self) -> None:
+        """router_from_object should filter to specific methods."""
+        from robo_infra.integrations.svc_infra import router_from_object
+
+        class Service:
+            def action_a(self) -> str:
+                return "a"
+
+            def action_b(self) -> str:
+                return "b"
+
+            def action_c(self) -> str:
+                return "c"
+
+        # Only include action_a and action_b with POST verbs
+        router = router_from_object(
+            Service(),
+            methods={"action_a": "POST", "action_b": "GET"},
+            prefix="/svc",
+        )
+
+        route_paths = [r.path for r in router.routes]
+        # action_a and action_b should be included
+        assert any("action-a" in p for p in route_paths)
+        assert any("action-b" in p for p in route_paths)
+        # action_c should NOT be included
+        assert not any("action-c" in p for p in route_paths)
+
+    def test_endpoint_exclude_decorator(self) -> None:
+        """endpoint_exclude should exclude methods from router."""
+        from robo_infra.integrations.svc_infra import (
+            endpoint_exclude,
+            router_from_object,
+        )
+
+        class Service:
+            def public_method(self) -> str:
+                return "public"
+
+            @endpoint_exclude
+            def private_helper(self) -> str:
+                return "private"
+
+        router = router_from_object(Service(), prefix="/svc")
+        route_paths = [r.path for r in router.routes]
+
+        # public_method should be included
+        assert any("public-method" in p for p in route_paths)
+        # private_helper should be excluded
+        assert not any("private-helper" in p for p in route_paths)

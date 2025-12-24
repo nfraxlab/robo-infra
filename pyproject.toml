@@ -31,8 +31,10 @@ packages = [{ include = "robo_infra", from = "src" }]
 python = ">=3.11,<4.0"
 pydantic = ">=2.0"
 typing-extensions = ">=4.0"
-ai-infra = ">=0.1.0"
-svc-infra = ">=0.1.0"
+# ai-infra >= 0.1.164 provides tools_from_object()
+# svc-infra >= 0.1.714 provides router_from_object()
+svc-infra = "^0.1.715"
+ai-infra = "^0.1.165"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.0"
@@ -55,13 +57,6 @@ optional = true
 smbus2 = ">=0.4"
 spidev = ">=3.6"
 pyserial = ">=3.5"
-
-[tool.poetry.group.integrations]
-optional = true
-
-[tool.poetry.group.integrations.dependencies]
-# Integration dependencies are included in main dependencies
-# This group exists for documentation/organization purposes
 
 [tool.poetry.scripts]
 robo-infra = "robo_infra.cli:main"

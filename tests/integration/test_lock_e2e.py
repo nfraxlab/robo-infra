@@ -226,69 +226,67 @@ class TestLockWithAITools:
         assert isinstance(tools, list)
 
     def test_tools_have_required_properties(self, door_lock: Lock) -> None:
-        """Test that generated tools have name, description, parameters."""
+        """Test that generated tools are callable with __name__ and __doc__."""
         tools = controller_to_tools(door_lock)
 
         for tool in tools:
-            assert "name" in tool
-            assert "description" in tool
-            assert "parameters" in tool
-            assert tool["name"].startswith("door_lock")
+            assert callable(tool)
+            assert hasattr(tool, "__name__")
+            assert hasattr(tool, "__doc__")
+            assert tool.__name__.startswith("door_lock")
 
     def test_move_tool_exists(self, door_lock: Lock) -> None:
         """Test that move tool is generated."""
         tools = controller_to_tools(door_lock)
-        tool_names = [t["name"] for t in tools]
+        tool_names = [t.__name__ for t in tools]
 
         assert "door_lock_move" in tool_names
 
     def test_call_move_tool_to_unlock(self, door_lock: Lock) -> None:
-        """Test calling the move tool handler to unlock."""
+        """Test calling the move tool to unlock."""
         tools = controller_to_tools(door_lock)
 
         # Find move tool
-        move_tool = next(t for t in tools if t["name"] == "door_lock_move")
-        handler = move_tool["handler"]
+        move_tool = next(t for t in tools if t.__name__ == "door_lock_move")
 
-        # Call handler to set lock actuator to unlocked position
-        handler({"lock": 90})  # 90 degrees = unlocked
+        # Call tool to set lock actuator to unlocked position
+        move_tool(targets={"lock": 90})  # 90 degrees = unlocked
 
         assert door_lock.position == pytest.approx(90, abs=1)
 
     def test_call_move_tool_to_lock(self, door_lock: Lock) -> None:
-        """Test calling the move tool handler to lock."""
+        """Test calling the move tool to lock."""
         tools = controller_to_tools(door_lock)
 
         # Unlock first
         door_lock.unlock()
 
         # Find move tool
-        move_tool = next(t for t in tools if t["name"] == "door_lock_move")
-        handler = move_tool["handler"]
+        move_tool = next(t for t in tools if t.__name__ == "door_lock_move")
 
-        # Call handler to set lock actuator to locked position
-        handler({"lock": 0})  # 0 degrees = locked
+        # Call tool to set lock actuator to locked position
+        move_tool(targets={"lock": 0})  # 0 degrees = locked
 
         assert door_lock.position == pytest.approx(0, abs=1)
 
     def test_home_tool_exists(self, door_lock: Lock) -> None:
         """Test that home tool is generated."""
         tools = controller_to_tools(door_lock)
-        tool_names = [t["name"] for t in tools]
+        tool_names = [t.__name__ for t in tools]
 
         assert "door_lock_home" in tool_names
 
     def test_call_home_tool_locks(self, door_lock: Lock) -> None:
-        """Test calling the home tool handler locks the door."""
+        """Test calling the home tool locks the door."""
         tools = controller_to_tools(door_lock)
 
         # Unlock first
         door_lock.unlock()
         assert door_lock.is_unlocked
 
-        # Find home tool and call handler
-        home_tool = next(t for t in tools if t["name"] == "door_lock_home")
-        home_tool["handler"]()
+        # Find home tool and call it
+        home_tool = next(t for t in tools if t.__name__ == "door_lock_home")
+        home_tool()
 
         # Home should lock (start_locked=True)
         assert door_lock.is_locked
@@ -296,14 +294,14 @@ class TestLockWithAITools:
     def test_status_tool_exists(self, door_lock: Lock) -> None:
         """Test that status tool is generated."""
         tools = controller_to_tools(door_lock)
-        tool_names = [t["name"] for t in tools]
+        tool_names = [t.__name__ for t in tools]
 
         assert "door_lock_status" in tool_names
 
     def test_stop_tool_exists(self, door_lock: Lock) -> None:
         """Test that stop tool is generated."""
         tools = controller_to_tools(door_lock)
-        tool_names = [t["name"] for t in tools]
+        tool_names = [t.__name__ for t in tools]
 
         assert "door_lock_stop" in tool_names
 
@@ -453,9 +451,9 @@ class TestFullE2EFlow:
         app.include_router(router, prefix="/lock")
         client = TestClient(app)
 
-        # Unlock via AI tool handler
-        move_tool = next(t for t in tools if t["name"] == "door_lock_move")
-        move_tool["handler"]({"lock": 90})  # Unlock position
+        # Unlock via AI tool
+        move_tool = next(t for t in tools if t.__name__ == "door_lock_move")
+        move_tool(targets={"lock": 90})  # Unlock position
 
         # Read via API
         response = client.get("/lock/actuators")
@@ -493,12 +491,12 @@ class TestFullE2EFlow:
         initial_pos = door_lock.position
 
         # "Toggle" by moving to opposite position via move tool
-        move_tool = next(t for t in tools if t["name"] == "door_lock_move")
+        move_tool = next(t for t in tools if t.__name__ == "door_lock_move")
 
         if door_lock.is_locked:
-            move_tool["handler"]({"lock": 90})  # Unlock
+            move_tool(targets={"lock": 90})  # Unlock
         else:
-            move_tool["handler"]({"lock": 0})  # Lock
+            move_tool(targets={"lock": 0})  # Lock
 
         # Position should have changed
         assert door_lock.position != initial_pos

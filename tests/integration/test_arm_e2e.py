@@ -220,33 +220,32 @@ class TestArmWithAITools:
         assert isinstance(tools, list)
 
     def test_tools_have_required_properties(self, robot_arm: JointGroup) -> None:
-        """Test that generated tools have name, description, parameters."""
+        """Test that generated tools are callable with __name__ and __doc__."""
         tools = controller_to_tools(robot_arm)
 
         for tool in tools:
-            assert "name" in tool
-            assert "description" in tool
-            assert "parameters" in tool
-            assert tool["name"].startswith("robot_arm")
+            assert callable(tool)
+            assert hasattr(tool, "__name__")
+            assert hasattr(tool, "__doc__")
+            assert tool.__name__.startswith("robot_arm")
 
     def test_move_tool_exists(self, robot_arm: JointGroup) -> None:
         """Test that move tool is generated."""
         tools = controller_to_tools(robot_arm)
-        tool_names = [t["name"] for t in tools]
+        tool_names = [t.__name__ for t in tools]
 
         assert "robot_arm_move" in tool_names
 
     def test_call_move_tool_handler(self, robot_arm: JointGroup) -> None:
-        """Test calling the move tool handler directly."""
+        """Test calling the move tool directly."""
         tools = controller_to_tools(robot_arm)
 
         # Find move tool
-        move_tool = next(t for t in tools if t["name"] == "robot_arm_move")
-        handler = move_tool["handler"]
+        move_tool = next(t for t in tools if t.__name__ == "robot_arm_move")
 
-        # Call handler with target positions
+        # Call tool with target positions
         target = {"base": 45, "shoulder": 60}
-        handler(target)
+        move_tool(targets=target)
 
         # Verify arm moved
         positions = robot_arm.get_positions()
@@ -256,20 +255,20 @@ class TestArmWithAITools:
     def test_home_tool_exists(self, robot_arm: JointGroup) -> None:
         """Test that home tool is generated."""
         tools = controller_to_tools(robot_arm)
-        tool_names = [t["name"] for t in tools]
+        tool_names = [t.__name__ for t in tools]
 
         assert "robot_arm_home" in tool_names
 
     def test_call_home_tool_handler(self, robot_arm: JointGroup) -> None:
-        """Test calling the home tool handler."""
+        """Test calling the home tool."""
         tools = controller_to_tools(robot_arm)
 
         # Move away from home first
         robot_arm.move_joints({"base": 0, "shoulder": 0})
 
-        # Find home tool and call handler
-        home_tool = next(t for t in tools if t["name"] == "robot_arm_home")
-        home_tool["handler"]()
+        # Find home tool and call it
+        home_tool = next(t for t in tools if t.__name__ == "robot_arm_home")
+        home_tool()
 
         # Verify arm is at home position
         positions = robot_arm.get_positions()
@@ -278,14 +277,14 @@ class TestArmWithAITools:
     def test_status_tool_exists(self, robot_arm: JointGroup) -> None:
         """Test that status tool is generated."""
         tools = controller_to_tools(robot_arm)
-        tool_names = [t["name"] for t in tools]
+        tool_names = [t.__name__ for t in tools]
 
         assert "robot_arm_status" in tool_names
 
     def test_stop_tool_exists(self, robot_arm: JointGroup) -> None:
         """Test that stop (emergency) tool is generated."""
         tools = controller_to_tools(robot_arm)
-        tool_names = [t["name"] for t in tools]
+        tool_names = [t.__name__ for t in tools]
 
         assert "robot_arm_stop" in tool_names
 
@@ -497,9 +496,9 @@ class TestFullE2EFlow:
         app.include_router(router, prefix="/arm")
         client = TestClient(app)
 
-        # Move via AI tool handler
-        move_tool = next(t for t in tools if t["name"] == "robot_arm_move")
-        move_tool["handler"]({"base": 222, "elbow": 111})
+        # Move via AI tool
+        move_tool = next(t for t in tools if t.__name__ == "robot_arm_move")
+        move_tool(targets={"base": 222, "elbow": 111})
 
         # Read via API
         response = client.get("/arm/actuators")
@@ -530,8 +529,8 @@ class TestFullE2EFlow:
             assert response.status_code == 200
 
         # Read via status tool (verify it works)
-        status_tool = next(t for t in tools if t["name"] == "robot_arm_status")
-        _status = status_tool["handler"]()  # Verify tool can be called
+        status_tool = next(t for t in tools if t.__name__ == "robot_arm_status")
+        _status = status_tool()  # Verify tool can be called
 
         # Also verify via direct controller access
         positions = robot_arm.get_positions()
