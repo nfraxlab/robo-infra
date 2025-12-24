@@ -31,6 +31,7 @@ from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field
 
+
 if TYPE_CHECKING:
     from robo_infra.power.drivers import PowerMonitorDriver
 
@@ -766,22 +767,22 @@ def get_battery_monitor(
 # =============================================================================
 
 __all__ = [
+    "LEAD_ACID_VOLTAGE_CURVE",
+    "LIFEPO4_VOLTAGE_CURVE",
+    "LIION_VOLTAGE_CURVE",
+    # Voltage curves
+    "LIPO_VOLTAGE_CURVE",
+    "NIMH_VOLTAGE_CURVE",
     # Enums
     "BatteryChemistry",
-    "BatteryState",
-    # Data classes
-    "BatteryReading",
     # Config
     "BatteryConfig",
     # Classes
     "BatteryMonitor",
+    # Data classes
+    "BatteryReading",
+    "BatteryState",
     "SimulatedBatteryMonitor",
     # Factory
     "get_battery_monitor",
-    # Voltage curves
-    "LIPO_VOLTAGE_CURVE",
-    "LIION_VOLTAGE_CURVE",
-    "LIFEPO4_VOLTAGE_CURVE",
-    "NIMH_VOLTAGE_CURVE",
-    "LEAD_ACID_VOLTAGE_CURVE",
 ]
