@@ -31,7 +31,7 @@ import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Callable
 
 from pydantic import BaseModel, Field
 
@@ -827,11 +827,11 @@ class Controller(ABC):
     # Integration Hooks (for ai-infra and svc-infra)
     # -------------------------------------------------------------------------
 
-    def as_tools(self) -> list[dict[str, Any]]:
+    def as_tools(self) -> list[dict[str, Any] | Callable[..., Any]]:
         """Export controller as AI tools (stub for ai-infra integration).
 
         Returns:
-            List of tool definitions for AI agents.
+            List of tool definitions (dicts) or function tools (Callables) for AI agents.
 
         Note:
             This is a placeholder. Full implementation will be in Phase 7

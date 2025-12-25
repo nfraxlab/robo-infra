@@ -978,7 +978,7 @@ class Hexapod(Controller):
             error=self._error,
         )
 
-    def as_tools(self) -> list[Callable[..., Any]]:
+    def as_tools(self) -> list[dict[str, Any] | Callable[..., Any]]:
         """Generate AI tools for controlling the hexapod.
 
         Returns:
@@ -1515,7 +1515,7 @@ class Quadruped(Controller):
             error=self._error,
         )
 
-    def as_tools(self) -> list[Callable[..., Any]]:
+    def as_tools(self) -> list[dict[str, Any] | Callable[..., Any]]:
         """Generate AI tools for controlling the quadruped.
 
         Returns:

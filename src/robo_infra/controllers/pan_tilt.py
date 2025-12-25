@@ -43,7 +43,7 @@ from __future__ import annotations
 
 import logging
 from enum import Enum
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Callable
 
 from pydantic import BaseModel, Field
 
@@ -665,7 +665,7 @@ class PanTilt(Controller):
     # Tool Generation
     # -------------------------------------------------------------------------
 
-    def as_tools(self) -> list[Any]:
+    def as_tools(self) -> list[dict[str, Any] | Callable[..., Any]]:
         """Generate ai-infra compatible tools for this controller.
 
         Returns:

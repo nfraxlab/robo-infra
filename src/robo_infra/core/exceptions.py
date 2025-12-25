@@ -24,6 +24,11 @@ class HardwareNotFoundError(RoboInfraError):
 class LimitsExceededError(RoboInfraError):
     """Raised when a value exceeds defined limits."""
 
+    value: float | None
+    min_limit: float | None
+    max_limit: float | None
+    name: str | None
+
     def __init__(
         self,
         value_or_message: float | str | None = None,

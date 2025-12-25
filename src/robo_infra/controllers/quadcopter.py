@@ -35,7 +35,7 @@ import math
 import time
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Callable
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -1302,7 +1302,7 @@ class Quadcopter(Controller):
     # Integration Methods (ai-infra/svc-infra)
     # -------------------------------------------------------------------------
 
-    def as_tools(self) -> list:
+    def as_tools(self) -> list[dict[str, Any] | Callable[..., Any]]:
         """Generate ai-infra compatible tools for LLM control.
 
         Returns:

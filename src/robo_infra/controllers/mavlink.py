@@ -38,7 +38,7 @@ import logging
 import time
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any
+from typing import Any, Callable
 
 from pydantic import BaseModel, Field
 
@@ -1066,7 +1066,7 @@ class MAVLinkController(Controller):
     # Integration Methods (ai-infra/svc-infra)
     # -------------------------------------------------------------------------
 
-    def as_tools(self) -> list:
+    def as_tools(self) -> list[dict[str, Any] | Callable[..., Any]]:
         """Generate ai-infra compatible tools for LLM control.
 
         Returns:

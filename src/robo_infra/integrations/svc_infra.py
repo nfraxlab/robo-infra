@@ -216,7 +216,7 @@ def _create_dual_router(
         )
         from fastapi import APIRouter
 
-        return APIRouter(prefix=prefix, tags=default_tags)
+        return APIRouter(prefix=prefix, tags=list(default_tags))
 
 
 def controller_to_router(
@@ -585,7 +585,7 @@ def _create_ws_router(
         )
         from fastapi import APIRouter
 
-        return APIRouter(prefix=prefix, tags=default_tags)
+        return APIRouter(prefix=prefix, tags=list(default_tags))
 
 
 def create_websocket_router(
