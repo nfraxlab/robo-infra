@@ -112,14 +112,6 @@ from robo_infra.controllers.turntable import (
 
 
 __all__ = [
-    # Conveyor Controller
-    "Conveyor",
-    "ConveyorConfig",
-    "ConveyorDirection",
-    "ConveyorState",
-    "ConveyorStatus",
-    "conveyor_status",
-    "create_conveyor",
     # Quadcopter Controller
     "Attitude",
     # MAVLink Controller
@@ -127,6 +119,12 @@ __all__ = [
     # Hexapod/Legged Robot
     "BodyAxis",
     "BodyPose",
+    # Conveyor Controller
+    "Conveyor",
+    "ConveyorConfig",
+    "ConveyorDirection",
+    "ConveyorState",
+    "ConveyorStatus",
     # Differential Drive
     "DifferentialDrive",
     "DifferentialDriveConfig",
@@ -195,6 +193,8 @@ __all__ = [
     "TurntableStatus",
     "Velocity",
     "calculate_foot_trajectory",
+    "conveyor_status",
+    "create_conveyor",
     "create_hexapod",
     "create_leg",
     "create_mavlink_controller",

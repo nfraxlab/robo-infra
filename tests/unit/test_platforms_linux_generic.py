@@ -591,3 +591,680 @@ class TestSBCDetection:
         platform = LinuxGenericPlatform(simulation=True)
         info = platform.get_info()
         assert "Linux" in info.model
+
+
+# =============================================================================
+# libgpiod Mock Tests (Phase 5.7.4.1)
+# =============================================================================
+
+
+class TestLinuxGPIOChipOpen:
+    """Tests for GPIO chip open operations."""
+
+    def test_gpiochip_open_simulation(self) -> None:
+        """Test opening GPIO chip in simulation mode."""
+        platform = LinuxGenericPlatform(simulation=True)
+        chips = platform.list_gpio_chips()
+        assert len(chips) >= 1
+        assert chips[0].chip_id == 0
+
+    def test_gpiochip_open_default_chip(self) -> None:
+        """Test opening default GPIO chip."""
+        platform = LinuxGenericPlatform(simulation=True, default_chip=0)
+        info = platform.get_gpio_chip_info(0)
+        assert info is not None
+        assert info.name == "gpiochip0"
+
+    def test_gpiochip_open_custom_chip(self) -> None:
+        """Test opening custom GPIO chip."""
+        platform = LinuxGenericPlatform(simulation=True, default_chip=1)
+        assert platform.default_chip == 1
+
+    def test_gpiochip_open_nonexistent(self) -> None:
+        """Test opening non-existent GPIO chip returns None."""
+        platform = LinuxGenericPlatform(simulation=True)
+        info = platform.get_gpio_chip_info(99)
+        assert info is None
+
+    def test_gpiochip_info_properties(self) -> None:
+        """Test GPIO chip info properties."""
+        platform = LinuxGenericPlatform(simulation=True)
+        info = platform.get_gpio_chip_info(0)
+        assert info is not None
+        assert info.name == "gpiochip0"
+        assert info.label == "simulated-gpio"
+        assert info.num_lines == 32
+        assert info.chip_id == 0
+
+    def test_gpiochip_path(self) -> None:
+        """Test GPIO chip path."""
+        platform = LinuxGenericPlatform(simulation=True)
+        info = platform.get_gpio_chip_info(0)
+        assert info is not None
+        assert str(info.path) == "/dev/gpiochip0"
+
+    @patch("robo_infra.platforms.linux_generic.GPIOCHIP_PATH")
+    def test_gpiochip_discovery_with_glob(self, mock_path: MagicMock) -> None:
+        """Test GPIO chip discovery with glob."""
+        mock_path.glob.return_value = []
+        platform = LinuxGenericPlatform(simulation=True)
+        # Simulation mode still has simulated chips
+        assert len(platform.gpio_chips) >= 1
+
+
+class TestLinuxGPIOChipList:
+    """Tests for GPIO chip listing operations."""
+
+    def test_list_gpio_chips_returns_list(self) -> None:
+        """Test list_gpio_chips returns a list."""
+        platform = LinuxGenericPlatform(simulation=True)
+        chips = platform.list_gpio_chips()
+        assert isinstance(chips, list)
+
+    def test_list_gpio_chips_simulation(self) -> None:
+        """Test list_gpio_chips in simulation mode."""
+        platform = LinuxGenericPlatform(simulation=True)
+        chips = platform.list_gpio_chips()
+        assert len(chips) == 1
+        assert chips[0].name == "gpiochip0"
+
+    def test_list_gpio_chips_returns_copy(self) -> None:
+        """Test list_gpio_chips returns a copy."""
+        platform = LinuxGenericPlatform(simulation=True)
+        chips1 = platform.list_gpio_chips()
+        chips2 = platform.list_gpio_chips()
+        assert chips1 is not chips2
+        assert chips1 == chips2
+
+    def test_gpio_chips_property(self) -> None:
+        """Test gpio_chips property."""
+        platform = LinuxGenericPlatform(simulation=True)
+        chips = platform.gpio_chips
+        assert isinstance(chips, list)
+        assert len(chips) >= 1
+
+    def test_multiple_gpio_chips_access(self) -> None:
+        """Test accessing multiple GPIO chips."""
+        platform = LinuxGenericPlatform(simulation=True)
+        for chip in platform.list_gpio_chips():
+            info = platform.get_gpio_chip_info(chip.chip_id)
+            assert info is not None
+            assert info.num_lines > 0
+
+
+class TestLinuxLineRequest:
+    """Tests for GPIO line request operations."""
+
+    def test_line_request_output(self) -> None:
+        """Test requesting line as output."""
+        pin = LinuxDigitalPin(
+            line=17,
+            chip=0,
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+        assert pin.mode == PinMode.OUTPUT
+
+    def test_line_request_input(self) -> None:
+        """Test requesting line as input."""
+        pin = LinuxDigitalPin(
+            line=18,
+            chip=0,
+            mode=PinMode.INPUT,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+        assert pin.mode == PinMode.INPUT
+
+    def test_line_request_with_pull_up(self) -> None:
+        """Test requesting line with pull-up."""
+        pin = LinuxDigitalPin(
+            line=19,
+            chip=0,
+            mode=PinMode.INPUT,
+            backend=GPIOBackend.SIMULATION,
+            pull="up",
+        )
+        pin.setup()
+        assert pin._pull == "up"
+
+    def test_line_request_with_pull_down(self) -> None:
+        """Test requesting line with pull-down."""
+        pin = LinuxDigitalPin(
+            line=20,
+            chip=0,
+            mode=PinMode.INPUT,
+            backend=GPIOBackend.SIMULATION,
+            pull="down",
+        )
+        pin.setup()
+        assert pin._pull == "down"
+
+    def test_line_request_active_low(self) -> None:
+        """Test requesting line with active_low."""
+        pin = LinuxDigitalPin(
+            line=21,
+            chip=0,
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.SIMULATION,
+            active_low=True,
+        )
+        pin.setup()
+        assert pin._active_low is True
+
+    def test_line_request_initial_high(self) -> None:
+        """Test requesting output line with initial HIGH."""
+        pin = LinuxDigitalPin(
+            line=22,
+            chip=0,
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.SIMULATION,
+            initial=PinState.HIGH,
+        )
+        pin.setup()
+        assert pin.read() is True
+
+    def test_line_request_initial_low(self) -> None:
+        """Test requesting output line with initial LOW."""
+        pin = LinuxDigitalPin(
+            line=23,
+            chip=0,
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.SIMULATION,
+            initial=PinState.LOW,
+        )
+        pin.setup()
+        assert pin.read() is False
+
+    def test_line_request_via_platform(self) -> None:
+        """Test line request via platform."""
+        platform = LinuxGenericPlatform(simulation=True)
+        pin = platform.get_pin(17, chip=0, mode=PinMode.OUTPUT)
+        pin.setup()
+        assert pin.mode == PinMode.OUTPUT
+
+    def test_line_request_with_custom_name(self) -> None:
+        """Test line request with custom name."""
+        pin = LinuxDigitalPin(
+            line=24,
+            chip=0,
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.SIMULATION,
+            line_name="LED_PIN",
+        )
+        pin.setup()
+        assert pin.line_name == "LED_PIN"
+
+
+class TestLinuxLineRelease:
+    """Tests for GPIO line release operations."""
+
+    def test_line_release_simulation(self) -> None:
+        """Test releasing line in simulation."""
+        pin = LinuxDigitalPin(
+            line=17,
+            chip=0,
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+        pin.cleanup()
+        assert pin._initialized is False
+
+    def test_line_release_before_setup(self) -> None:
+        """Test releasing line before setup."""
+        pin = LinuxDigitalPin(
+            line=18,
+            chip=0,
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.cleanup()  # Should not raise
+
+    def test_line_release_idempotent(self) -> None:
+        """Test multiple cleanup calls are safe."""
+        pin = LinuxDigitalPin(
+            line=19,
+            chip=0,
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+        pin.cleanup()
+        pin.cleanup()  # Should not raise
+
+    def test_line_release_via_platform_cleanup(self) -> None:
+        """Test line release via platform cleanup."""
+        platform = LinuxGenericPlatform(simulation=True)
+        pin = platform.get_pin(17, mode=PinMode.OUTPUT)
+        pin.setup()
+        platform.cleanup()  # Should cleanup all pins
+
+    def test_line_release_multiple_pins(self) -> None:
+        """Test releasing multiple pins."""
+        platform = LinuxGenericPlatform(simulation=True)
+        pin1 = platform.get_pin(17, mode=PinMode.OUTPUT)
+        pin2 = platform.get_pin(18, mode=PinMode.OUTPUT)
+        pin1.setup()
+        pin2.setup()
+        pin1.cleanup()
+        pin2.cleanup()
+
+
+class TestLinuxLineRead:
+    """Tests for GPIO line read operations."""
+
+    def test_line_read_returns_bool(self) -> None:
+        """Test reading line returns boolean."""
+        pin = LinuxDigitalPin(
+            line=17,
+            chip=0,
+            mode=PinMode.INPUT,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+        value = pin.read()
+        assert isinstance(value, bool)
+
+    def test_line_read_input_pin(self) -> None:
+        """Test reading input pin."""
+        pin = LinuxDigitalPin(
+            line=18,
+            chip=0,
+            mode=PinMode.INPUT,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+        _ = pin.read()  # Should not raise
+
+    def test_line_read_output_pin(self) -> None:
+        """Test reading output pin."""
+        pin = LinuxDigitalPin(
+            line=19,
+            chip=0,
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+        pin.high()
+        assert pin.read() is True
+
+    def test_line_read_active_low(self) -> None:
+        """Test reading with active_low inverts value."""
+        pin = LinuxDigitalPin(
+            line=20,
+            chip=0,
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.SIMULATION,
+            active_low=True,
+        )
+        pin.setup()
+        # Write True, which sets internal state to False (inverted)
+        pin.write(True)
+        # Read should return True (inverted back)
+        assert pin.read() is True
+
+    def test_line_read_multiple_times(self) -> None:
+        """Test reading line multiple times."""
+        pin = LinuxDigitalPin(
+            line=21,
+            chip=0,
+            mode=PinMode.INPUT,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+        for _ in range(10):
+            _ = pin.read()
+
+    def test_line_read_tracks_state(self) -> None:
+        """Test reading tracks state after write."""
+        pin = LinuxDigitalPin(
+            line=22,
+            chip=0,
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+        pin.high()
+        assert pin.read() is True
+        pin.low()
+        assert pin.read() is False
+
+
+class TestLinuxLineWrite:
+    """Tests for GPIO line write operations."""
+
+    def test_line_write_high(self) -> None:
+        """Test writing HIGH to line."""
+        pin = LinuxDigitalPin(
+            line=17,
+            chip=0,
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+        pin.write(True)
+        assert pin.read() is True
+
+    def test_line_write_low(self) -> None:
+        """Test writing LOW to line."""
+        pin = LinuxDigitalPin(
+            line=18,
+            chip=0,
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+        pin.write(False)
+        assert pin.read() is False
+
+    def test_line_write_high_method(self) -> None:
+        """Test high() method."""
+        pin = LinuxDigitalPin(
+            line=19,
+            chip=0,
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+        pin.high()
+        assert pin.read() is True
+
+    def test_line_write_low_method(self) -> None:
+        """Test low() method."""
+        pin = LinuxDigitalPin(
+            line=20,
+            chip=0,
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+        pin.low()
+        assert pin.read() is False
+
+    def test_line_write_to_input_raises(self) -> None:
+        """Test writing to input pin raises error."""
+        pin = LinuxDigitalPin(
+            line=21,
+            chip=0,
+            mode=PinMode.INPUT,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+        with pytest.raises(ValueError, match="Cannot write to input pin"):
+            pin.write(True)
+
+    def test_line_write_toggle(self) -> None:
+        """Test toggle method."""
+        pin = LinuxDigitalPin(
+            line=22,
+            chip=0,
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+        pin.write(False)
+        assert pin.read() is False
+        pin.toggle()
+        assert pin.read() is True
+        pin.toggle()
+        assert pin.read() is False
+
+    def test_line_write_active_low(self) -> None:
+        """Test writing with active_low."""
+        pin = LinuxDigitalPin(
+            line=23,
+            chip=0,
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.SIMULATION,
+            active_low=True,
+        )
+        pin.setup()
+        pin.write(True)
+        # Active low: writing True sets internal LOW, read inverts back to True
+        assert pin.read() is True
+
+    def test_line_write_rapid_sequence(self) -> None:
+        """Test rapid write sequence."""
+        pin = LinuxDigitalPin(
+            line=24,
+            chip=0,
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+        for _ in range(100):
+            pin.high()
+            pin.low()
+        assert pin.read() is False
+
+
+class TestLinuxLineEvent:
+    """Tests for GPIO line event operations."""
+
+    def test_edge_enum_values(self) -> None:
+        """Test GPIOEdge enum values."""
+        assert GPIOEdge.NONE.value == "none"
+        assert GPIOEdge.RISING.value == "rising"
+        assert GPIOEdge.FALLING.value == "falling"
+        assert GPIOEdge.BOTH.value == "both"
+
+    def test_edge_enum_count(self) -> None:
+        """Test GPIOEdge enum count."""
+        assert len(GPIOEdge) == 4
+
+    def test_line_info_direction(self) -> None:
+        """Test GPIOLineInfo direction field."""
+        info = GPIOLineInfo(
+            offset=0,
+            name="line0",
+            consumer="",
+            direction="input",
+            active_low=False,
+            used=False,
+        )
+        assert info.direction == "input"
+
+    def test_line_info_output_direction(self) -> None:
+        """Test GPIOLineInfo output direction."""
+        info = GPIOLineInfo(
+            offset=1,
+            name="line1",
+            consumer="robo_infra",
+            direction="output",
+            active_low=False,
+            used=True,
+        )
+        assert info.direction == "output"
+
+    def test_list_gpio_lines_simulation(self) -> None:
+        """Test listing GPIO lines in simulation."""
+        platform = LinuxGenericPlatform(simulation=True)
+        lines = platform.list_gpio_lines(0)
+        assert len(lines) == 32
+
+    def test_list_gpio_lines_has_info(self) -> None:
+        """Test GPIO line info contains expected fields."""
+        platform = LinuxGenericPlatform(simulation=True)
+        lines = platform.list_gpio_lines(0)
+        for line in lines:
+            assert hasattr(line, "offset")
+            assert hasattr(line, "name")
+            assert hasattr(line, "consumer")
+            assert hasattr(line, "direction")
+            assert hasattr(line, "active_low")
+            assert hasattr(line, "used")
+
+    def test_list_gpio_lines_offsets(self) -> None:
+        """Test GPIO line offsets are sequential."""
+        platform = LinuxGenericPlatform(simulation=True)
+        lines = platform.list_gpio_lines(0)
+        for i, line in enumerate(lines):
+            assert line.offset == i
+
+
+# =============================================================================
+# Backend Detection Tests
+# =============================================================================
+
+
+class TestBackendDetection:
+    """Tests for GPIO backend detection."""
+
+    def test_simulation_backend(self) -> None:
+        """Test simulation backend is used in simulation mode."""
+        platform = LinuxGenericPlatform(simulation=True)
+        assert platform.backend == GPIOBackend.SIMULATION
+
+    def test_string_backend_simulation(self) -> None:
+        """Test string 'simulation' is converted to enum."""
+        platform = LinuxGenericPlatform(backend="simulation")
+        assert platform.backend == GPIOBackend.SIMULATION
+
+    def test_string_backend_gpiod(self) -> None:
+        """Test string 'gpiod' is converted to enum."""
+        platform = LinuxGenericPlatform(backend="gpiod", simulation=True)
+        assert platform.backend == GPIOBackend.GPIOD
+
+    def test_string_backend_sysfs(self) -> None:
+        """Test string 'sysfs' is converted to enum."""
+        platform = LinuxGenericPlatform(backend="sysfs", simulation=True)
+        assert platform.backend == GPIOBackend.SYSFS
+
+    def test_is_simulation_property(self) -> None:
+        """Test is_simulation property."""
+        platform = LinuxGenericPlatform(simulation=True)
+        assert platform.is_simulation is True
+
+
+# =============================================================================
+# PWM Extended Tests
+# =============================================================================
+
+
+class TestLinuxPWMExtended:
+    """Extended tests for Linux PWM functionality."""
+
+    def test_pwm_chip_id_property(self) -> None:
+        """Test chip_id property."""
+        pin = LinuxPWMPin(chip=1, channel=0, backend=GPIOBackend.SIMULATION)
+        assert pin.chip_id == 1
+
+    def test_pwm_channel_property(self) -> None:
+        """Test channel property."""
+        pin = LinuxPWMPin(chip=0, channel=2, backend=GPIOBackend.SIMULATION)
+        assert pin.channel == 2
+
+    def test_pwm_period_calculation(self) -> None:
+        """Test period is calculated from frequency."""
+        pin = LinuxPWMPin(chip=0, channel=0, frequency=1000, backend=GPIOBackend.SIMULATION)
+        # 1000 Hz = 1ms period = 1,000,000 ns
+        assert pin._period_ns == 1_000_000
+
+    def test_pwm_frequency_change_updates_period(self) -> None:
+        """Test changing frequency updates period."""
+        pin = LinuxPWMPin(chip=0, channel=0, frequency=1000, backend=GPIOBackend.SIMULATION)
+        pin.setup()
+        pin.set_frequency(500)
+        assert pin._period_ns == 2_000_000
+
+    def test_pwm_duty_cycle_range(self) -> None:
+        """Test duty cycle accepts full range."""
+        pin = LinuxPWMPin(chip=0, channel=0, backend=GPIOBackend.SIMULATION)
+        pin.setup()
+        for duty in [0.0, 0.1, 0.5, 0.9, 1.0]:
+            pin.set_duty_cycle(duty)
+            assert pin.duty_cycle == pytest.approx(duty)
+
+    def test_pwm_is_running_property(self) -> None:
+        """Test is_running property."""
+        pin = LinuxPWMPin(chip=0, channel=0, backend=GPIOBackend.SIMULATION)
+        pin.setup()
+        assert pin.is_running is False
+        pin.start()
+        assert pin.is_running is True
+        pin.stop()
+        assert pin.is_running is False
+
+
+# =============================================================================
+# SBC Type Detection Extended Tests
+# =============================================================================
+
+
+class TestSBCTypeDetectionExtended:
+    """Extended tests for SBC type detection."""
+
+    def test_all_sbc_types_unique_values(self) -> None:
+        """Test all SBC type values are unique."""
+        values = [sbc.value for sbc in LinuxSBCType]
+        assert len(values) == len(set(values))
+
+    @patch("pathlib.Path.exists")
+    @patch("pathlib.Path.read_text")
+    def test_detect_rock_pi_4(self, mock_read: MagicMock, mock_exists: MagicMock) -> None:
+        """Test Rock Pi 4 detection."""
+        mock_exists.return_value = True
+        mock_read.return_value = "Radxa ROCK Pi 4 Model B"
+        # In simulation, detection doesn't run
+        platform = LinuxGenericPlatform(simulation=True)
+        assert platform.sbc_type == LinuxSBCType.GENERIC
+
+    @patch("pathlib.Path.exists")
+    @patch("pathlib.Path.read_text")
+    def test_detect_banana_pi(self, mock_read: MagicMock, mock_exists: MagicMock) -> None:
+        """Test Banana Pi detection."""
+        mock_exists.return_value = True
+        mock_read.return_value = "Banana Pi M5"
+        platform = LinuxGenericPlatform(simulation=True)
+        assert platform.sbc_type == LinuxSBCType.GENERIC
+
+    @patch("pathlib.Path.exists")
+    @patch("pathlib.Path.read_text")
+    def test_detect_odroid(self, mock_read: MagicMock, mock_exists: MagicMock) -> None:
+        """Test Odroid detection."""
+        mock_exists.return_value = True
+        mock_read.return_value = "Hardkernel ODROID-C4"
+        platform = LinuxGenericPlatform(simulation=True)
+        assert platform.sbc_type == LinuxSBCType.GENERIC
+
+
+# =============================================================================
+# Platform Capabilities Tests
+# =============================================================================
+
+
+class TestLinuxPlatformCapabilities:
+    """Tests for Linux platform capabilities."""
+
+    def test_gpio_capability_present(self) -> None:
+        """Test GPIO capability is always present."""
+        from robo_infra.platforms.base import PlatformCapability
+        platform = LinuxGenericPlatform(simulation=True)
+        assert PlatformCapability.GPIO in platform.capabilities
+
+    def test_platform_type_is_linux_generic(self) -> None:
+        """Test platform type is LINUX_GENERIC."""
+        from robo_infra.platforms.base import PlatformType
+        platform = LinuxGenericPlatform(simulation=True)
+        assert platform.platform_type == PlatformType.LINUX_GENERIC
+
+    def test_get_info_returns_platform_info(self) -> None:
+        """Test get_info returns PlatformInfo."""
+        from robo_infra.platforms.base import PlatformInfo
+        platform = LinuxGenericPlatform(simulation=True)
+        info = platform.get_info()
+        assert isinstance(info, PlatformInfo)
+
+    def test_get_info_has_gpio_chips(self) -> None:
+        """Test get_info includes gpio_chips."""
+        platform = LinuxGenericPlatform(simulation=True)
+        info = platform.get_info()
+        assert len(info.gpio_chips) >= 1
+
+    def test_get_info_model_includes_sbc_type(self) -> None:
+        """Test get_info model includes SBC type."""
+        platform = LinuxGenericPlatform(simulation=True)
+        info = platform.get_info()
+        assert "Generic" in info.model

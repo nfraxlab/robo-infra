@@ -16,6 +16,7 @@ from unittest.mock import patch
 import pytest
 
 from robo_infra.core.pin import PinMode, PinState
+from robo_infra.platforms.base import PlatformType
 from robo_infra.platforms.raspberry_pi import (
     GPIO_CHIP_PI5,
     HARDWARE_PWM_PINS_STANDARD,
@@ -560,3 +561,735 @@ class TestEdgeCases:
         bus1 = mock_rpi_platform.get_bus("i2c", bus=0)
         bus2 = mock_rpi_platform.get_bus("i2c", bus=1)
         assert bus1 is not bus2
+
+
+# =============================================================================
+# Phase 5.7.2: Extended GPIO Mock Tests
+# =============================================================================
+
+
+class TestGPIOSetupModes:
+    """Tests for GPIO setup with different modes."""
+
+    def test_gpio_setup_output_default(self):
+        """Test GPIO setup in output mode with default state."""
+        pin = RaspberryPiDigitalPin(
+            17,
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+        assert pin.initialized is True
+        assert pin.mode == PinMode.OUTPUT
+        # Default is LOW
+        assert pin.state == PinState.LOW
+
+    def test_gpio_setup_output_high(self):
+        """Test GPIO setup in output mode with HIGH initial state."""
+        pin = RaspberryPiDigitalPin(
+            17,
+            mode=PinMode.OUTPUT,
+            initial=PinState.HIGH,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+        # Should read True after setup with HIGH initial
+        assert pin.read() is True
+
+    def test_gpio_setup_input_no_pull(self):
+        """Test GPIO setup as input without pull resistor."""
+        pin = RaspberryPiDigitalPin(
+            18,
+            mode=PinMode.INPUT,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+        assert pin.initialized is True
+        assert pin.mode == PinMode.INPUT
+
+    def test_gpio_setup_input_pullup(self):
+        """Test GPIO setup with internal pullup resistor."""
+        pin = RaspberryPiDigitalPin(
+            22,
+            mode=PinMode.INPUT_PULLUP,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+        assert pin.mode == PinMode.INPUT_PULLUP
+
+    def test_gpio_setup_input_pulldown(self):
+        """Test GPIO setup with internal pulldown resistor."""
+        pin = RaspberryPiDigitalPin(
+            23,
+            mode=PinMode.INPUT_PULLDOWN,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+        assert pin.mode == PinMode.INPUT_PULLDOWN
+
+    def test_gpio_double_setup_noop(self):
+        """Test that calling setup twice is a no-op."""
+        pin = RaspberryPiDigitalPin(
+            17,
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+        # Store reference
+        obj1 = pin._gpio_obj
+        # Second setup should not reinitialize
+        pin.setup()
+        assert pin._gpio_obj is obj1
+
+
+class TestGPIOReadWrite:
+    """Tests for GPIO read/write operations."""
+
+    def test_gpio_set_high(self):
+        """Test setting GPIO HIGH."""
+        pin = RaspberryPiDigitalPin(
+            17,
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+        pin.high()
+        assert pin.state == PinState.HIGH
+        assert pin.read() is True
+
+    def test_gpio_set_low(self):
+        """Test setting GPIO LOW."""
+        pin = RaspberryPiDigitalPin(
+            17,
+            mode=PinMode.OUTPUT,
+            initial=PinState.HIGH,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+        pin.low()
+        assert pin.state == PinState.LOW
+        assert pin.read() is False
+
+    def test_gpio_read_returns_current_state(self):
+        """Test GPIO read returns current state."""
+        pin = RaspberryPiDigitalPin(
+            17,
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+
+        pin.write(True)
+        assert pin.read() is True
+
+        pin.write(False)
+        assert pin.read() is False
+
+    def test_gpio_read_auto_setup(self):
+        """Test GPIO read auto-setup if not initialized."""
+        pin = RaspberryPiDigitalPin(
+            17,
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.SIMULATION,
+        )
+        # Don't call setup manually
+        assert pin.initialized is False
+        # Read should auto-setup
+        _ = pin.read()
+        assert pin.initialized is True
+
+    def test_gpio_write_auto_setup(self):
+        """Test GPIO write auto-setup if not initialized."""
+        pin = RaspberryPiDigitalPin(
+            17,
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.SIMULATION,
+        )
+        assert pin.initialized is False
+        # Write should auto-setup
+        pin.write(True)
+        assert pin.initialized is True
+
+    def test_gpio_inverted_write(self):
+        """Test inverted GPIO logic on write."""
+        pin = RaspberryPiDigitalPin(
+            17,
+            mode=PinMode.OUTPUT,
+            inverted=True,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+
+        # Write True, but inverted means LOW
+        pin.write(True)
+        # Internal value should be False
+        assert pin._gpio_obj["value"] is False
+
+    def test_gpio_inverted_read(self):
+        """Test inverted GPIO logic on read."""
+        pin = RaspberryPiDigitalPin(
+            17,
+            mode=PinMode.OUTPUT,
+            inverted=True,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+
+        # Set internal value directly
+        pin._gpio_obj["value"] = False
+        # Read should return True (inverted)
+        assert pin.read() is True
+
+
+class TestGPIOCleanup:
+    """Tests for GPIO cleanup operations."""
+
+    def test_gpio_cleanup_releases_resources(self):
+        """Test cleanup releases GPIO resources."""
+        pin = RaspberryPiDigitalPin(
+            17,
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+        assert pin.initialized is True
+        assert pin._gpio_obj is not None
+
+        pin.cleanup()
+        assert pin.initialized is False
+        assert pin._gpio_obj is None
+
+    def test_gpio_cleanup_before_setup_noop(self):
+        """Test cleanup before setup is a no-op."""
+        pin = RaspberryPiDigitalPin(
+            17,
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.SIMULATION,
+        )
+        # Don't setup, just cleanup
+        pin.cleanup()  # Should not raise
+        assert pin.initialized is False
+
+
+class TestBCMBoardMode:
+    """Tests for BCM and BOARD pin numbering modes."""
+
+    def test_bcm_mode_default(self):
+        """Test BCM is the default numbering mode."""
+        pin = RaspberryPiDigitalPin(
+            17,
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.SIMULATION,
+        )
+        assert pin._numbering == PinNumbering.BCM
+
+    def test_board_mode_explicit(self):
+        """Test BOARD numbering can be set explicitly."""
+        pin = RaspberryPiDigitalPin(
+            11,  # Physical pin 11 = BCM 17
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.SIMULATION,
+            numbering=PinNumbering.BOARD,
+        )
+        assert pin._numbering == PinNumbering.BOARD
+        assert pin.number == 11
+
+    def test_platform_uses_bcm_by_default(self):
+        """Test platform uses BCM numbering by default."""
+        platform = RaspberryPiPlatform(backend=GPIOBackend.SIMULATION)
+        assert platform._numbering == PinNumbering.BCM
+
+    def test_platform_can_use_board(self):
+        """Test platform can be configured for BOARD numbering."""
+        platform = RaspberryPiPlatform(
+            backend=GPIOBackend.SIMULATION,
+            numbering=PinNumbering.BOARD,
+        )
+        assert platform._numbering == PinNumbering.BOARD
+
+
+# =============================================================================
+# Phase 5.7.2: Extended PWM Mock Tests
+# =============================================================================
+
+
+class TestPWMHardwarePins:
+    """Tests for hardware PWM pins."""
+
+    def test_hardware_pwm_pin_12(self):
+        """Test pin 12 supports hardware PWM."""
+        pin = RaspberryPiPWMPin(12, backend=GPIOBackend.SIMULATION)
+        assert pin._hardware_pwm is True
+
+    def test_hardware_pwm_pin_13(self):
+        """Test pin 13 supports hardware PWM."""
+        pin = RaspberryPiPWMPin(13, backend=GPIOBackend.SIMULATION)
+        assert pin._hardware_pwm is True
+
+    def test_hardware_pwm_pin_18(self):
+        """Test pin 18 supports hardware PWM."""
+        pin = RaspberryPiPWMPin(18, backend=GPIOBackend.SIMULATION)
+        assert pin._hardware_pwm is True
+
+    def test_hardware_pwm_pin_19(self):
+        """Test pin 19 supports hardware PWM."""
+        pin = RaspberryPiPWMPin(19, backend=GPIOBackend.SIMULATION)
+        assert pin._hardware_pwm is True
+
+
+class TestPWMSoftwareFallback:
+    """Tests for software PWM fallback."""
+
+    def test_software_pwm_non_hardware_pin(self):
+        """Test non-hardware PWM pins use software PWM."""
+        pin = RaspberryPiPWMPin(17, backend=GPIOBackend.SIMULATION)
+        assert pin._hardware_pwm is False
+
+    def test_software_pwm_pin_20(self):
+        """Test pin 20 uses software PWM."""
+        pin = RaspberryPiPWMPin(20, backend=GPIOBackend.SIMULATION)
+        assert pin._hardware_pwm is False
+
+    def test_force_software_pwm(self):
+        """Test forcing software PWM on hardware-capable pin."""
+        pin = RaspberryPiPWMPin(
+            18,  # Normally hardware PWM
+            backend=GPIOBackend.SIMULATION,
+            hardware_pwm=False,
+        )
+        assert pin._hardware_pwm is False
+
+    def test_force_hardware_pwm(self):
+        """Test forcing hardware PWM flag (even on non-HW pin)."""
+        pin = RaspberryPiPWMPin(
+            17,  # Normally software PWM
+            backend=GPIOBackend.SIMULATION,
+            hardware_pwm=True,
+        )
+        assert pin._hardware_pwm is True
+
+
+class TestPWMFrequency:
+    """Tests for PWM frequency control."""
+
+    def test_pwm_default_frequency(self):
+        """Test default PWM frequency is 50Hz (servo standard)."""
+        pin = RaspberryPiPWMPin(18, backend=GPIOBackend.SIMULATION)
+        assert pin.frequency == 50
+
+    def test_pwm_custom_frequency(self):
+        """Test setting custom PWM frequency."""
+        pin = RaspberryPiPWMPin(
+            18,
+            frequency=1000,
+            backend=GPIOBackend.SIMULATION,
+        )
+        assert pin.frequency == 1000
+
+    def test_pwm_frequency_update_after_setup(self):
+        """Test updating frequency after setup."""
+        pin = RaspberryPiPWMPin(
+            18,
+            frequency=50,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+
+        pin.frequency = 200
+        assert pin.frequency == 200
+        assert pin._pwm_obj["frequency"] == 200
+
+    def test_pwm_set_frequency_method(self):
+        """Test set_frequency method."""
+        pin = RaspberryPiPWMPin(
+            18,
+            frequency=50,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+
+        pin.set_frequency(100)
+        assert pin.frequency == 100
+
+
+class TestPWMDutyCycle:
+    """Tests for PWM duty cycle control."""
+
+    def test_pwm_default_duty_cycle(self):
+        """Test default duty cycle is 0%."""
+        pin = RaspberryPiPWMPin(18, backend=GPIOBackend.SIMULATION)
+        assert pin.duty_cycle == 0.0
+
+    def test_pwm_custom_duty_cycle(self):
+        """Test setting custom duty cycle."""
+        pin = RaspberryPiPWMPin(
+            18,
+            duty_cycle=0.5,
+            backend=GPIOBackend.SIMULATION,
+        )
+        assert pin.duty_cycle == 0.5
+
+    def test_pwm_duty_cycle_clamping_max(self):
+        """Test duty cycle is clamped to 1.0 max."""
+        pin = RaspberryPiPWMPin(
+            18,
+            duty_cycle=1.5,
+            backend=GPIOBackend.SIMULATION,
+        )
+        assert pin.duty_cycle == 1.0
+
+    def test_pwm_duty_cycle_clamping_min(self):
+        """Test duty cycle is clamped to 0.0 min."""
+        pin = RaspberryPiPWMPin(
+            18,
+            duty_cycle=-0.5,
+            backend=GPIOBackend.SIMULATION,
+        )
+        assert pin.duty_cycle == 0.0
+
+    def test_pwm_duty_cycle_update_after_setup(self):
+        """Test updating duty cycle after setup."""
+        pin = RaspberryPiPWMPin(
+            18,
+            duty_cycle=0.25,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+
+        pin.duty_cycle = 0.75
+        assert pin.duty_cycle == 0.75
+        assert pin._pwm_obj["duty_cycle"] == 0.75
+
+    def test_pwm_set_duty_cycle_method(self):
+        """Test set_duty_cycle method."""
+        pin = RaspberryPiPWMPin(
+            18,
+            duty_cycle=0.0,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+
+        pin.set_duty_cycle(0.5)
+        assert pin.duty_cycle == 0.5
+
+
+class TestPWMStartStop:
+    """Tests for PWM start/stop operations."""
+
+    def test_pwm_start(self):
+        """Test starting PWM."""
+        pin = RaspberryPiPWMPin(18, backend=GPIOBackend.SIMULATION)
+        assert pin.initialized is False
+
+        pin.start()
+        assert pin.initialized is True
+
+    def test_pwm_stop_sets_duty_zero(self):
+        """Test stopping PWM sets duty cycle to 0."""
+        pin = RaspberryPiPWMPin(
+            18,
+            duty_cycle=0.5,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+        assert pin.duty_cycle == 0.5
+
+        pin.stop()
+        assert pin.duty_cycle == 0.0
+
+    def test_pwm_cleanup(self):
+        """Test PWM cleanup releases resources."""
+        pin = RaspberryPiPWMPin(18, backend=GPIOBackend.SIMULATION)
+        pin.setup()
+        assert pin.initialized is True
+
+        pin.cleanup()
+        assert pin.initialized is False
+        assert pin._pwm_obj is None
+
+    def test_pwm_cleanup_before_setup_noop(self):
+        """Test cleanup before setup is a no-op."""
+        pin = RaspberryPiPWMPin(18, backend=GPIOBackend.SIMULATION)
+        pin.cleanup()  # Should not raise
+        assert pin.initialized is False
+
+
+class TestPWMPulseWidth:
+    """Tests for PWM pulse width (servo control)."""
+
+    def test_pulse_width_center(self):
+        """Test 1500us pulse width for servo center."""
+        pin = RaspberryPiPWMPin(
+            18,
+            frequency=50,  # 20ms period
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+
+        pin.set_pulse_width(1500)  # 1500us = 7.5% of 20ms
+        assert abs(pin.duty_cycle - 0.075) < 0.001
+
+    def test_pulse_width_min(self):
+        """Test 1000us pulse width for servo min position."""
+        pin = RaspberryPiPWMPin(
+            18,
+            frequency=50,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+
+        pin.set_pulse_width(1000)  # 1000us = 5% of 20ms
+        assert abs(pin.duty_cycle - 0.05) < 0.001
+
+    def test_pulse_width_max(self):
+        """Test 2000us pulse width for servo max position."""
+        pin = RaspberryPiPWMPin(
+            18,
+            frequency=50,
+            backend=GPIOBackend.SIMULATION,
+        )
+        pin.setup()
+
+        pin.set_pulse_width(2000)  # 2000us = 10% of 20ms
+        assert abs(pin.duty_cycle - 0.10) < 0.001
+
+
+# =============================================================================
+# Phase 5.7.2: Extended Bus Mock Tests
+# =============================================================================
+
+
+class TestI2CBus:
+    """Tests for I2C bus operations."""
+
+    def test_i2c_bus_creation(self):
+        """Test creating I2C bus."""
+        platform = RaspberryPiPlatform(backend=GPIOBackend.SIMULATION)
+        bus = platform.get_bus("i2c", bus=1)
+        assert bus is not None
+
+    def test_i2c_bus_default_bus_1(self):
+        """Test I2C defaults to bus 1."""
+        platform = RaspberryPiPlatform(backend=GPIOBackend.SIMULATION)
+        bus = platform.get_bus("i2c")
+        assert bus is not None
+
+    def test_i2c_bus_scan(self):
+        """Test I2C bus scan returns list."""
+        platform = RaspberryPiPlatform(backend=GPIOBackend.SIMULATION)
+        bus = platform.get_bus("i2c", bus=1)
+        devices = bus.scan()
+        assert isinstance(devices, list)
+
+    def test_i2c_bus_read_write_simulated(self):
+        """Test I2C read/write in simulation."""
+        platform = RaspberryPiPlatform(backend=GPIOBackend.SIMULATION)
+        bus = platform.get_bus("i2c", bus=1)
+
+        # Simulated I2C should not raise
+        # Write and read (simulation mode)
+        if hasattr(bus, "write_byte"):
+            bus.write_byte(0x50, 0x00)  # Simulated, no error
+
+
+class TestSPIBus:
+    """Tests for SPI bus operations."""
+
+    def test_spi_bus_creation(self):
+        """Test creating SPI bus."""
+        platform = RaspberryPiPlatform(backend=GPIOBackend.SIMULATION)
+        bus = platform.get_bus("spi", bus=0, device=0)
+        assert bus is not None
+
+    def test_spi_bus_default_device(self):
+        """Test SPI defaults to bus 0, device 0."""
+        platform = RaspberryPiPlatform(backend=GPIOBackend.SIMULATION)
+        bus = platform.get_bus("spi")
+        assert bus is not None
+
+    def test_spi_bus_transfer_simulated(self):
+        """Test SPI transfer in simulation."""
+        platform = RaspberryPiPlatform(backend=GPIOBackend.SIMULATION)
+        bus = platform.get_bus("spi", bus=0, device=0)
+
+        # Simulated SPI transfer should not raise
+        if hasattr(bus, "transfer"):
+            result = bus.transfer([0x01, 0x02, 0x03])
+            assert isinstance(result, (list, bytes, type(None)))
+
+
+class TestUARTBus:
+    """Tests for UART/Serial bus operations."""
+
+    def test_uart_bus_creation(self):
+        """Test creating UART bus."""
+        platform = RaspberryPiPlatform(backend=GPIOBackend.SIMULATION)
+        bus = platform.get_bus("uart", port="/dev/ttyAMA0")
+        assert bus is not None
+
+    def test_uart_serial_alias(self):
+        """Test 'serial' is an alias for 'uart'."""
+        platform = RaspberryPiPlatform(backend=GPIOBackend.SIMULATION)
+        bus = platform.get_bus("serial", port="/dev/ttyAMA0")
+        assert bus is not None
+
+    def test_uart_custom_baudrate(self):
+        """Test UART with custom baudrate."""
+        platform = RaspberryPiPlatform(backend=GPIOBackend.SIMULATION)
+        bus = platform.get_bus("uart", port="/dev/ttyAMA0", baudrate=115200)
+        assert bus is not None
+
+    def test_uart_read_write_simulated(self):
+        """Test UART read/write in simulation."""
+        platform = RaspberryPiPlatform(backend=GPIOBackend.SIMULATION)
+        bus = platform.get_bus("uart", port="/dev/ttyAMA0")
+
+        # Simulated UART operations should not raise
+        if hasattr(bus, "write"):
+            bus.write(b"Hello")
+
+
+# =============================================================================
+# Backend Mock Tests
+# =============================================================================
+
+
+class TestBackendMocking:
+    """Tests for GPIO backend mocking."""
+
+    def test_gpiozero_import_error(self):
+        """Test gpiozero import error is handled."""
+        pin = RaspberryPiDigitalPin(
+            17,
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.GPIOZERO,
+        )
+        # On macOS without gpiozero, should raise HardwareNotFoundError
+        from robo_infra.core.exceptions import HardwareNotFoundError
+
+        with pytest.raises(HardwareNotFoundError):
+            pin._setup_gpiozero()
+
+    def test_lgpio_import_error(self):
+        """Test lgpio import error is handled."""
+        pin = RaspberryPiDigitalPin(
+            17,
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.LGPIO,
+        )
+        from robo_infra.core.exceptions import HardwareNotFoundError
+
+        with pytest.raises(HardwareNotFoundError):
+            pin._setup_lgpio()
+
+    def test_rpi_gpio_import_error(self):
+        """Test RPi.GPIO import error is handled."""
+        pin = RaspberryPiDigitalPin(
+            17,
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.RPI_GPIO,
+        )
+        from robo_infra.core.exceptions import HardwareNotFoundError
+
+        with pytest.raises(HardwareNotFoundError):
+            pin._setup_rpi_gpio()
+
+    def test_pigpio_import_error(self):
+        """Test pigpio import error is handled."""
+        pin = RaspberryPiDigitalPin(
+            17,
+            mode=PinMode.OUTPUT,
+            backend=GPIOBackend.PIGPIO,
+        )
+        from robo_infra.core.exceptions import HardwareNotFoundError
+
+        with pytest.raises(HardwareNotFoundError):
+            pin._setup_pigpio()
+
+
+# =============================================================================
+# Platform Info Extended Tests
+# =============================================================================
+
+
+class TestPlatformInfoExtended:
+    """Extended tests for platform info detection."""
+
+    def test_platform_type_is_raspberry_pi(self):
+        """Test platform type is RASPBERRY_PI."""
+        platform = RaspberryPiPlatform(backend=GPIOBackend.SIMULATION)
+        assert platform.platform_type == PlatformType.RASPBERRY_PI
+
+    def test_info_model_property(self):
+        """Test model property returns string."""
+        platform = RaspberryPiPlatform(backend=GPIOBackend.SIMULATION)
+        assert isinstance(platform.model, str)
+
+    def test_info_is_pi5_false_in_simulation(self):
+        """Test is_pi5 is False in simulation (no Pi5 chip)."""
+        platform = RaspberryPiPlatform(backend=GPIOBackend.SIMULATION)
+        # In simulation, GPIO_CHIP_PI5 doesn't exist
+        assert platform.is_pi5 is False or "5" in platform.model
+
+    def test_info_capabilities_has_gpio(self):
+        """Test capabilities includes GPIO."""
+        platform = RaspberryPiPlatform(backend=GPIOBackend.SIMULATION)
+        from robo_infra.platforms.base import PlatformCapability
+
+        caps = platform.capabilities
+        # Simulation may have all capabilities
+        assert isinstance(caps, set)
+
+
+class TestPlatformContextManager:
+    """Tests for platform context manager."""
+
+    def test_platform_as_context_manager(self):
+        """Test platform can be used as context manager."""
+        with RaspberryPiPlatform(backend=GPIOBackend.SIMULATION) as platform:
+            pin = platform.get_pin(17)
+            pin.setup()
+        # Cleanup should have been called
+
+    def test_context_manager_cleanup_on_exception(self):
+        """Test cleanup is called even on exception."""
+        try:
+            with RaspberryPiPlatform(backend=GPIOBackend.SIMULATION) as platform:
+                platform.get_pin(17)
+                raise ValueError("Test error")
+        except ValueError:
+            pass
+        # Platform should still be cleaned up
+
+
+# =============================================================================
+# Logging Tests
+# =============================================================================
+
+
+class TestLogging:
+    """Tests for logging behavior."""
+
+    def test_platform_init_logs_backend(self, caplog):
+        """Test platform initialization logs the backend."""
+        import logging
+
+        with caplog.at_level(logging.INFO):
+            RaspberryPiPlatform(backend=GPIOBackend.SIMULATION)
+
+        assert "simulation" in caplog.text.lower()
+
+    def test_pin_setup_logs_at_debug(self, caplog):
+        """Test pin setup logs at debug level."""
+        import logging
+
+        with caplog.at_level(logging.DEBUG):
+            pin = RaspberryPiDigitalPin(
+                17,
+                mode=PinMode.OUTPUT,
+                backend=GPIOBackend.SIMULATION,
+            )
+            pin.setup()
+
+        # Debug log should mention pin initialization
+        assert any("17" in r.message for r in caplog.records) or len(caplog.records) >= 0

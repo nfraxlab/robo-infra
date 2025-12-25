@@ -546,3 +546,661 @@ class TestSimulationEnvVar:
         with patch.dict(os.environ, {"ROBO_SIMULATION": "yes"}):
             platform = JetsonPlatform()
             assert platform._simulation is True
+
+
+# =============================================================================
+# GPIO Mock Tests (Phase 5.7.3.1)
+# =============================================================================
+
+
+class TestJetsonGPIOSetup:
+    """Tests for Jetson GPIO setup operations."""
+
+    def test_gpio_setup_output_mode(self) -> None:
+        """Test GPIO setup in OUTPUT mode."""
+        pin = JetsonDigitalPin(17, mode=PinMode.OUTPUT, simulation=True)
+        assert not pin.initialized
+        pin.setup()
+        assert pin.initialized
+        assert pin.mode == PinMode.OUTPUT
+
+    def test_gpio_setup_input_mode(self) -> None:
+        """Test GPIO setup in INPUT mode."""
+        pin = JetsonDigitalPin(18, mode=PinMode.INPUT, simulation=True)
+        pin.setup()
+        assert pin.initialized
+        assert pin.mode == PinMode.INPUT
+
+    def test_gpio_setup_input_pullup(self) -> None:
+        """Test GPIO setup with INPUT_PULLUP."""
+        pin = JetsonDigitalPin(19, mode=PinMode.INPUT_PULLUP, simulation=True)
+        pin.setup()
+        assert pin.mode == PinMode.INPUT_PULLUP
+
+    def test_gpio_setup_input_pulldown(self) -> None:
+        """Test GPIO setup with INPUT_PULLDOWN."""
+        pin = JetsonDigitalPin(20, mode=PinMode.INPUT_PULLDOWN, simulation=True)
+        pin.setup()
+        assert pin.mode == PinMode.INPUT_PULLDOWN
+
+    def test_gpio_setup_idempotent(self) -> None:
+        """Test that multiple setup calls are safe."""
+        pin = JetsonDigitalPin(21, simulation=True)
+        pin.setup()
+        pin.setup()  # Should not raise
+        assert pin.initialized
+
+    def test_gpio_setup_all_numbering_schemes(self) -> None:
+        """Test setup with all numbering schemes."""
+        for numbering in JetsonPinNumbering:
+            pin = JetsonDigitalPin(17, numbering=numbering, simulation=True)
+            pin.setup()
+            assert pin._numbering == numbering
+
+    def test_gpio_setup_with_initial_high(self) -> None:
+        """Test GPIO setup with initial HIGH state."""
+        pin = JetsonDigitalPin(
+            22, mode=PinMode.OUTPUT, initial=PinState.HIGH, simulation=True
+        )
+        pin.setup()
+        assert pin.state == PinState.HIGH
+
+    def test_gpio_setup_with_initial_low(self) -> None:
+        """Test GPIO setup with initial LOW state."""
+        pin = JetsonDigitalPin(
+            23, mode=PinMode.OUTPUT, initial=PinState.LOW, simulation=True
+        )
+        pin.setup()
+        assert pin.state == PinState.LOW
+
+    def test_gpio_read_triggers_setup(self) -> None:
+        """Test that read() triggers setup if not initialized."""
+        pin = JetsonDigitalPin(24, mode=PinMode.INPUT, simulation=True)
+        assert not pin.initialized
+        pin.read()
+        assert pin.initialized
+
+    def test_gpio_write_triggers_setup(self) -> None:
+        """Test that write() triggers setup if not initialized."""
+        pin = JetsonDigitalPin(25, mode=PinMode.OUTPUT, simulation=True)
+        assert not pin.initialized
+        pin.write(True)
+        assert pin.initialized
+
+
+class TestJetsonGPIOReadWrite:
+    """Tests for Jetson GPIO read/write operations."""
+
+    def test_read_returns_bool(self) -> None:
+        """Test that read returns boolean."""
+        pin = JetsonDigitalPin(17, mode=PinMode.INPUT, simulation=True)
+        pin.setup()
+        value = pin.read()
+        assert isinstance(value, bool)
+
+    def test_write_true_sets_high(self) -> None:
+        """Test writing True sets HIGH state."""
+        pin = JetsonDigitalPin(18, mode=PinMode.OUTPUT, simulation=True)
+        pin.setup()
+        pin.write(True)
+        assert pin.state == PinState.HIGH
+
+    def test_write_false_sets_low(self) -> None:
+        """Test writing False sets LOW state."""
+        pin = JetsonDigitalPin(19, mode=PinMode.OUTPUT, simulation=True)
+        pin.setup()
+        pin.write(False)
+        assert pin.state == PinState.LOW
+
+    def test_read_after_write_high(self) -> None:
+        """Test reading after writing HIGH."""
+        pin = JetsonDigitalPin(20, mode=PinMode.OUTPUT, simulation=True)
+        pin.setup()
+        pin.write(True)
+        assert pin.read() is True
+
+    def test_read_after_write_low(self) -> None:
+        """Test reading after writing LOW."""
+        pin = JetsonDigitalPin(21, mode=PinMode.OUTPUT, simulation=True)
+        pin.setup()
+        pin.write(False)
+        assert pin.read() is False
+
+    def test_inverted_read(self) -> None:
+        """Test inverted pin read."""
+        pin = JetsonDigitalPin(22, mode=PinMode.INPUT, inverted=True, simulation=True)
+        pin.setup()
+        pin._gpio_module["value"] = True
+        # Inverted: actual True reads as False
+        assert pin.read() is False
+
+    def test_inverted_write(self) -> None:
+        """Test inverted pin write."""
+        pin = JetsonDigitalPin(23, mode=PinMode.OUTPUT, inverted=True, simulation=True)
+        pin.setup()
+        pin.write(True)
+        # Inverted: writing True sets LOW internally
+        assert pin._gpio_module["value"] is False
+
+    def test_toggle_state(self) -> None:
+        """Test toggle switches state."""
+        pin = JetsonDigitalPin(24, mode=PinMode.OUTPUT, simulation=True)
+        pin.setup()
+        pin.write(False)
+        assert pin.state == PinState.LOW
+        pin.toggle()
+        assert pin.state == PinState.HIGH
+        pin.toggle()
+        assert pin.state == PinState.LOW
+
+    def test_rapid_write_sequence(self) -> None:
+        """Test rapid write sequence."""
+        pin = JetsonDigitalPin(25, mode=PinMode.OUTPUT, simulation=True)
+        pin.setup()
+        for _ in range(100):
+            pin.write(True)
+            pin.write(False)
+        assert pin.state == PinState.LOW
+
+
+class TestJetsonPinModes:
+    """Tests for Jetson pin modes."""
+
+    def test_all_pin_modes_supported(self) -> None:
+        """Test all PinMode values are handled."""
+        modes = [PinMode.INPUT, PinMode.OUTPUT, PinMode.INPUT_PULLUP, PinMode.INPUT_PULLDOWN]
+        for mode in modes:
+            pin = JetsonDigitalPin(17, mode=mode, simulation=True)
+            assert pin.mode == mode
+
+    def test_output_mode_allows_write(self) -> None:
+        """Test OUTPUT mode allows write."""
+        pin = JetsonDigitalPin(18, mode=PinMode.OUTPUT, simulation=True)
+        pin.setup()
+        pin.write(True)  # Should not raise
+
+    def test_input_mode_allows_read(self) -> None:
+        """Test INPUT mode allows read."""
+        pin = JetsonDigitalPin(19, mode=PinMode.INPUT, simulation=True)
+        pin.setup()
+        pin.read()  # Should not raise
+
+    def test_mode_preserved_after_setup(self) -> None:
+        """Test mode is preserved after setup."""
+        pin = JetsonDigitalPin(20, mode=PinMode.INPUT_PULLUP, simulation=True)
+        pin.setup()
+        assert pin.mode == PinMode.INPUT_PULLUP
+
+
+class TestJetsonPWM:
+    """Tests for Jetson PWM functionality."""
+
+    def test_pwm_default_frequency(self) -> None:
+        """Test default PWM frequency is 50Hz."""
+        pin = JetsonPWMPin(32, simulation=True)
+        assert pin.frequency == 50
+
+    def test_pwm_default_duty_cycle(self) -> None:
+        """Test default duty cycle is 0."""
+        pin = JetsonPWMPin(32, simulation=True)
+        assert pin.duty_cycle == 0.0
+
+    def test_pwm_frequency_change(self) -> None:
+        """Test changing PWM frequency."""
+        pin = JetsonPWMPin(32, simulation=True)
+        pin.setup()
+        pin.frequency = 1000
+        assert pin.frequency == 1000
+
+    def test_pwm_duty_cycle_change(self) -> None:
+        """Test changing PWM duty cycle."""
+        pin = JetsonPWMPin(32, simulation=True)
+        pin.setup()
+        pin.duty_cycle = 0.5
+        assert pin.duty_cycle == 0.5
+
+    def test_pwm_duty_cycle_clamp_high(self) -> None:
+        """Test duty cycle is clamped to max 1.0."""
+        pin = JetsonPWMPin(32, simulation=True)
+        pin.setup()
+        pin.duty_cycle = 2.0
+        assert pin.duty_cycle == 1.0
+
+    def test_pwm_duty_cycle_clamp_low(self) -> None:
+        """Test duty cycle is clamped to min 0.0."""
+        pin = JetsonPWMPin(32, simulation=True)
+        pin.setup()
+        pin.duty_cycle = -1.0
+        assert pin.duty_cycle == 0.0
+
+    def test_pwm_start_stop(self) -> None:
+        """Test PWM start/stop cycle."""
+        pin = JetsonPWMPin(32, simulation=True)
+        pin.start()
+        assert pin._pwm_obj["running"] is True
+        pin.stop()
+        assert pin._pwm_obj["running"] is False
+
+    def test_pwm_pulse_width_calculation(self) -> None:
+        """Test pulse width to duty cycle conversion."""
+        pin = JetsonPWMPin(32, frequency=50, simulation=True)  # 20ms period
+        pin.setup()
+        pin.set_pulse_width(2000)  # 2ms = 10% of 20ms
+        assert abs(pin.duty_cycle - 0.1) < 0.001
+
+    def test_pwm_hardware_pin_detection(self) -> None:
+        """Test hardware PWM pin detection."""
+        hw_pin = JetsonPWMPin(32, simulation=True)
+        assert hw_pin._hardware_pwm is True
+
+    def test_pwm_software_pin_detection(self) -> None:
+        """Test software PWM pin detection."""
+        sw_pin = JetsonPWMPin(17, simulation=True)
+        assert sw_pin._hardware_pwm is False
+
+    def test_pwm_all_hardware_pins(self) -> None:
+        """Test all hardware PWM pins are detected."""
+        from robo_infra.platforms.jetson import HARDWARE_PWM_PINS
+        for pin_num in HARDWARE_PWM_PINS:
+            pin = JetsonPWMPin(pin_num, simulation=True)
+            assert pin._hardware_pwm is True
+
+    def test_pwm_set_methods(self) -> None:
+        """Test PWM setter methods."""
+        pin = JetsonPWMPin(32, simulation=True)
+        pin.setup()
+        pin.set_duty_cycle(0.75)
+        assert pin.duty_cycle == 0.75
+        pin.set_frequency(100)
+        assert pin.frequency == 100
+
+
+class TestJetsonCleanup:
+    """Tests for Jetson GPIO cleanup."""
+
+    def test_digital_pin_cleanup(self) -> None:
+        """Test digital pin cleanup."""
+        pin = JetsonDigitalPin(17, simulation=True)
+        pin.setup()
+        assert pin.initialized
+        pin.cleanup()
+        assert not pin.initialized
+        assert pin._gpio_module is None
+
+    def test_pwm_pin_cleanup(self) -> None:
+        """Test PWM pin cleanup."""
+        pin = JetsonPWMPin(32, simulation=True)
+        pin.setup()
+        assert pin.initialized
+        pin.cleanup()
+        assert not pin.initialized
+        assert pin._pwm_obj is None
+
+    def test_cleanup_idempotent(self) -> None:
+        """Test multiple cleanup calls are safe."""
+        pin = JetsonDigitalPin(18, simulation=True)
+        pin.setup()
+        pin.cleanup()
+        pin.cleanup()  # Should not raise
+        assert not pin.initialized
+
+    def test_cleanup_without_setup(self) -> None:
+        """Test cleanup without prior setup."""
+        pin = JetsonDigitalPin(19, simulation=True)
+        assert not pin.initialized
+        pin.cleanup()  # Should not raise
+        assert not pin.initialized
+
+    def test_platform_cleanup_all_pins(self) -> None:
+        """Test platform cleanup releases all pins."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            pin1 = platform.get_pin(17, mode=PinMode.OUTPUT)
+            pin2 = platform.get_pin(18, mode=PinMode.OUTPUT)
+            pin1.setup()
+            pin2.setup()
+            assert pin1.initialized
+            assert pin2.initialized
+            platform.cleanup()
+            # Cleanup should have occurred
+
+
+# =============================================================================
+# Jetson-Specific Tests (Phase 5.7.3.2)
+# =============================================================================
+
+
+class TestJetsonModelDetection:
+    """Comprehensive tests for Jetson model detection."""
+
+    def test_model_returns_jetson_model_enum(self) -> None:
+        """Test model property returns JetsonModel enum."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            assert isinstance(platform.model, JetsonModel)
+
+    def test_simulation_default_model_is_nano(self) -> None:
+        """Test simulation defaults to Nano model."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            assert platform.model == JetsonModel.NANO
+
+    def test_model_is_cached(self) -> None:
+        """Test model detection is cached."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            model1 = platform.model
+            model2 = platform.model
+            assert model1 is model2
+
+    def test_model_dict_nano_entries(self) -> None:
+        """Test JETSON_MODELS contains Nano entries."""
+        assert JETSON_MODELS.get("jetson-nano") == JetsonModel.NANO
+        assert JETSON_MODELS.get("p3448-0000") == JetsonModel.NANO
+
+    def test_model_dict_tx2_entries(self) -> None:
+        """Test JETSON_MODELS contains TX2 entries."""
+        assert JETSON_MODELS.get("jetson-tx2") == JetsonModel.TX2
+        assert JETSON_MODELS.get("p2771-0000") == JetsonModel.TX2
+
+    def test_model_dict_xavier_entries(self) -> None:
+        """Test JETSON_MODELS contains Xavier entries."""
+        assert JETSON_MODELS.get("jetson-xavier") == JetsonModel.AGX_XAVIER
+        assert JETSON_MODELS.get("jetson-xavier-nx") == JetsonModel.XAVIER_NX
+
+    def test_model_dict_orin_entries(self) -> None:
+        """Test JETSON_MODELS contains Orin entries."""
+        assert JETSON_MODELS.get("jetson-agx-orin") == JetsonModel.AGX_ORIN
+        assert JETSON_MODELS.get("jetson-orin-nano") == JetsonModel.ORIN_NANO
+
+    def test_all_models_have_values(self) -> None:
+        """Test all JetsonModel enum members have values."""
+        for model in JetsonModel:
+            assert model.value is not None
+            assert len(model.value) > 0
+
+    @patch("robo_infra.platforms.jetson.Path.exists")
+    @patch("robo_infra.platforms.jetson.Path.read_text")
+    def test_detect_model_from_device_tree(
+        self, mock_read: MagicMock, mock_exists: MagicMock
+    ) -> None:
+        """Test model detection from /proc/device-tree/model."""
+        mock_exists.return_value = True
+        mock_read.return_value = "NVIDIA Jetson TX2"
+
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            platform._model = None
+            platform._simulation = False  # Force real detection
+            model = platform._detect_model()
+            assert isinstance(model, JetsonModel)
+
+
+class TestJetsonCUDAAvailable:
+    """Tests for Jetson CUDA availability detection."""
+
+    def test_cuda_available_returns_bool(self) -> None:
+        """Test cuda_available returns boolean."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            assert isinstance(platform.cuda_available, bool)
+
+    def test_cuda_simulation_returns_false(self) -> None:
+        """Test CUDA returns False in simulation."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            assert platform.cuda_available is False
+
+    @patch("robo_infra.platforms.jetson.Path.exists")
+    def test_cuda_path_check(self, mock_exists: MagicMock) -> None:
+        """Test CUDA path checking."""
+        mock_exists.return_value = True
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            # Still returns False because simulation overrides
+            assert platform.cuda_available is False
+
+
+class TestJetsonCUDAVersion:
+    """Tests for Jetson CUDA version detection."""
+
+    def test_cuda_version_returns_string_or_none(self) -> None:
+        """Test cuda_version returns string or None."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            result = platform.cuda_version
+            assert result is None or isinstance(result, str)
+
+    def test_cuda_version_simulation_returns_none(self) -> None:
+        """Test CUDA version returns None in simulation."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            assert platform.cuda_version is None
+
+    @patch("robo_infra.platforms.jetson.Path.exists")
+    @patch("robo_infra.platforms.jetson.Path.read_text")
+    def test_cuda_version_from_file(
+        self, mock_read: MagicMock, mock_exists: MagicMock
+    ) -> None:
+        """Test CUDA version parsing from file."""
+        mock_exists.return_value = True
+        mock_read.return_value = "CUDA Version 11.4.315"
+
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            platform._simulation = False
+            version = platform.cuda_version
+            # In real detection would parse version
+            assert version is None or isinstance(version, str)
+
+
+class TestJetsonPowerMode:
+    """Tests for Jetson power mode management."""
+
+    def test_power_mode_returns_enum(self) -> None:
+        """Test power_mode returns JetsonPowerMode enum."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            assert isinstance(platform.power_mode, JetsonPowerMode)
+
+    def test_power_mode_simulation_returns_maxn(self) -> None:
+        """Test power mode returns MAXN in simulation."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            assert platform.power_mode == JetsonPowerMode.MAXN
+
+    def test_set_power_mode_simulation_returns_true(self) -> None:
+        """Test set_power_mode returns True in simulation."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            result = platform.set_power_mode(JetsonPowerMode.MODE_10W)
+            assert result is True
+
+    def test_set_power_mode_with_string(self) -> None:
+        """Test set_power_mode accepts string."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            result = platform.set_power_mode("1")
+            assert result is True
+
+    def test_all_power_modes_defined(self) -> None:
+        """Test all power mode values are unique."""
+        values = [mode.value for mode in JetsonPowerMode]
+        assert len(values) == len(set(values))
+
+
+class TestJetsonCSICameraList:
+    """Tests for Jetson CSI camera detection."""
+
+    def test_csi_cameras_returns_list(self) -> None:
+        """Test get_csi_cameras returns list."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            cameras = platform.get_csi_cameras()
+            assert isinstance(cameras, list)
+
+    def test_csi_cameras_simulation_returns_empty(self) -> None:
+        """Test CSI cameras returns empty list in simulation."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            cameras = platform.get_csi_cameras()
+            assert cameras == []
+
+    @patch("robo_infra.platforms.jetson.Path.exists")
+    @patch("subprocess.run")
+    def test_csi_camera_detection_with_device(
+        self, mock_run: MagicMock, mock_exists: MagicMock
+    ) -> None:
+        """Test CSI camera detection with device present."""
+        mock_exists.return_value = True
+        mock_run.return_value = MagicMock(returncode=0, stdout="Argus camera")
+
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            platform._simulation = False
+            cameras = platform.get_csi_cameras()
+            # Would detect cameras if not simulated
+            assert isinstance(cameras, list)
+
+
+class TestJetsonJetPackVersion:
+    """Tests for Jetson JetPack version detection."""
+
+    def test_jetpack_version_returns_string_or_none(self) -> None:
+        """Test jetpack_version returns string or None."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            result = platform.jetpack_version
+            assert result is None or isinstance(result, str)
+
+    def test_jetpack_version_simulation_returns_none(self) -> None:
+        """Test JetPack version returns None in simulation."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            assert platform.jetpack_version is None
+
+    @patch("robo_infra.platforms.jetson.Path.exists")
+    @patch("robo_infra.platforms.jetson.Path.read_text")
+    def test_jetpack_version_from_tegra_release(
+        self, mock_read: MagicMock, mock_exists: MagicMock
+    ) -> None:
+        """Test JetPack version from tegra release file."""
+        mock_exists.return_value = True
+        mock_read.return_value = "# R35 (release), REVISION: 2.1"
+
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            platform._simulation = False
+            version = platform.jetpack_version
+            # Would parse version if not simulated
+            assert version is None or isinstance(version, str)
+
+
+class TestJetsonPlatformAvailability:
+    """Tests for Jetson platform availability."""
+
+    def test_is_available_in_simulation(self) -> None:
+        """Test is_available returns True in simulation."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            assert platform.is_available is True
+
+    @patch("robo_infra.platforms.jetson.Path.exists")
+    def test_is_available_with_tegra_release(self, mock_exists: MagicMock) -> None:
+        """Test is_available with tegra release file."""
+        # Simulate having the tegra release file
+        mock_exists.return_value = True
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            # Still returns True because simulation
+            assert platform.is_available is True
+
+
+class TestJetsonBusCreation:
+    """Tests for Jetson bus creation."""
+
+    def test_i2c_bus_default_bus_number(self) -> None:
+        """Test I2C bus uses default bus number 1."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            bus = platform.get_bus("i2c")
+            assert bus is not None
+
+    def test_i2c_bus_custom_bus_number(self) -> None:
+        """Test I2C bus with custom bus number."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            bus = platform.get_bus("i2c", bus=0)
+            assert bus is not None
+
+    def test_spi_bus_default_device(self) -> None:
+        """Test SPI bus with default device."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            bus = platform.get_bus("spi")
+            assert bus is not None
+
+    def test_spi_bus_custom_device(self) -> None:
+        """Test SPI bus with custom bus and device."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            bus = platform.get_bus("spi", bus=1, device=1)
+            assert bus is not None
+
+    def test_uart_bus_default_port(self) -> None:
+        """Test UART bus with default port."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            bus = platform.get_bus("uart")
+            assert bus is not None
+
+    def test_uart_bus_custom_port(self) -> None:
+        """Test UART bus with custom port."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            bus = platform.get_bus("uart", port="/dev/ttyTHS2")
+            assert bus is not None
+
+    def test_serial_alias_for_uart(self) -> None:
+        """Test 'serial' is an alias for 'uart'."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            bus = platform.get_bus("serial")
+            assert bus is not None
+
+    def test_invalid_bus_type_raises(self) -> None:
+        """Test invalid bus type raises HardwareNotFoundError."""
+        from robo_infra.core.exceptions import HardwareNotFoundError
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            with pytest.raises(HardwareNotFoundError):
+                platform.get_bus("invalid")
+
+
+class TestJetsonPlatformConfig:
+    """Tests for Jetson platform configuration."""
+
+    def test_platform_name_contains_jetson(self) -> None:
+        """Test platform name contains 'Jetson'."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            assert "Jetson" in platform.name
+
+    def test_platform_type_is_jetson(self) -> None:
+        """Test platform type is JETSON."""
+        from robo_infra.platforms.base import PlatformType
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform()
+            assert platform.info.platform_type == PlatformType.JETSON
+
+    def test_custom_numbering(self) -> None:
+        """Test custom numbering scheme."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform(numbering=JetsonPinNumbering.BCM)
+            assert platform._numbering == JetsonPinNumbering.BCM
+
+    def test_tegra_soc_numbering(self) -> None:
+        """Test TEGRA_SOC numbering scheme."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            platform = JetsonPlatform(numbering=JetsonPinNumbering.TEGRA_SOC)
+            assert platform._numbering == JetsonPinNumbering.TEGRA_SOC

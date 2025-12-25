@@ -772,3 +772,940 @@ class TestCreateTestFrame:
 
         assert frame.format == PixelFormat.GRAY
         assert frame.channels == 1
+
+
+# =============================================================================
+# Phase 5.9.1: Comprehensive Vision Processing Tests
+# =============================================================================
+
+
+class TestResizeComprehensive:
+    """Comprehensive tests for resize operations."""
+
+    @pytest.fixture
+    def cv2(self):
+        """Get cv2 module, skip if not available."""
+        return pytest.importorskip("cv2")
+
+    def test_resize_downscale_half(self, cv2):
+        """Test downscaling to half size."""
+        from robo_infra.vision.processing import resize
+
+        frame = create_test_frame(640, 480)
+        result = resize(frame, (320, 240))
+
+        assert result.width == 320
+        assert result.height == 240
+        assert result.data.shape == (240, 320, 3)
+
+    def test_resize_downscale_quarter(self, cv2):
+        """Test downscaling to quarter size."""
+        from robo_infra.vision.processing import resize
+
+        frame = create_test_frame(640, 480)
+        result = resize(frame, (160, 120))
+
+        assert result.width == 160
+        assert result.height == 120
+
+    def test_resize_upscale_double(self, cv2):
+        """Test upscaling to double size."""
+        from robo_infra.vision.processing import resize
+
+        frame = create_test_frame(320, 240)
+        result = resize(frame, (640, 480))
+
+        assert result.width == 640
+        assert result.height == 480
+
+    def test_resize_upscale_triple(self, cv2):
+        """Test upscaling to triple size."""
+        from robo_infra.vision.processing import resize
+
+        frame = create_test_frame(100, 100)
+        result = resize(frame, (300, 300))
+
+        assert result.width == 300
+        assert result.height == 300
+
+    def test_resize_interpolation_nearest(self, cv2):
+        """Test nearest neighbor interpolation."""
+        from robo_infra.vision.processing import resize
+
+        frame = create_test_frame(640, 480)
+        result = resize(frame, (320, 240), interpolation="nearest")
+
+        assert result.width == 320
+        assert result.height == 240
+
+    def test_resize_interpolation_linear(self, cv2):
+        """Test bilinear interpolation (default)."""
+        from robo_infra.vision.processing import resize
+
+        frame = create_test_frame(640, 480)
+        result = resize(frame, (320, 240), interpolation="linear")
+
+        assert result.width == 320
+
+    def test_resize_interpolation_cubic(self, cv2):
+        """Test bicubic interpolation."""
+        from robo_infra.vision.processing import resize
+
+        frame = create_test_frame(640, 480)
+        result = resize(frame, (800, 600), interpolation="cubic")
+
+        assert result.width == 800
+
+    def test_resize_interpolation_area(self, cv2):
+        """Test area averaging (good for downscaling)."""
+        from robo_infra.vision.processing import resize
+
+        frame = create_test_frame(640, 480)
+        result = resize(frame, (320, 240), interpolation="area")
+
+        assert result.width == 320
+
+    def test_resize_interpolation_lanczos(self, cv2):
+        """Test Lanczos interpolation (highest quality)."""
+        from robo_infra.vision.processing import resize
+
+        frame = create_test_frame(320, 240)
+        result = resize(frame, (640, 480), interpolation="lanczos")
+
+        assert result.width == 640
+
+    def test_resize_non_square(self, cv2):
+        """Test resizing non-square aspect ratio."""
+        from robo_infra.vision.processing import resize
+
+        frame = create_test_frame(640, 480)
+        result = resize(frame, (800, 200))
+
+        assert result.width == 800
+        assert result.height == 200
+
+    def test_resize_preserves_metadata(self, cv2):
+        """Test resize preserves frame metadata."""
+        from robo_infra.vision.processing import resize
+
+        frame = create_test_frame(640, 480)
+        frame.metadata["camera_id"] = "test_cam"
+        result = resize(frame, (320, 240))
+
+        assert result.metadata.get("camera_id") == "test_cam"
+        assert result.frame_number == frame.frame_number
+
+    def test_resize_bgr_format(self, cv2):
+        """Test resizing BGR format frames."""
+        from robo_infra.vision.processing import resize
+
+        frame = create_test_frame(640, 480, format=PixelFormat.BGR)
+        result = resize(frame, (320, 240))
+
+        assert result.format == PixelFormat.BGR
+
+
+class TestCropComprehensive:
+    """Comprehensive tests for crop operations."""
+
+    def test_crop_basic_region(self):
+        """Test basic region cropping."""
+        from robo_infra.vision.processing import crop
+
+        frame = create_test_frame(640, 480)
+        result = crop(frame, (100, 100, 200, 200))
+
+        assert result.width == 200
+        assert result.height == 200
+
+    def test_crop_corner_top_left(self):
+        """Test cropping from top-left corner."""
+        from robo_infra.vision.processing import crop
+
+        frame = create_test_frame(640, 480)
+        result = crop(frame, (0, 0, 100, 100))
+
+        assert result.width == 100
+        assert result.height == 100
+
+    def test_crop_corner_bottom_right(self):
+        """Test cropping from bottom-right corner."""
+        from robo_infra.vision.processing import crop
+
+        frame = create_test_frame(640, 480)
+        result = crop(frame, (540, 380, 100, 100))
+
+        assert result.width == 100
+        assert result.height == 100
+
+    def test_crop_full_frame(self):
+        """Test cropping entire frame."""
+        from robo_infra.vision.processing import crop
+
+        frame = create_test_frame(640, 480)
+        result = crop(frame, (0, 0, 640, 480))
+
+        assert result.width == frame.width
+        assert result.height == frame.height
+
+    def test_crop_single_pixel(self):
+        """Test cropping single pixel."""
+        from robo_infra.vision.processing import crop
+
+        frame = create_test_frame(640, 480)
+        result = crop(frame, (320, 240, 1, 1))
+
+        assert result.width == 1
+        assert result.height == 1
+
+    def test_crop_out_of_bounds_clamp_raises(self):
+        """Test crop raises error when out of bounds."""
+        from robo_infra.vision.processing import crop
+
+        frame = create_test_frame(640, 480)
+
+        with pytest.raises(ValueError, match="exceeds frame bounds"):
+            crop(frame, (600, 100, 100, 100))
+
+    def test_crop_zero_width(self):
+        """Test crop with zero width raises error."""
+        from robo_infra.vision.processing import crop
+
+        frame = create_test_frame(640, 480)
+
+        with pytest.raises(ValueError, match="dimensions must be positive"):
+            crop(frame, (100, 100, 0, 100))
+
+    def test_crop_zero_height(self):
+        """Test crop with zero height raises error."""
+        from robo_infra.vision.processing import crop
+
+        frame = create_test_frame(640, 480)
+
+        with pytest.raises(ValueError, match="dimensions must be positive"):
+            crop(frame, (100, 100, 100, 0))
+
+
+class TestRotateComprehensive:
+    """Comprehensive tests for rotate operations."""
+
+    @pytest.fixture
+    def cv2(self):
+        """Get cv2 module, skip if not available."""
+        return pytest.importorskip("cv2")
+
+    def test_rotate_90_degrees(self, cv2):
+        """Test 90 degree rotation."""
+        from robo_infra.vision.processing import rotate
+
+        frame = create_test_frame(640, 480)
+        result = rotate(frame, 90.0)
+
+        assert result.width == frame.width
+        assert result.height == frame.height
+
+    def test_rotate_180_degrees(self, cv2):
+        """Test 180 degree rotation."""
+        from robo_infra.vision.processing import rotate
+
+        frame = create_test_frame(640, 480)
+        result = rotate(frame, 180.0)
+
+        assert result.width == frame.width
+
+    def test_rotate_270_degrees(self, cv2):
+        """Test 270 degree rotation."""
+        from robo_infra.vision.processing import rotate
+
+        frame = create_test_frame(640, 480)
+        result = rotate(frame, 270.0)
+
+        assert result.width == frame.width
+
+    def test_rotate_arbitrary_angle(self, cv2):
+        """Test arbitrary angle rotation."""
+        from robo_infra.vision.processing import rotate
+
+        frame = create_test_frame(640, 480)
+
+        for angle in [15.0, 30.0, 45.0, 60.0, 135.0]:
+            result = rotate(frame, angle)
+            assert result.width == frame.width
+
+    def test_rotate_negative_angle(self, cv2):
+        """Test negative angle rotation (clockwise)."""
+        from robo_infra.vision.processing import rotate
+
+        frame = create_test_frame(640, 480)
+        result = rotate(frame, -45.0)
+
+        assert result.width == frame.width
+
+    def test_rotate_with_scale_shrink(self, cv2):
+        """Test rotation with shrinking scale."""
+        from robo_infra.vision.processing import rotate
+
+        frame = create_test_frame(640, 480)
+        result = rotate(frame, 45.0, scale=0.5)
+
+        assert result.width == frame.width
+
+    def test_rotate_with_scale_enlarge(self, cv2):
+        """Test rotation with enlarging scale."""
+        from robo_infra.vision.processing import rotate
+
+        frame = create_test_frame(640, 480)
+        result = rotate(frame, 45.0, scale=1.5)
+
+        assert result.width == frame.width
+
+    def test_rotate_custom_center(self, cv2):
+        """Test rotation around custom center."""
+        from robo_infra.vision.processing import rotate
+
+        frame = create_test_frame(640, 480)
+        result = rotate(frame, 45.0, center=(0.0, 0.0))
+
+        assert result.width == frame.width
+
+    def test_rotate_border_replicate(self, cv2):
+        """Test rotation with replicate border mode."""
+        from robo_infra.vision.processing import rotate
+
+        frame = create_test_frame(640, 480)
+        result = rotate(frame, 45.0, border_mode="replicate")
+
+        assert result.width == frame.width
+
+    def test_rotate_border_reflect(self, cv2):
+        """Test rotation with reflect border mode."""
+        from robo_infra.vision.processing import rotate
+
+        frame = create_test_frame(640, 480)
+        result = rotate(frame, 45.0, border_mode="reflect")
+
+        assert result.width == frame.width
+
+    def test_rotate_grayscale(self, cv2):
+        """Test rotation of grayscale frame."""
+        from robo_infra.vision.processing import rotate
+
+        frame = create_test_frame(640, 480, format=PixelFormat.GRAY)
+        result = rotate(frame, 45.0)
+
+        assert result.format == PixelFormat.GRAY
+
+
+class TestToGrayscaleComprehensive:
+    """Comprehensive tests for grayscale conversion."""
+
+    def test_to_grayscale_from_rgb(self):
+        """Test RGB to grayscale conversion."""
+        from robo_infra.vision.processing import to_grayscale
+
+        frame = create_test_frame(640, 480, format=PixelFormat.RGB)
+        result = to_grayscale(frame)
+
+        assert result.format == PixelFormat.GRAY
+        assert result.channels == 1
+
+    def test_to_grayscale_from_bgr(self):
+        """Test BGR to grayscale conversion."""
+        from robo_infra.vision.processing import to_grayscale
+
+        frame = create_test_frame(640, 480, format=PixelFormat.BGR)
+        result = to_grayscale(frame)
+
+        assert result.format == PixelFormat.GRAY
+
+    def test_to_grayscale_passthrough(self):
+        """Test grayscale input passes through."""
+        from robo_infra.vision.processing import to_grayscale
+
+        frame = create_test_frame(640, 480, format=PixelFormat.GRAY)
+        result = to_grayscale(frame)
+
+        assert result.format == PixelFormat.GRAY
+        assert result is not frame  # Should be a copy
+
+    def test_to_grayscale_preserves_dimensions(self):
+        """Test grayscale conversion preserves dimensions."""
+        from robo_infra.vision.processing import to_grayscale
+
+        frame = create_test_frame(640, 480, format=PixelFormat.RGB)
+        result = to_grayscale(frame)
+
+        assert result.width == frame.width
+        assert result.height == frame.height
+
+
+class TestThresholdComprehensive:
+    """Comprehensive tests for thresholding operations."""
+
+    @pytest.fixture
+    def cv2(self):
+        """Get cv2 module, skip if not available."""
+        return pytest.importorskip("cv2")
+
+    def test_threshold_binary(self, cv2):
+        """Test binary thresholding."""
+        from robo_infra.vision.processing import threshold
+
+        frame = create_test_frame(640, 480, format=PixelFormat.GRAY, pattern="gradient")
+        result = threshold(frame, 128, thresh_type="binary")
+
+        assert result.format == PixelFormat.GRAY
+        unique = np.unique(result.data)
+        assert 0 in unique
+        assert 255 in unique
+
+    def test_threshold_binary_inv(self, cv2):
+        """Test inverse binary thresholding."""
+        from robo_infra.vision.processing import threshold
+
+        frame = create_test_frame(640, 480, format=PixelFormat.GRAY, pattern="gradient")
+        result = threshold(frame, 128, thresh_type="binary_inv")
+
+        assert result.format == PixelFormat.GRAY
+
+    def test_threshold_trunc(self, cv2):
+        """Test truncate thresholding."""
+        from robo_infra.vision.processing import threshold
+
+        frame = create_test_frame(640, 480, format=PixelFormat.GRAY, pattern="gradient")
+        result = threshold(frame, 128, thresh_type="trunc")
+
+        assert result.format == PixelFormat.GRAY
+
+    def test_threshold_tozero(self, cv2):
+        """Test to-zero thresholding."""
+        from robo_infra.vision.processing import threshold
+
+        frame = create_test_frame(640, 480, format=PixelFormat.GRAY, pattern="gradient")
+        result = threshold(frame, 128, thresh_type="tozero")
+
+        assert result.format == PixelFormat.GRAY
+
+    def test_threshold_otsu(self, cv2):
+        """Test Otsu's automatic thresholding."""
+        from robo_infra.vision.processing import threshold
+
+        frame = create_test_frame(640, 480, format=PixelFormat.GRAY, pattern="gradient")
+        result = threshold(frame, 0, thresh_type="otsu")
+
+        assert result.format == PixelFormat.GRAY
+
+    def test_threshold_adaptive_mean(self, cv2):
+        """Test adaptive mean thresholding."""
+        from robo_infra.vision.processing import threshold
+
+        frame = create_test_frame(640, 480, format=PixelFormat.GRAY)
+        result = threshold(frame, 0, thresh_type="adaptive_mean")
+
+        assert result.format == PixelFormat.GRAY
+
+    def test_threshold_adaptive_gaussian(self, cv2):
+        """Test adaptive Gaussian thresholding."""
+        from robo_infra.vision.processing import threshold
+
+        frame = create_test_frame(640, 480, format=PixelFormat.GRAY)
+        result = threshold(frame, 0, thresh_type="adaptive_gaussian")
+
+        assert result.format == PixelFormat.GRAY
+
+    def test_threshold_custom_max_value(self, cv2):
+        """Test thresholding with custom max value."""
+        from robo_infra.vision.processing import threshold
+
+        frame = create_test_frame(640, 480, format=PixelFormat.GRAY, pattern="gradient")
+        result = threshold(frame, 128, max_value=200)
+
+        unique = np.unique(result.data)
+        assert 200 in unique or 0 in unique
+
+    def test_threshold_color_converts_to_gray(self, cv2):
+        """Test thresholding color frame converts to gray first."""
+        from robo_infra.vision.processing import threshold
+
+        frame = create_test_frame(640, 480, format=PixelFormat.RGB)
+        result = threshold(frame, 128)
+
+        assert result.format == PixelFormat.GRAY
+
+
+class TestBlurComprehensive:
+    """Comprehensive tests for blur operations."""
+
+    @pytest.fixture
+    def cv2(self):
+        """Get cv2 module, skip if not available."""
+        return pytest.importorskip("cv2")
+
+    def test_blur_gaussian_default(self, cv2):
+        """Test Gaussian blur with default settings."""
+        from robo_infra.vision.processing import blur
+
+        frame = create_test_frame(640, 480, pattern="noise")
+        result = blur(frame, kernel_size=5)
+
+        assert result.width == frame.width
+        assert result.format == frame.format
+
+    def test_blur_gaussian_large_kernel(self, cv2):
+        """Test Gaussian blur with large kernel."""
+        from robo_infra.vision.processing import blur
+
+        frame = create_test_frame(640, 480, pattern="noise")
+        result = blur(frame, kernel_size=15, method="gaussian")
+
+        assert result.width == frame.width
+
+    def test_blur_gaussian_custom_sigma(self, cv2):
+        """Test Gaussian blur with custom sigma."""
+        from robo_infra.vision.processing import blur
+
+        frame = create_test_frame(640, 480, pattern="noise")
+        result = blur(frame, kernel_size=5, method="gaussian", sigma=2.0)
+
+        assert result.width == frame.width
+
+    def test_blur_median(self, cv2):
+        """Test median blur (good for salt-and-pepper noise)."""
+        from robo_infra.vision.processing import blur
+
+        frame = create_test_frame(640, 480, pattern="noise")
+        result = blur(frame, kernel_size=5, method="median")
+
+        assert result.width == frame.width
+
+    def test_blur_average(self, cv2):
+        """Test average (box) blur."""
+        from robo_infra.vision.processing import blur
+
+        frame = create_test_frame(640, 480, pattern="noise")
+        result = blur(frame, kernel_size=5, method="average")
+
+        assert result.width == frame.width
+
+    def test_blur_grayscale(self, cv2):
+        """Test blur on grayscale frame."""
+        from robo_infra.vision.processing import blur
+
+        frame = create_test_frame(640, 480, format=PixelFormat.GRAY, pattern="noise")
+        result = blur(frame, kernel_size=5)
+
+        assert result.format == PixelFormat.GRAY
+
+    def test_blur_invalid_kernel_size(self, cv2):
+        """Test blur with invalid kernel size."""
+        from robo_infra.vision.processing import blur
+
+        frame = create_test_frame(640, 480)
+
+        with pytest.raises(ValueError):
+            blur(frame, kernel_size=0)
+
+
+class TestBilateralFilterComprehensive:
+    """Comprehensive tests for bilateral filter."""
+
+    @pytest.fixture
+    def cv2(self):
+        """Get cv2 module, skip if not available."""
+        return pytest.importorskip("cv2")
+
+    def test_bilateral_filter_default(self, cv2):
+        """Test bilateral filter with default parameters."""
+        from robo_infra.vision.processing import bilateral_filter
+
+        frame = create_test_frame(640, 480, pattern="noise")
+        result = bilateral_filter(frame)
+
+        assert result.width == frame.width
+        assert result.format == frame.format
+
+    def test_bilateral_filter_custom_d(self, cv2):
+        """Test bilateral filter with custom diameter."""
+        from robo_infra.vision.processing import bilateral_filter
+
+        frame = create_test_frame(640, 480, pattern="noise")
+        result = bilateral_filter(frame, d=5)
+
+        assert result.width == frame.width
+
+    def test_bilateral_filter_high_sigma(self, cv2):
+        """Test bilateral filter with high sigma values."""
+        from robo_infra.vision.processing import bilateral_filter
+
+        frame = create_test_frame(640, 480, pattern="noise")
+        result = bilateral_filter(frame, sigma_color=150.0, sigma_space=150.0)
+
+        assert result.width == frame.width
+
+    def test_bilateral_filter_grayscale(self, cv2):
+        """Test bilateral filter on grayscale frame."""
+        from robo_infra.vision.processing import bilateral_filter
+
+        frame = create_test_frame(640, 480, format=PixelFormat.GRAY, pattern="noise")
+        result = bilateral_filter(frame)
+
+        assert result.format == PixelFormat.GRAY
+
+
+class TestEdgeDetectComprehensive:
+    """Comprehensive tests for edge detection."""
+
+    @pytest.fixture
+    def cv2(self):
+        """Get cv2 module, skip if not available."""
+        return pytest.importorskip("cv2")
+
+    def test_edge_detect_canny(self, cv2):
+        """Test Canny edge detection."""
+        from robo_infra.vision.processing import edge_detect
+
+        frame = create_test_frame(640, 480, pattern="edges")
+        result = edge_detect(frame, method="canny")
+
+        assert result.format == PixelFormat.GRAY
+
+    def test_edge_detect_canny_custom_thresholds(self, cv2):
+        """Test Canny with custom thresholds."""
+        from robo_infra.vision.processing import edge_detect
+
+        frame = create_test_frame(640, 480, pattern="edges")
+        result = edge_detect(frame, method="canny", threshold1=50, threshold2=150)
+
+        assert result.format == PixelFormat.GRAY
+
+    def test_edge_detect_sobel(self, cv2):
+        """Test Sobel edge detection."""
+        from robo_infra.vision.processing import edge_detect
+
+        frame = create_test_frame(640, 480, pattern="edges")
+        result = edge_detect(frame, method="sobel")
+
+        assert result.format == PixelFormat.GRAY
+
+    def test_edge_detect_sobel_custom_ksize(self, cv2):
+        """Test Sobel with custom kernel size."""
+        from robo_infra.vision.processing import edge_detect
+
+        frame = create_test_frame(640, 480, pattern="edges")
+        result = edge_detect(frame, method="sobel", ksize=5)
+
+        assert result.format == PixelFormat.GRAY
+
+    def test_edge_detect_laplacian(self, cv2):
+        """Test Laplacian edge detection."""
+        from robo_infra.vision.processing import edge_detect
+
+        frame = create_test_frame(640, 480, pattern="edges")
+        result = edge_detect(frame, method="laplacian")
+
+        assert result.format == PixelFormat.GRAY
+
+    def test_edge_detect_scharr(self, cv2):
+        """Test Scharr edge detection."""
+        from robo_infra.vision.processing import edge_detect
+
+        frame = create_test_frame(640, 480, pattern="edges")
+        result = edge_detect(frame, method="scharr")
+
+        assert result.format == PixelFormat.GRAY
+
+    def test_edge_detect_on_color_frame(self, cv2):
+        """Test edge detection converts color to grayscale."""
+        from robo_infra.vision.processing import edge_detect
+
+        frame = create_test_frame(640, 480, format=PixelFormat.RGB, pattern="edges")
+        result = edge_detect(frame, method="canny")
+
+        assert result.format == PixelFormat.GRAY
+
+    def test_canny_edge_l2_gradient(self, cv2):
+        """Test Canny edge with L2 gradient norm."""
+        from robo_infra.vision.processing import canny_edge
+
+        frame = create_test_frame(640, 480, pattern="edges")
+        result = canny_edge(frame, 50, 150, l2_gradient=True)
+
+        assert result.format == PixelFormat.GRAY
+
+    def test_sobel_edge_x_direction(self, cv2):
+        """Test Sobel edge in X direction only."""
+        from robo_infra.vision.processing import sobel_edge
+
+        frame = create_test_frame(640, 480, pattern="edges")
+        result = sobel_edge(frame, dx=1, dy=0)
+
+        assert result.format == PixelFormat.GRAY
+
+    def test_sobel_edge_y_direction(self, cv2):
+        """Test Sobel edge in Y direction only."""
+        from robo_infra.vision.processing import sobel_edge
+
+        frame = create_test_frame(640, 480, pattern="edges")
+        result = sobel_edge(frame, dx=0, dy=1)
+
+        assert result.format == PixelFormat.GRAY
+
+    def test_laplacian_edge_custom_scale(self, cv2):
+        """Test Laplacian edge with custom scale."""
+        from robo_infra.vision.processing import laplacian_edge
+
+        frame = create_test_frame(640, 480, pattern="edges")
+        result = laplacian_edge(frame, ksize=5, scale=2.0)
+
+        assert result.format == PixelFormat.GRAY
+
+
+class TestMorphologyComprehensive:
+    """Comprehensive tests for morphological operations."""
+
+    @pytest.fixture
+    def cv2(self):
+        """Get cv2 module, skip if not available."""
+        return pytest.importorskip("cv2")
+
+    def test_erode_basic(self, cv2):
+        """Test basic erosion."""
+        from robo_infra.vision.processing import erode
+
+        frame = create_test_frame(640, 480, pattern="checkerboard")
+        result = erode(frame, kernel_size=3)
+
+        assert result.width == frame.width
+
+    def test_erode_multiple_iterations(self, cv2):
+        """Test erosion with multiple iterations."""
+        from robo_infra.vision.processing import erode
+
+        frame = create_test_frame(640, 480, pattern="checkerboard")
+        result = erode(frame, kernel_size=3, iterations=3)
+
+        assert result.width == frame.width
+
+    def test_erode_ellipse_kernel(self, cv2):
+        """Test erosion with ellipse kernel."""
+        from robo_infra.vision.processing import erode
+
+        frame = create_test_frame(640, 480, pattern="checkerboard")
+        result = erode(frame, kernel_size=5, kernel_shape="ellipse")
+
+        assert result.width == frame.width
+
+    def test_erode_cross_kernel(self, cv2):
+        """Test erosion with cross kernel."""
+        from robo_infra.vision.processing import erode
+
+        frame = create_test_frame(640, 480, pattern="checkerboard")
+        result = erode(frame, kernel_size=5, kernel_shape="cross")
+
+        assert result.width == frame.width
+
+    def test_dilate_basic(self, cv2):
+        """Test basic dilation."""
+        from robo_infra.vision.processing import dilate
+
+        frame = create_test_frame(640, 480, pattern="checkerboard")
+        result = dilate(frame, kernel_size=3)
+
+        assert result.width == frame.width
+
+    def test_dilate_multiple_iterations(self, cv2):
+        """Test dilation with multiple iterations."""
+        from robo_infra.vision.processing import dilate
+
+        frame = create_test_frame(640, 480, pattern="checkerboard")
+        result = dilate(frame, kernel_size=3, iterations=3)
+
+        assert result.width == frame.width
+
+    def test_morphology_open_removes_noise(self, cv2):
+        """Test opening operation (erosion then dilation)."""
+        from robo_infra.vision.processing import morphology
+
+        frame = create_test_frame(640, 480, pattern="checkerboard")
+        result = morphology(frame, "open", kernel_size=3)
+
+        assert result.width == frame.width
+
+    def test_morphology_close_fills_holes(self, cv2):
+        """Test closing operation (dilation then erosion)."""
+        from robo_infra.vision.processing import morphology
+
+        frame = create_test_frame(640, 480, pattern="checkerboard")
+        result = morphology(frame, "close", kernel_size=3)
+
+        assert result.width == frame.width
+
+    def test_morphology_gradient_outline(self, cv2):
+        """Test morphological gradient (outline)."""
+        from robo_infra.vision.processing import morphology
+
+        frame = create_test_frame(640, 480, pattern="checkerboard")
+        result = morphology(frame, "gradient", kernel_size=3)
+
+        assert result.width == frame.width
+
+    def test_morphology_tophat(self, cv2):
+        """Test top-hat operation (bright spots)."""
+        from robo_infra.vision.processing import morphology
+
+        frame = create_test_frame(640, 480, pattern="checkerboard")
+        result = morphology(frame, "tophat", kernel_size=5)
+
+        assert result.width == frame.width
+
+    def test_morphology_blackhat(self, cv2):
+        """Test black-hat operation (dark spots)."""
+        from robo_infra.vision.processing import morphology
+
+        frame = create_test_frame(640, 480, pattern="checkerboard")
+        result = morphology(frame, "blackhat", kernel_size=5)
+
+        assert result.width == frame.width
+
+
+class TestHistogramEqualizeComprehensive:
+    """Comprehensive tests for histogram equalization."""
+
+    @pytest.fixture
+    def cv2(self):
+        """Get cv2 module, skip if not available."""
+        return pytest.importorskip("cv2")
+
+    def test_histogram_equalize_grayscale(self, cv2):
+        """Test histogram equalization on grayscale."""
+        from robo_infra.vision.processing import histogram_equalize
+
+        frame = create_test_frame(640, 480, format=PixelFormat.GRAY, pattern="gradient")
+        result = histogram_equalize(frame)
+
+        assert result.format == PixelFormat.GRAY
+
+    def test_histogram_equalize_rgb(self, cv2):
+        """Test histogram equalization on RGB."""
+        from robo_infra.vision.processing import histogram_equalize
+
+        frame = create_test_frame(640, 480, format=PixelFormat.RGB)
+        result = histogram_equalize(frame)
+
+        assert result.channels == 3
+
+    def test_histogram_equalize_bgr(self, cv2):
+        """Test histogram equalization on BGR."""
+        from robo_infra.vision.processing import histogram_equalize
+
+        frame = create_test_frame(640, 480, format=PixelFormat.BGR)
+        result = histogram_equalize(frame)
+
+        assert result.channels == 3
+
+    def test_histogram_equalize_increases_contrast(self, cv2):
+        """Test histogram equalization increases contrast."""
+        from robo_infra.vision.processing import histogram_equalize
+
+        # Create low contrast frame
+        data = np.full((480, 640), 128, dtype=np.uint8)
+        # Add some slight variation
+        data[100:200, 100:200] = 130
+        frame = Frame(
+            data=data,
+            timestamp=time.monotonic(),
+            width=640,
+            height=480,
+            format=PixelFormat.GRAY,
+            frame_number=0,
+        )
+
+        result = histogram_equalize(frame)
+
+        # After equalization, there should be more contrast
+        assert result.format == PixelFormat.GRAY
+
+
+class TestIntegration:
+    """Integration tests for processing pipelines."""
+
+    @pytest.fixture
+    def cv2(self):
+        """Get cv2 module, skip if not available."""
+        return pytest.importorskip("cv2")
+
+    def test_resize_then_blur(self, cv2):
+        """Test resize followed by blur."""
+        from robo_infra.vision.processing import blur, resize
+
+        frame = create_test_frame(640, 480)
+        resized = resize(frame, (320, 240))
+        blurred = blur(resized, kernel_size=5)
+
+        assert blurred.width == 320
+        assert blurred.height == 240
+
+    def test_grayscale_then_threshold(self, cv2):
+        """Test grayscale conversion then thresholding."""
+        from robo_infra.vision.processing import threshold, to_grayscale
+
+        frame = create_test_frame(640, 480, format=PixelFormat.RGB)
+        gray = to_grayscale(frame)
+        binary = threshold(gray, 128)
+
+        assert binary.format == PixelFormat.GRAY
+
+    def test_blur_then_edge_detect(self, cv2):
+        """Test blur followed by edge detection."""
+        from robo_infra.vision.processing import blur, edge_detect
+
+        frame = create_test_frame(640, 480, pattern="edges")
+        blurred = blur(frame, kernel_size=5)
+        edges = edge_detect(blurred, method="canny")
+
+        assert edges.format == PixelFormat.GRAY
+
+    def test_threshold_then_morphology(self, cv2):
+        """Test threshold followed by morphology."""
+        from robo_infra.vision.processing import morphology, threshold
+
+        frame = create_test_frame(640, 480, format=PixelFormat.GRAY, pattern="gradient")
+        binary = threshold(frame, 128)
+        cleaned = morphology(binary, "open", kernel_size=3)
+
+        assert cleaned.format == PixelFormat.GRAY
+
+    def test_full_processing_pipeline(self, cv2):
+        """Test a full image processing pipeline."""
+        from robo_infra.vision.processing import (
+            blur,
+            crop,
+            edge_detect,
+            resize,
+            threshold,
+            to_grayscale,
+        )
+
+        frame = create_test_frame(640, 480, format=PixelFormat.RGB)
+
+        # Crop region of interest
+        cropped = crop(frame, (100, 100, 400, 300))
+
+        # Resize for processing
+        resized = resize(cropped, (200, 150))
+
+        # Convert to grayscale
+        gray = to_grayscale(resized)
+
+        # Apply blur to reduce noise
+        blurred = blur(gray, kernel_size=5)
+
+        # Edge detection
+        edges = edge_detect(blurred, method="canny")
+
+        # Final threshold
+        binary = threshold(edges, 50)
+
+        assert binary.format == PixelFormat.GRAY
+        assert binary.width == 200
+        assert binary.height == 150

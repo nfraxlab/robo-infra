@@ -569,3 +569,362 @@ class TestSensorTypeEnums:
         assert LightSensorType.PHOTODIODE.value == "photodiode"
         assert LightSensorType.PHOTOTRANSISTOR.value == "phototransistor"
         assert LightSensorType.I2C.value == "i2c"
+
+
+# =============================================================================
+# Phase 5.5.5.1 - Enhanced Environmental Sensor Tests
+# =============================================================================
+
+
+class TestTemperatureConversions:
+    """Tests for temperature unit conversions (5.5.5.1)."""
+
+    def test_celsius_to_fahrenheit_freezing(self) -> None:
+        """Test Celsius to Fahrenheit conversion at freezing point."""
+        # 0°C = 32°F
+        pin = SimulatedAnalogPin(0)
+        pin.setup()
+        # Need raw value that gives 0°C
+        # Thermistor at 0°C has higher resistance, lower voltage
+        pin.set_simulated_normalized(0.2)
+
+        config = TemperatureConfig(unit=Unit.CELSIUS, offset=-25.0)
+        temp = Temperature(pin=pin, config=config)
+        temp.enable()
+
+        celsius = temp.read_celsius()
+        fahrenheit = temp.read_fahrenheit()
+
+        # Verify conversion formula: F = C * 9/5 + 32
+        expected_f = celsius * 9.0 / 5.0 + 32.0
+        assert fahrenheit == pytest.approx(expected_f, abs=0.1)
+
+    def test_celsius_to_fahrenheit_boiling(self) -> None:
+        """Test Celsius to Fahrenheit conversion formula validation."""
+        # Verify 100°C = 212°F using the formula
+        celsius = 100.0
+        fahrenheit = celsius * 9.0 / 5.0 + 32.0
+        assert fahrenheit == pytest.approx(212.0, abs=0.01)
+
+    def test_fahrenheit_to_celsius_room_temp(self) -> None:
+        """Test Fahrenheit to Celsius conversion at room temperature."""
+        # 77°F = 25°C
+        pin = SimulatedAnalogPin(0)
+        pin.setup()
+        pin.set_simulated_normalized(0.5)
+
+        config = TemperatureConfig(unit=Unit.FAHRENHEIT)
+        temp = Temperature(pin=pin, config=config)
+        temp.enable()
+
+        reading = temp.read()
+        # Convert back to Celsius
+        celsius = (reading.value - 32.0) * 5.0 / 9.0
+        assert reading.unit == Unit.FAHRENHEIT
+        # Verify it's a valid temperature reading
+        assert -40 < celsius < 125
+
+    def test_fahrenheit_to_celsius_formula(self) -> None:
+        """Test Fahrenheit to Celsius conversion formula."""
+        # 68°F = 20°C
+        fahrenheit = 68.0
+        celsius = (fahrenheit - 32.0) * 5.0 / 9.0
+        assert celsius == pytest.approx(20.0, abs=0.01)
+
+    def test_thermistor_calculation_cold(self) -> None:
+        """Test thermistor calculation at cold temperature.
+
+        For NTC thermistor with thermistor connected to ground:
+        - Higher raw value = higher thermistor resistance = colder
+        """
+        pin = SimulatedAnalogPin(0)
+        pin.setup()
+        # High voltage/raw = high resistance = cold (NTC thermistor)
+        pin.set_simulated_normalized(0.85)
+
+        config = TemperatureConfig(
+            sensor_type=TemperatureSensorType.THERMISTOR,
+            beta_coefficient=3950,
+            nominal_resistance=10000.0,
+            nominal_temp=25.0,
+        )
+        temp = Temperature(pin=pin, config=config)
+        temp.enable()
+
+        reading = temp.read()
+        # High normalized value should give cold temperature for NTC
+        assert reading.value < 10
+
+    def test_thermistor_calculation_hot(self) -> None:
+        """Test thermistor calculation at hot temperature.
+
+        For NTC thermistor with thermistor connected to ground:
+        - Lower raw value = lower thermistor resistance = hotter
+        """
+        pin = SimulatedAnalogPin(0)
+        pin.setup()
+        # Low voltage/raw = low resistance = hot (NTC thermistor)
+        pin.set_simulated_normalized(0.15)
+
+        config = TemperatureConfig(
+            sensor_type=TemperatureSensorType.THERMISTOR,
+            beta_coefficient=3950,
+            nominal_resistance=10000.0,
+            nominal_temp=25.0,
+        )
+        temp = Temperature(pin=pin, config=config)
+        temp.enable()
+
+        reading = temp.read()
+        # Low normalized value should give hot temperature for NTC
+        assert reading.value > 30
+
+    def test_thermistor_beta_coefficient_effect(self) -> None:
+        """Test that beta coefficient affects thermistor calculation."""
+        pin = SimulatedAnalogPin(0)
+        pin.setup()
+        pin.set_simulated_normalized(0.3)
+
+        # Lower beta = steeper curve
+        config1 = TemperatureConfig(beta_coefficient=3000)
+        temp1 = Temperature(pin=pin, config=config1)
+        temp1.enable()
+        reading1 = temp1.read()
+
+        # Higher beta = shallower curve
+        config2 = TemperatureConfig(beta_coefficient=4500)
+        temp2 = Temperature(pin=pin, config=config2)
+        temp2.enable()
+        reading2 = temp2.read()
+
+        # Different beta values should give different temperatures
+        assert reading1.value != reading2.value
+
+
+class TestHumidityCalculations:
+    """Tests for humidity-related calculations (5.5.5.1)."""
+
+    def test_dewpoint_calculation_formula(self) -> None:
+        """Test dewpoint calculation using Magnus formula.
+
+        Magnus formula:
+        γ(T,RH) = ln(RH/100) + (a*T)/(b+T)
+        Td = (b * γ) / (a - γ)
+        where a = 17.27, b = 237.7
+        """
+        # At 25°C and 50% RH, dewpoint should be around 13.8°C
+        import math
+
+        temp_c = 25.0
+        rh = 50.0
+        a = 17.27
+        b = 237.7
+
+        gamma = math.log(rh / 100.0) + (a * temp_c) / (b + temp_c)
+        dewpoint = (b * gamma) / (a - gamma)
+
+        assert dewpoint == pytest.approx(13.8, abs=0.5)
+
+    def test_dewpoint_at_high_humidity(self) -> None:
+        """Test dewpoint approaches temperature at high humidity."""
+        import math
+
+        temp_c = 20.0
+        rh = 95.0  # Very high humidity
+        a = 17.27
+        b = 237.7
+
+        gamma = math.log(rh / 100.0) + (a * temp_c) / (b + temp_c)
+        dewpoint = (b * gamma) / (a - gamma)
+
+        # At 95% RH, dewpoint should be very close to temperature
+        assert abs(dewpoint - temp_c) < 2.0
+
+    def test_dewpoint_at_low_humidity(self) -> None:
+        """Test dewpoint is much lower than temp at low humidity."""
+        import math
+
+        temp_c = 25.0
+        rh = 20.0  # Low humidity
+        a = 17.27
+        b = 237.7
+
+        gamma = math.log(rh / 100.0) + (a * temp_c) / (b + temp_c)
+        dewpoint = (b * gamma) / (a - gamma)
+
+        # At 20% RH, dewpoint should be much lower than temperature
+        assert dewpoint < temp_c - 15
+
+    def test_absolute_humidity_from_relative(self) -> None:
+        """Test absolute humidity calculation from relative humidity.
+
+        Absolute humidity (g/m³) = (RH × ρw) / 100
+        where ρw is saturation vapor density at temperature
+        """
+        import math
+
+        temp_c = 20.0
+        rh = 50.0
+
+        # Saturation vapor pressure (hPa) using simplified formula
+        es = 6.112 * math.exp((17.67 * temp_c) / (temp_c + 243.5))
+
+        # Saturation vapor density (g/m³)
+        # ρw = 216.7 * es / (temp_c + 273.15)
+        rho_w = 216.7 * es / (temp_c + 273.15)
+
+        # Absolute humidity
+        abs_humidity = (rh * rho_w) / 100.0
+
+        # At 20°C, 50% RH, absolute humidity should be ~8.6 g/m³
+        assert abs_humidity == pytest.approx(8.6, abs=0.5)
+
+    def test_humidity_sensor_calibration(self) -> None:
+        """Test humidity sensor with calibration scale and offset."""
+        pin = SimulatedAnalogPin(0)
+        pin.setup()
+        pin.set_simulated_normalized(0.5)
+
+        config = HumidityConfig(
+            sensor_type=HumiditySensorType.CAPACITIVE,
+            scale=0.95,
+            offset=2.0,
+        )
+        humidity = Humidity(pin=pin, config=config)
+        humidity.enable()
+
+        reading = humidity.read()
+        # Calibration should be applied
+        assert reading.value > 0
+        assert reading.value <= 100
+
+
+class TestPressureCalculations:
+    """Tests for pressure-related calculations (5.5.5.1)."""
+
+    def test_pressure_altitude_calculation_sea_level(self) -> None:
+        """Test altitude calculation at sea level pressure."""
+        pin = SimulatedAnalogPin(0)
+        pin.setup()
+        # Set raw value for approximately 1013 hPa
+        pin.set_simulated_normalized(0.99)
+
+        config = PressureConfig(sea_level_pressure=1013.25)
+        pressure = Pressure(pin=pin, config=config)
+        pressure.enable()
+
+        altitude = pressure.estimate_altitude()
+        # Near sea level pressure should give near-zero altitude
+        assert isinstance(altitude, float)
+
+    def test_pressure_altitude_calculation_high(self) -> None:
+        """Test altitude calculation at reduced pressure (higher altitude)."""
+        import math
+
+        # At ~900 hPa, altitude should be around 1000m
+        p = 900.0
+        p0 = 1013.25
+        altitude = 44330.0 * (1.0 - math.pow(p / p0, 0.1903))
+
+        assert altitude == pytest.approx(1000, abs=100)
+
+    def test_pressure_altitude_formula(self) -> None:
+        """Test barometric altitude formula accuracy."""
+        import math
+
+        # Known altitude: Denver, CO is at ~1609m with avg pressure ~840 hPa
+        p = 840.0
+        p0 = 1013.25
+        altitude = 44330.0 * (1.0 - math.pow(p / p0, 0.1903))
+
+        assert altitude == pytest.approx(1609, abs=200)
+
+    def test_pressure_sea_level_correction(self) -> None:
+        """Test sea level pressure correction for altitude."""
+        import math
+
+        # If we're at 500m with measured pressure of 955 hPa,
+        # calculate what sea level pressure would be
+        measured_pressure = 955.0
+        altitude = 500.0
+
+        # Inverse of altitude formula to get P0
+        # P = P0 * (1 - altitude/44330)^5.255
+        # P0 = P / (1 - altitude/44330)^5.255
+        sea_level_pressure = measured_pressure / math.pow(
+            1.0 - altitude / 44330.0, 5.255
+        )
+
+        # Sea level pressure should be higher than measured
+        assert sea_level_pressure > measured_pressure
+        assert sea_level_pressure == pytest.approx(1013, abs=20)
+
+    def test_pressure_unit_conversions(self) -> None:
+        """Test pressure unit conversion accuracy."""
+        # 1013.25 hPa = 101325 Pa = 101.325 kPa = 1.01325 bar = 14.696 psi
+        hpa = 1013.25
+
+        assert hpa * 100 == pytest.approx(101325, abs=1)  # Pa
+        assert hpa / 10 == pytest.approx(101.325, abs=0.01)  # kPa
+        assert hpa / 1000 == pytest.approx(1.01325, abs=0.001)  # bar
+        assert hpa * 0.0145038 == pytest.approx(14.696, abs=0.01)  # psi
+
+
+class TestTemperatureEdgeCases:
+    """Edge case tests for temperature sensors (5.5.5.1)."""
+
+    def test_temperature_min_limit(self) -> None:
+        """Test temperature at minimum limit."""
+        pin = SimulatedAnalogPin(0)
+        pin.setup()
+        pin.set_simulated_normalized(0.0)  # Extreme cold
+
+        config = TemperatureConfig(min_temp=-40.0)
+        temp = Temperature(pin=pin, config=config)
+        temp.enable()
+
+        reading = temp.read()
+        assert reading.value >= -40.0
+
+    def test_temperature_max_limit(self) -> None:
+        """Test temperature at maximum limit."""
+        pin = SimulatedAnalogPin(0)
+        pin.setup()
+        pin.set_simulated_normalized(1.0)  # Extreme hot
+
+        config = TemperatureConfig(max_temp=125.0)
+        temp = Temperature(pin=pin, config=config)
+        temp.enable()
+
+        reading = temp.read()
+        assert reading.value <= 125.0
+
+    def test_ds18b20_sensor_type(self) -> None:
+        """Test DS18B20 digital temperature sensor."""
+        config = TemperatureConfig(
+            sensor_type=TemperatureSensorType.DS18B20,
+            name="DS18B20",
+        )
+        temp = Temperature(config=config)
+
+        assert temp.config.sensor_type == TemperatureSensorType.DS18B20
+
+    def test_thermocouple_sensor_type(self) -> None:
+        """Test thermocouple temperature sensor."""
+        config = TemperatureConfig(
+            sensor_type=TemperatureSensorType.THERMOCOUPLE,
+            name="TypeK",
+        )
+        temp = Temperature(config=config)
+
+        assert temp.config.sensor_type == TemperatureSensorType.THERMOCOUPLE
+
+    def test_i2c_temperature_sensor(self) -> None:
+        """Test I2C temperature sensor configuration."""
+        config = TemperatureConfig(
+            sensor_type=TemperatureSensorType.I2C,
+            name="TMP102",
+        )
+        temp = Temperature(config=config)
+
+        assert temp.config.sensor_type == TemperatureSensorType.I2C

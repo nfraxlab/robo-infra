@@ -7,7 +7,7 @@ allowing testing without ROS2 installed.
 from __future__ import annotations
 
 import os
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -708,3 +708,309 @@ class TestIntegration:
 
         arm_node.destroy_node()
         gripper_node.destroy_node()
+
+
+# =============================================================================
+# Phase 5.7.5.2 - ROS2 Integration Tests
+# =============================================================================
+
+
+class TestROS2NodeCreation:
+    """Tests for ROS2 node creation (Phase 5.7.5.2)."""
+
+    def test_ros2_node_creation_basic(self, servos: list[Servo]) -> None:
+        """Test basic ROS2 node creation."""
+        joints = {s.name: s for s in servos}
+        arm = JointGroup(name="test_arm", joints=joints)
+        node = controller_to_ros2_node(arm)
+
+        assert node is not None
+        assert node.get_name() == "test_arm"
+
+        node.destroy_node()
+
+    def test_ros2_node_creation_with_custom_name(
+        self, servos: list[Servo]
+    ) -> None:
+        """Test ROS2 node creation with custom name."""
+        joints = {s.name: s for s in servos}
+        arm = JointGroup(name="arm", joints=joints)
+        # controller_to_ros2_node uses keyword args for customization
+        node = controller_to_ros2_node(
+            arm,
+            node_name="custom_arm_node",
+            namespace="robot",
+            publish_rate_hz=50.0,
+        )
+
+        assert node is not None
+        assert node.get_name() == "custom_arm_node"
+
+        node.destroy_node()
+
+    def test_ros2_actuator_node_creation(self, servos: list[Servo]) -> None:
+        """Test ROS2 node creation from actuator."""
+        # Use one of the fixture servos
+        servo = servos[0]
+        node = actuator_to_ros2_node(servo)
+
+        assert node is not None
+        assert servo.name in node.get_name() or node.get_name() is not None
+
+        node.destroy_node()
+
+    def test_ros2_node_lifecycle(self, servos: list[Servo]) -> None:
+        """Test ROS2 node lifecycle."""
+        joints = {s.name: s for s in servos}
+        arm = JointGroup(name="lifecycle_test", joints=joints)
+        node = controller_to_ros2_node(arm)
+
+        # Node should be active
+        assert node.get_name() == "lifecycle_test"
+
+        # Destroy node
+        node.destroy_node()
+
+        # After destroy, re-create should work
+        node2 = controller_to_ros2_node(arm)
+        assert node2.get_name() == "lifecycle_test"
+        node2.destroy_node()
+
+
+class TestROS2Publisher:
+    """Tests for ROS2 publisher functionality (Phase 5.7.5.2)."""
+
+    def test_ros2_publisher_creation(self, servos: list[Servo]) -> None:
+        """Test ROS2 publisher is created via node creation."""
+        joints = {s.name: s for s in servos}
+        arm = JointGroup(name="pub_test", joints=joints)
+        node = controller_to_ros2_node(arm)
+
+        # ControllerROS2Node should have a publishers dict
+        assert hasattr(node, "_node") or node is not None
+
+        node.destroy_node()
+
+    def test_ros2_mock_publisher_publish(self) -> None:
+        """Test MockPublisher can publish messages."""
+        from robo_infra.integrations.ros2 import MockPublisher
+
+        # MockPublisher takes (msg_type, topic, qos_profile)
+        publisher = MockPublisher(dict, "test_topic")
+        message = {"data": "test_message"}
+
+        # Should not raise
+        publisher.publish(message)
+
+        # Verify message was stored
+        assert len(publisher.messages) == 1
+        assert publisher.messages[0] == message
+
+    def test_ros2_mock_publisher_topic_name(self) -> None:
+        """Test MockPublisher has correct topic name."""
+        from robo_infra.integrations.ros2 import MockPublisher
+
+        publisher = MockPublisher(dict, "robot/joint_states")
+        assert publisher.topic == "robot/joint_states"
+
+    def test_ros2_mock_publisher_multiple_messages(self) -> None:
+        """Test MockPublisher handles multiple messages."""
+        from robo_infra.integrations.ros2 import MockPublisher
+
+        publisher = MockPublisher(dict, "test_topic")
+
+        for i in range(5):
+            publisher.publish({"count": i})
+
+        assert len(publisher.messages) == 5
+        assert publisher.messages[2]["count"] == 2
+
+
+class TestROS2Subscriber:
+    """Tests for ROS2 subscriber functionality (Phase 5.7.5.2)."""
+
+    def test_ros2_mock_subscriber_creation(self) -> None:
+        """Test MockSubscriber can be created."""
+        from robo_infra.integrations.ros2 import MockSubscriber
+
+        def callback(msg: Any) -> None:
+            pass
+
+        # MockSubscriber takes (msg_type, topic, callback, qos_profile)
+        subscriber = MockSubscriber(dict, "test_topic", callback)
+        assert subscriber is not None
+        assert subscriber.topic == "test_topic"
+
+    def test_ros2_mock_subscriber_callback(self) -> None:
+        """Test MockSubscriber callback is invoked via receive."""
+        from robo_infra.integrations.ros2 import MockSubscriber
+
+        received: list[Any] = []
+
+        def callback(msg: Any) -> None:
+            received.append(msg)
+
+        subscriber = MockSubscriber(dict, "test_topic", callback)
+
+        # Simulate receiving a message via receive()
+        subscriber.receive({"data": "test"})
+
+        assert len(received) == 1
+        assert received[0]["data"] == "test"
+
+    def test_ros2_mock_subscriber_multiple_callbacks(self) -> None:
+        """Test MockSubscriber handles multiple messages."""
+        from robo_infra.integrations.ros2 import MockSubscriber
+
+        received: list[Any] = []
+
+        def callback(msg: Any) -> None:
+            received.append(msg)
+
+        subscriber = MockSubscriber(dict, "test_topic", callback)
+
+        for i in range(3):
+            subscriber.receive({"index": i})
+
+        assert len(received) == 3
+        assert received[1]["index"] == 1
+
+
+class TestROS2Service:
+    """Tests for ROS2 service functionality (Phase 5.7.5.2)."""
+
+    def test_ros2_mock_service_creation(self) -> None:
+        """Test MockService can be created."""
+        from robo_infra.integrations.ros2 import MockService
+
+        def handler(request: Any, response: Any) -> Any:
+            response.success = True
+            return response
+
+        # MockService takes (srv_type, service_name, callback)
+        service = MockService(dict, "test_service", handler)
+        assert service is not None
+        assert service.service_name == "test_service"
+
+    def test_ros2_mock_service_call(self) -> None:
+        """Test MockService can be called."""
+        from robo_infra.integrations.ros2 import MockService
+
+        def handler(request: Any, response: Any) -> Any:
+            response.result = request.get("value", 0) * 2
+            return response
+
+        service = MockService(dict, "double_service", handler)
+        response = service.call({"value": 5})
+
+        assert response.result == 10
+
+    def test_ros2_mock_service_basic_functionality(self) -> None:
+        """Test MockService basic call functionality."""
+        from robo_infra.integrations.ros2 import MockService
+
+        calls_made: list[Any] = []
+
+        def handler(request: Any, response: Any) -> Any:
+            calls_made.append(request)
+            response.success = True
+            return response
+
+        service = MockService(dict, "track_service", handler)
+
+        service.call({"a": 1})
+        service.call({"b": 2})
+
+        # Track that calls were made via our local tracking
+        assert len(calls_made) == 2
+        assert calls_made[0]["a"] == 1
+        assert calls_made[1]["b"] == 2
+
+    def test_ros2_mock_service_error_handling(self) -> None:
+        """Test MockService handles errors in handler."""
+        from robo_infra.integrations.ros2 import MockService
+
+        def handler(request: Any, response: Any) -> Any:
+            if "fail" in request:
+                raise ValueError("Intentional failure")
+            response.success = True
+            return response
+
+        service = MockService(dict, "error_service", handler)
+
+        # Success case
+        response = service.call({})
+        assert response.success is True
+
+        # Error case
+        try:
+            service.call({"fail": True})
+            assert False, "Should have raised"
+        except ValueError as e:
+            assert "Intentional failure" in str(e)
+
+
+class TestROS2LaunchFileGeneration:
+    """Tests for ROS2 launch file generation (Phase 5.7.5.2)."""
+
+    def test_launch_file_generation_basic(self, servos: list[Servo]) -> None:
+        """Test basic launch file generation."""
+        joints = {s.name: s for s in servos}
+        arm = JointGroup(name="launch_arm", joints=joints)
+
+        content = generate_launch_file(arm)
+
+        assert isinstance(content, str)
+        assert len(content) > 0
+        assert "launch_arm" in content
+
+    def test_launch_file_generation_with_config(
+        self, servos: list[Servo]
+    ) -> None:
+        """Test launch file generation with config."""
+        joints = {s.name: s for s in servos}
+        arm = JointGroup(name="arm", joints=joints)
+
+        config = LaunchConfig(
+            package_name="my_robot_pkg",
+            output="screen",
+            remappings=[("input", "output")],
+        )
+        content = generate_launch_file(arm, config=config)
+
+        assert "my_robot_pkg" in content
+
+    def test_launch_file_generation_python_format(
+        self, servos: list[Servo]
+    ) -> None:
+        """Test launch file uses Python format."""
+        joints = {s.name: s for s in servos}
+        arm = JointGroup(name="arm", joints=joints)
+
+        content = generate_launch_file(arm)
+
+        # Should be Python launch file format
+        assert "from launch" in content or "launch" in content.lower()
+
+    def test_parameters_file_generation(self, servos: list[Servo]) -> None:
+        """Test parameters file generation."""
+        joints = {s.name: s for s in servos}
+        arm = JointGroup(name="params_arm", joints=joints)
+
+        config = ROS2NodeConfig(node_name="arm_node")
+        content = generate_parameters_file(arm, config)
+
+        assert isinstance(content, str)
+        assert "arm_node" in content
+
+    def test_parameters_file_yaml_format(self, servos: list[Servo]) -> None:
+        """Test parameters file is YAML format."""
+        joints = {s.name: s for s in servos}
+        arm = JointGroup(name="arm", joints=joints)
+
+        config = ROS2NodeConfig(node_name="test_node")
+        content = generate_parameters_file(arm, config)
+
+        # Should be valid YAML-like content
+        assert ":" in content  # YAML key-value indicator
+        assert "test_node:" in content

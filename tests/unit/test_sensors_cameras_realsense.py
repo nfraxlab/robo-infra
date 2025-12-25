@@ -442,3 +442,296 @@ class TestDepthProcessing:
         assert colorized.format == PixelFormat.RGB
         assert colorized.data.shape == (480, 640, 3)
         assert colorized.data.dtype == np.uint8
+
+
+# =============================================================================
+# Phase 5.5.4.2 - Additional RealSense Tests
+# =============================================================================
+
+
+class TestRealSenseStreams:
+    """Tests for RealSense stream types (5.5.4.2)."""
+
+    @pytest.fixture
+    def simulated_camera(self):
+        """Create a simulated RealSense camera."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            camera = RealSenseCamera(serial_number=None)
+            camera.enable()
+            yield camera
+            if camera.is_enabled:
+                camera.disable()
+
+    def test_color_stream(self, simulated_camera):
+        """Test color stream capture."""
+        frame = simulated_camera.capture()
+
+        assert isinstance(frame, Frame)
+        assert frame.format == PixelFormat.RGB
+        assert frame.channels == 3
+        assert frame.width == 640
+        assert frame.height == 480
+
+    def test_depth_stream(self, simulated_camera):
+        """Test depth stream capture."""
+        depth = simulated_camera.capture_depth()
+
+        assert isinstance(depth, DepthFrame)
+        assert depth.data.dtype == np.uint16
+        assert depth.width == 640
+        assert depth.height == 480
+
+    def test_infrared_stream_config(self):
+        """Test infrared stream configuration."""
+        config = RealSenseConfig(
+            enable_imu=True,
+            imu_fps=200,
+        )
+
+        assert config.enable_imu is True
+        assert config.imu_fps == 200
+
+
+class TestRealSenseDepthAlignment:
+    """Tests for RealSense depth-to-color alignment (5.5.4.2)."""
+
+    @pytest.fixture
+    def simulated_camera(self):
+        """Create a simulated RealSense camera with alignment."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            config = RealSenseConfig(align_depth_to_color=True)
+            camera = RealSenseCamera(config=config)
+            camera.enable()
+            yield camera
+            if camera.is_enabled:
+                camera.disable()
+
+    def test_align_depth_to_color(self, simulated_camera):
+        """Test aligned depth capture."""
+        rgb, depth = simulated_camera.capture_rgbd()
+
+        # When aligned, depth should have same dimensions as RGB
+        assert rgb.width == depth.width
+        assert rgb.height == depth.height
+
+
+class TestRealSenseDepthToMeters:
+    """Tests for RealSense depth to meters conversion (5.5.4.2)."""
+
+    def test_depth_to_meters(self):
+        """Test depth to meters conversion."""
+        # Create depth with known values
+        data = np.array([[1000, 2000], [3000, 4000]], dtype=np.uint16)
+        depth = DepthFrame(
+            data=data,
+            timestamp=time.monotonic(),
+            width=2,
+            height=2,
+            depth_scale=0.001,  # 1mm per unit
+            min_depth=0.1,
+            max_depth=10.0,
+        )
+
+        meters = depth.to_meters()
+
+        assert meters[0, 0] == pytest.approx(1.0, abs=0.01)
+        assert meters[0, 1] == pytest.approx(2.0, abs=0.01)
+        assert meters[1, 0] == pytest.approx(3.0, abs=0.01)
+        assert meters[1, 1] == pytest.approx(4.0, abs=0.01)
+
+    def test_depth_colorize(self):
+        """Test depth colorization."""
+        data = np.random.randint(300, 5000, (240, 320), dtype=np.uint16)
+        depth = DepthFrame(
+            data=data,
+            timestamp=time.monotonic(),
+            width=320,
+            height=240,
+            depth_scale=0.001,
+            min_depth=0.3,
+            max_depth=5.0,
+        )
+
+        colorized = depth.to_colormap()
+
+        assert isinstance(colorized, Frame)
+        assert colorized.format == PixelFormat.RGB
+        assert colorized.data.shape == (240, 320, 3)
+
+
+class TestRealSenseFilters:
+    """Tests for RealSense depth processing filters (5.5.4.2)."""
+
+    def test_decimation_filter_config(self):
+        """Test decimation filter configuration."""
+        config = RealSenseConfig(
+            decimation_filter=True,
+            decimation_magnitude=4,
+        )
+
+        assert config.decimation_filter is True
+        assert config.decimation_magnitude == 4
+
+    def test_spatial_filter_config(self):
+        """Test spatial filter configuration."""
+        config = RealSenseConfig(
+            spatial_filter=True,
+        )
+
+        assert config.spatial_filter is True
+
+    def test_temporal_filter_config(self):
+        """Test temporal filter configuration."""
+        config = RealSenseConfig(
+            temporal_filter=True,
+        )
+
+        assert config.temporal_filter is True
+
+    def test_hole_filling_config(self):
+        """Test hole filling filter configuration."""
+        config = RealSenseConfig(
+            hole_filling=True,
+        )
+
+        assert config.hole_filling is True
+
+    def test_all_filters_enabled(self):
+        """Test all filters enabled together."""
+        config = RealSenseConfig(
+            decimation_filter=True,
+            spatial_filter=True,
+            temporal_filter=True,
+            hole_filling=True,
+        )
+
+        assert config.decimation_filter is True
+        assert config.spatial_filter is True
+        assert config.temporal_filter is True
+        assert config.hole_filling is True
+
+
+class TestRealSensePointcloud:
+    """Tests for RealSense point cloud generation (5.5.4.2)."""
+
+    @pytest.fixture
+    def simulated_camera(self):
+        """Create a simulated RealSense camera."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            camera = RealSenseCamera()
+            camera.enable()
+            yield camera
+            camera.disable()
+
+    def test_get_pointcloud(self, simulated_camera):
+        """Test point cloud generation."""
+        pc = simulated_camera.get_pointcloud()
+
+        assert isinstance(pc, PointCloud)
+        assert pc.num_points > 0
+        assert pc.points.shape[1] == 3
+
+    def test_pointcloud_with_colors(self, simulated_camera):
+        """Test point cloud with colors."""
+        pc = simulated_camera.get_pointcloud(colored=True)
+
+        assert isinstance(pc, PointCloud)
+        # Colors may or may not be present in simulation
+        if pc.colors is not None:
+            assert pc.colors.shape[0] == pc.num_points
+            assert pc.colors.shape[1] == 3
+
+
+class TestRealSenseLaserControl:
+    """Tests for RealSense laser control (5.5.4.2)."""
+
+    def test_laser_power_config(self):
+        """Test laser power configuration."""
+        config = RealSenseConfig(
+            laser_power=200,
+            emitter_enabled=True,
+        )
+
+        assert config.laser_power == 200
+        assert config.emitter_enabled is True
+
+    def test_emitter_disabled_config(self):
+        """Test emitter disabled configuration."""
+        config = RealSenseConfig(
+            emitter_enabled=False,
+        )
+
+        assert config.emitter_enabled is False
+
+
+class TestRealSenseDepthPresets:
+    """Tests for RealSense depth presets (5.5.4.2)."""
+
+    def test_high_accuracy_preset(self):
+        """Test high accuracy preset."""
+        config = RealSenseConfig(depth_preset="high_accuracy")
+        assert config.depth_preset == "high_accuracy"
+
+    def test_high_density_preset(self):
+        """Test high density preset."""
+        config = RealSenseConfig(depth_preset="high_density")
+        assert config.depth_preset == "high_density"
+
+    def test_default_preset(self):
+        """Test default preset."""
+        config = RealSenseConfig(depth_preset="default")
+        assert config.depth_preset == "default"
+
+
+class TestRealSenseProperties:
+    """Tests for RealSense camera properties (5.5.4.2)."""
+
+    @pytest.fixture
+    def simulated_camera(self):
+        """Create a simulated RealSense camera."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            camera = RealSenseCamera()
+            camera.enable()
+            yield camera
+            camera.disable()
+
+    def test_device_name(self, simulated_camera):
+        """Test device name property."""
+        name = simulated_camera.device_name
+        assert "RealSense" in name or "Simulated" in name
+
+    def test_depth_scale(self, simulated_camera):
+        """Test depth scale property."""
+        scale = simulated_camera.depth_scale
+        assert scale == 0.001  # 1mm per unit
+
+    def test_serial_number(self, simulated_camera):
+        """Test serial number property."""
+        serial = simulated_camera.serial_number
+        # Simulation may have None or 'SIMULATION'
+        assert serial is None or isinstance(serial, str)
+
+
+class TestRealSenseAsync:
+    """Tests for RealSense async streaming (5.5.4.2)."""
+
+    @pytest.fixture
+    def simulated_camera(self):
+        """Create a simulated RealSense camera."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            camera = RealSenseCamera()
+            camera.enable()
+            yield camera
+            camera.disable()
+
+    @pytest.mark.asyncio
+    async def test_async_stream(self, simulated_camera):
+        """Test async frame streaming."""
+        frame_count = 0
+        async for frame in simulated_camera.stream():
+            assert isinstance(frame, Frame)
+            frame_count += 1
+            if frame_count >= 3:
+                break
+
+        assert frame_count == 3

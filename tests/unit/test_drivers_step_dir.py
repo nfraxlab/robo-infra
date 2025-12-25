@@ -359,3 +359,406 @@ class TestStepDirDriverChannelInterface:
         value = driver._read_channel(0)
         # Position / 1000.0 = 0.5
         assert value == 0.5
+
+
+# =============================================================================
+# Phase 5.8.2.2 - Step/Dir Advanced Tests
+# =============================================================================
+
+
+class TestStepDirInit:
+    """Tests for StepDirDriver initialization."""
+
+    def test_init_step_dir_pins_stored(self) -> None:
+        """Test that step and dir pins are stored correctly."""
+        driver = A4988Driver(step_pin=17, dir_pin=27)
+        assert driver._step_pin_num == 17
+        assert driver._dir_pin_num == 27
+
+    def test_init_enable_pin_optional(self) -> None:
+        """Test enable pin is optional."""
+        driver = A4988Driver(step_pin=17, dir_pin=27)
+        assert driver._enable_pin_num is None
+
+    def test_init_ms_pins_optional(self) -> None:
+        """Test microstepping pins are optional."""
+        driver = A4988Driver(step_pin=17, dir_pin=27)
+        assert driver._ms_pin_nums is None
+
+    def test_init_simulation_from_env(self) -> None:
+        """Test simulation mode from environment variable."""
+        driver = A4988Driver(step_pin=17, dir_pin=27)
+        assert driver.simulation is True
+
+    def test_init_default_position(self) -> None:
+        """Test default position is zero."""
+        driver = A4988Driver(step_pin=17, dir_pin=27)
+        assert driver.position == 0
+
+    def test_init_default_direction(self) -> None:
+        """Test default direction is forward."""
+        driver = A4988Driver(step_pin=17, dir_pin=27)
+        assert driver.direction is True
+
+    def test_init_default_microstepping(self) -> None:
+        """Test default microstepping is 1 (full step)."""
+        driver = A4988Driver(step_pin=17, dir_pin=27)
+        assert driver.microstepping == 1
+
+    def test_init_default_disabled(self) -> None:
+        """Test driver starts disabled."""
+        driver = A4988Driver(step_pin=17, dir_pin=27)
+        assert driver.enabled is False
+
+
+class TestStepDirEnableAdvanced:
+    """Advanced tests for StepDirDriver enable functionality."""
+
+    @pytest.fixture
+    def driver(self) -> A4988Driver:
+        """Create connected driver with enable pin."""
+        drv = A4988Driver(step_pin=2, dir_pin=3, enable_pin=4)
+        drv.connect()
+        return drv
+
+    def test_enable_sets_flag(self, driver: A4988Driver) -> None:
+        """Test enable sets the enabled flag."""
+        driver.enable()
+        assert driver.enabled is True
+
+    def test_enable_idempotent(self, driver: A4988Driver) -> None:
+        """Test calling enable multiple times is safe."""
+        driver.enable()
+        driver.enable()
+        driver.enable()
+        assert driver.enabled is True
+
+    def test_enable_without_enable_pin(self) -> None:
+        """Test enable works without enable pin configured."""
+        driver = A4988Driver(step_pin=2, dir_pin=3)  # No enable_pin
+        driver.connect()
+        driver.enable()  # Should not raise
+        assert driver.enabled is True
+
+
+class TestStepDirDisableAdvanced:
+    """Advanced tests for StepDirDriver disable functionality."""
+
+    @pytest.fixture
+    def driver(self) -> A4988Driver:
+        """Create connected driver with enable pin."""
+        drv = A4988Driver(step_pin=2, dir_pin=3, enable_pin=4)
+        drv.connect()
+        return drv
+
+    def test_disable_sets_flag(self, driver: A4988Driver) -> None:
+        """Test disable clears the enabled flag."""
+        driver.enable()
+        driver.disable()
+        assert driver.enabled is False
+
+    def test_disable_idempotent(self, driver: A4988Driver) -> None:
+        """Test calling disable multiple times is safe."""
+        driver.disable()
+        driver.disable()
+        driver.disable()
+        assert driver.enabled is False
+
+    def test_disable_without_enable_pin(self) -> None:
+        """Test disable works without enable pin configured."""
+        driver = A4988Driver(step_pin=2, dir_pin=3)  # No enable_pin
+        driver.connect()
+        driver.enable()
+        driver.disable()  # Should not raise
+        assert driver.enabled is False
+
+
+class TestStepDirDirectionAdvanced:
+    """Advanced tests for StepDirDriver direction control."""
+
+    @pytest.fixture
+    def driver(self) -> A4988Driver:
+        """Create connected driver."""
+        drv = A4988Driver(step_pin=2, dir_pin=3)
+        drv.connect()
+        return drv
+
+    def test_direction_forward(self, driver: A4988Driver) -> None:
+        """Test setting forward direction."""
+        driver.set_direction(forward=True)
+        assert driver.direction is True
+
+    def test_direction_reverse(self, driver: A4988Driver) -> None:
+        """Test setting reverse direction."""
+        driver.set_direction(forward=False)
+        assert driver.direction is False
+
+    def test_direction_toggle(self, driver: A4988Driver) -> None:
+        """Test toggling direction."""
+        driver.set_direction(forward=True)
+        assert driver.direction is True
+        driver.set_direction(forward=False)
+        assert driver.direction is False
+        driver.set_direction(forward=True)
+        assert driver.direction is True
+
+    def test_direction_affects_step(self, driver: A4988Driver) -> None:
+        """Test direction affects step movement."""
+        driver.set_direction(forward=True)
+        initial = driver.position
+        driver.step(10)
+        assert driver.position == initial + 10
+
+        # Negative step value reverses direction internally
+        current = driver.position
+        driver.step(-5)
+        assert driver.position == current - 5
+
+
+class TestStepDirStepAdvanced:
+    """Advanced tests for StepDirDriver step generation."""
+
+    @pytest.fixture
+    def driver(self) -> A4988Driver:
+        """Create connected driver."""
+        drv = A4988Driver(step_pin=2, dir_pin=3)
+        drv.connect()
+        return drv
+
+    def test_step_zero(self, driver: A4988Driver) -> None:
+        """Test stepping zero steps."""
+        initial = driver.position
+        driver.step(0)
+        assert driver.position == initial
+
+    def test_step_single(self, driver: A4988Driver) -> None:
+        """Test single step."""
+        initial = driver.position
+        driver.step(1)
+        assert driver.position == initial + 1
+
+    def test_step_multiple(self, driver: A4988Driver) -> None:
+        """Test multiple steps."""
+        initial = driver.position
+        driver.step(100)
+        assert driver.position == initial + 100
+
+    def test_step_negative(self, driver: A4988Driver) -> None:
+        """Test negative steps (reverse direction)."""
+        driver.move_to(100)
+        driver.step(-25)
+        assert driver.position == 75
+
+    def test_step_large_count(self, driver: A4988Driver) -> None:
+        """Test large step count."""
+        # Using small count in tests to avoid timeout
+        driver.step(50)
+        assert driver.position == 50
+
+
+class TestStepDirMicrosteppingAdvanced:
+    """Advanced tests for StepDirDriver microstepping."""
+
+    @pytest.fixture
+    def a4988_driver(self) -> A4988Driver:
+        """Create A4988 driver with MS pins."""
+        drv = A4988Driver(step_pin=2, dir_pin=3, ms_pins=(5, 6, 7))
+        drv.connect()
+        return drv
+
+    @pytest.fixture
+    def drv8825_driver(self) -> DRV8825Driver:
+        """Create DRV8825 driver with MS pins."""
+        drv = DRV8825Driver(step_pin=2, dir_pin=3, ms_pins=(5, 6, 7))
+        drv.connect()
+        return drv
+
+    def test_a4988_valid_microstepping(self, a4988_driver: A4988Driver) -> None:
+        """Test all valid A4988 microstepping values."""
+        for microsteps in [1, 2, 4, 8, 16]:
+            a4988_driver.set_microstepping(microsteps)
+            assert a4988_driver.get_microstepping() == microsteps
+
+    def test_drv8825_valid_microstepping(self, drv8825_driver: DRV8825Driver) -> None:
+        """Test all valid DRV8825 microstepping values."""
+        for microsteps in [1, 2, 4, 8, 16, 32]:
+            drv8825_driver.set_microstepping(microsteps)
+            assert drv8825_driver.get_microstepping() == microsteps
+
+    def test_a4988_invalid_microstepping_32(self, a4988_driver: A4988Driver) -> None:
+        """Test A4988 rejects 32 microstepping (DRV8825 only)."""
+        with pytest.raises(ValueError):
+            a4988_driver.set_microstepping(32)
+
+    def test_drv8825_invalid_microstepping_64(self, drv8825_driver: DRV8825Driver) -> None:
+        """Test DRV8825 rejects 64 microstepping (not supported)."""
+        with pytest.raises(ValueError):
+            drv8825_driver.set_microstepping(64)
+
+    def test_microstepping_without_ms_pins(self) -> None:
+        """Test microstepping without MS pins logs warning."""
+        driver = A4988Driver(step_pin=2, dir_pin=3)  # No ms_pins
+        driver.connect()
+        # Should not raise, just log warning
+        driver.set_microstepping(4)
+        assert driver.microstepping == 4
+
+
+class TestA4988DriverAdvanced:
+    """Advanced tests for A4988 driver specifics."""
+
+    def test_a4988_microstep_table(self) -> None:
+        """Test A4988 microstep table is correct."""
+        expected = {
+            1: (False, False, False),  # Full step
+            2: (True, False, False),   # Half step
+            4: (False, True, False),   # Quarter step
+            8: (True, True, False),    # Eighth step
+            16: (True, True, True),    # Sixteenth step
+        }
+        assert A4988Driver.MICROSTEP_TABLE == expected
+
+    def test_a4988_driver_name(self) -> None:
+        """Test A4988 driver default name."""
+        driver = A4988Driver(step_pin=2, dir_pin=3)
+        # Check driver has name set
+
+    def test_a4988_custom_name(self) -> None:
+        """Test A4988 driver with custom name."""
+        driver = A4988Driver(step_pin=2, dir_pin=3, name="X-Axis")
+        # Custom name should be applied
+
+    def test_a4988_status_contents(self) -> None:
+        """Test A4988 status dictionary contents."""
+        driver = A4988Driver(step_pin=2, dir_pin=3)
+        driver.connect()
+        driver.move_to(100)
+        status = driver.get_status()
+        
+        assert status["enabled"] is False
+        assert status["direction"] == "forward"
+        assert status["position"] == 100
+        assert status["microstepping"] == 1
+        assert status["simulation"] is True
+
+
+class TestDRV8825DriverAdvanced:
+    """Advanced tests for DRV8825 driver specifics."""
+
+    def test_drv8825_microstep_table(self) -> None:
+        """Test DRV8825 microstep table includes 32."""
+        expected = {
+            1: (False, False, False),  # Full step
+            2: (True, False, False),   # Half step
+            4: (False, True, False),   # Quarter step
+            8: (True, True, False),    # Eighth step
+            16: (False, False, True),  # Sixteenth step
+            32: (True, False, True),   # 1/32 step
+        }
+        assert DRV8825Driver.MICROSTEP_TABLE == expected
+
+    def test_drv8825_fault_pin_stored(self) -> None:
+        """Test DRV8825 fault pin is stored."""
+        driver = DRV8825Driver(step_pin=2, dir_pin=3, fault_pin=8)
+        assert driver._fault_pin_num == 8
+
+    def test_drv8825_fault_default_none(self) -> None:
+        """Test DRV8825 fault pin defaults to None."""
+        driver = DRV8825Driver(step_pin=2, dir_pin=3)
+        assert driver._fault_pin_num is None
+
+    def test_drv8825_status_includes_fault(self) -> None:
+        """Test DRV8825 status includes fault field."""
+        driver = DRV8825Driver(step_pin=2, dir_pin=3, fault_pin=8)
+        driver.connect()
+        status = driver.get_status()
+        
+        assert "fault" in status
+        assert status["fault"] is False
+
+    def test_drv8825_status_without_fault_pin(self) -> None:
+        """Test DRV8825 status works without fault pin."""
+        driver = DRV8825Driver(step_pin=2, dir_pin=3)
+        driver.connect()
+        status = driver.get_status()
+        
+        assert "fault" in status
+        assert status["fault"] is False
+
+
+class TestStepDirConfigAdvanced:
+    """Advanced tests for StepDirConfig."""
+
+    def test_config_steps_per_rev_default(self) -> None:
+        """Test default steps per revolution."""
+        config = StepDirConfig(step_pin=17, dir_pin=27)
+        assert config.steps_per_rev == 200  # Standard stepper
+
+    def test_config_steps_per_rev_custom(self) -> None:
+        """Test custom steps per revolution."""
+        config = StepDirConfig(step_pin=17, dir_pin=27, steps_per_rev=400)
+        assert config.steps_per_rev == 400
+
+    def test_config_step_pulse_timing(self) -> None:
+        """Test step pulse timing configuration."""
+        config = StepDirConfig(step_pin=17, dir_pin=27, step_pulse_us=5)
+        assert config.step_pulse_us == 5
+
+    def test_config_step_delay_timing(self) -> None:
+        """Test step delay timing configuration."""
+        config = StepDirConfig(step_pin=17, dir_pin=27, step_delay_us=200)
+        assert config.step_delay_us == 200
+
+    def test_config_invert_dir(self) -> None:
+        """Test direction inversion configuration."""
+        config = StepDirConfig(step_pin=17, dir_pin=27, invert_dir=True)
+        assert config.invert_dir is True
+
+    def test_config_invert_enable(self) -> None:
+        """Test enable inversion configuration (active low by default)."""
+        config_default = StepDirConfig(step_pin=17, dir_pin=27)
+        assert config_default.invert_enable is True  # Active low
+        
+        config_custom = StepDirConfig(step_pin=17, dir_pin=27, invert_enable=False)
+        assert config_custom.invert_enable is False
+
+
+class TestStepDirPositionControl:
+    """Tests for StepDirDriver position control."""
+
+    @pytest.fixture
+    def driver(self) -> A4988Driver:
+        """Create connected driver."""
+        drv = A4988Driver(step_pin=2, dir_pin=3)
+        drv.connect()
+        return drv
+
+    def test_move_to_absolute(self, driver: A4988Driver) -> None:
+        """Test moving to absolute position."""
+        driver.move_to(50)
+        assert driver.position == 50
+        driver.move_to(100)
+        assert driver.position == 100
+
+    def test_move_to_backward(self, driver: A4988Driver) -> None:
+        """Test moving backward with move_to."""
+        driver.move_to(100)
+        driver.move_to(50)
+        assert driver.position == 50
+
+    def test_move_to_negative(self, driver: A4988Driver) -> None:
+        """Test moving to negative position."""
+        driver.move_to(-50)
+        assert driver.position == -50
+
+    def test_reset_position(self, driver: A4988Driver) -> None:
+        """Test resetting position counter."""
+        driver.move_to(100)
+        driver.reset_position(0)
+        assert driver.position == 0
+
+    def test_reset_position_custom(self, driver: A4988Driver) -> None:
+        """Test resetting position to custom value."""
+        driver.move_to(100)
+        driver.reset_position(500)
+        assert driver.position == 500

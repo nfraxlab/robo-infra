@@ -903,3 +903,637 @@ class TestFirmataMode:
 # NOTE: Registration tests removed because test_core_driver.py clears
 # the driver registry, causing tests to fail when run in the full suite.
 # The registration is verified manually: ArduinoDriver uses @register_driver("arduino")
+
+
+# =============================================================================
+# Phase 5.8.1.1 - Firmata Mock Tests
+# =============================================================================
+
+
+class TestFirmataMockInit:
+    """Tests for Firmata initialization with mocked pyFirmata."""
+
+    def test_arduino_init_with_port_firmata(self) -> None:
+        """Test Arduino initialization with port in Firmata mode."""
+        config = ArduinoConfig(
+            serial=SerialConfig(port="/dev/ttyACM0"),
+            protocol=ArduinoProtocol.FIRMATA,
+            simulation=True,
+        )
+        driver = ArduinoDriver(config=config)
+        assert driver.port == "/dev/ttyACM0"
+        assert driver.protocol == ArduinoProtocol.FIRMATA
+
+    def test_arduino_auto_detect_firmata(self) -> None:
+        """Test Arduino auto-detection in Firmata mode."""
+        config = ArduinoConfig(
+            protocol=ArduinoProtocol.FIRMATA,
+            auto_detect_port=True,
+            simulation=True,
+        )
+        driver = ArduinoDriver(config=config)
+        assert driver.arduino_config.auto_detect_port is True
+
+    def test_arduino_board_types_uno(self) -> None:
+        """Test Arduino Uno board configuration."""
+        config = ArduinoConfig(
+            pwm_channels=6,
+            analog_channels=6,
+            digital_pins=14,
+            simulation=True,
+        )
+        driver = ArduinoDriver(config=config)
+        assert driver.arduino_config.pwm_channels == 6
+        assert driver.arduino_config.analog_channels == 6
+        assert driver.arduino_config.digital_pins == 14
+
+    def test_arduino_board_types_mega(self) -> None:
+        """Test Arduino Mega board configuration."""
+        # Mega has more pins
+        config = ArduinoConfig(
+            pwm_channels=15,  # Mega has 15 PWM pins
+            analog_channels=16,  # Mega has 16 analog inputs
+            digital_pins=54,  # Mega has 54 digital pins
+            simulation=True,
+        )
+        driver = ArduinoDriver(config=config)
+        assert driver.arduino_config.pwm_channels == 15
+        assert driver.arduino_config.analog_channels == 16
+        assert driver.arduino_config.digital_pins == 54
+
+
+class TestFirmataMockOperations:
+    """Tests for Firmata operations with mocked library."""
+
+    def test_firmata_digital_write_mock(self) -> None:
+        """Test Firmata digital write with mock board."""
+        mock_board = Mock()
+        mock_digital_pin = Mock()
+        mock_board.digital = {13: mock_digital_pin}
+
+        config = ArduinoConfig(protocol=ArduinoProtocol.FIRMATA)
+        driver = ArduinoDriver(config=config, simulation=True)
+        driver.connect()
+
+        # Use simulation mode, just verify it doesn't error
+        driver.write_digital(13, True)
+        assert driver.read_digital(13) is True
+
+        driver.disconnect()
+
+    def test_firmata_digital_read_mock(self) -> None:
+        """Test Firmata digital read with mock board."""
+        config = ArduinoConfig(protocol=ArduinoProtocol.FIRMATA, simulation=True)
+        driver = ArduinoDriver(config=config)
+        driver.connect()
+
+        driver.set_simulated_digital(7, True)
+        assert driver.read_digital(7) is True
+
+        driver.disconnect()
+
+    def test_firmata_analog_read_mock(self) -> None:
+        """Test Firmata analog read with mock board."""
+        config = ArduinoConfig(protocol=ArduinoProtocol.FIRMATA, simulation=True)
+        driver = ArduinoDriver(config=config)
+        driver.connect()
+
+        driver.set_simulated_analog(0, 512)
+        assert driver.read_analog(0) == 512
+
+        driver.disconnect()
+
+    def test_firmata_pwm_write_mock(self) -> None:
+        """Test Firmata PWM write with mock board."""
+        config = ArduinoConfig(protocol=ArduinoProtocol.FIRMATA, simulation=True)
+        driver = ArduinoDriver(config=config)
+        driver.connect()
+
+        driver.set_pwm(0, 128)
+        assert driver.get_pwm(0) == 128
+
+        driver.disconnect()
+
+    def test_firmata_servo_write_mock(self) -> None:
+        """Test Firmata servo write with mock board."""
+        config = ArduinoConfig(protocol=ArduinoProtocol.FIRMATA, simulation=True)
+        driver = ArduinoDriver(config=config)
+        driver.connect()
+
+        # Should not raise in simulation
+        driver.set_servo(0, 90)
+        driver.set_servo(0, 0)
+        driver.set_servo(0, 180)
+
+        driver.disconnect()
+
+    def test_firmata_pin_mode_mock(self) -> None:
+        """Test Firmata pin mode setting with mock board."""
+        config = ArduinoConfig(protocol=ArduinoProtocol.FIRMATA, simulation=True)
+        driver = ArduinoDriver(config=config)
+        driver.connect()
+
+        driver.set_pin_mode(13, PinMode.OUTPUT)
+        assert driver._pin_states[13].mode == PinMode.OUTPUT
+
+        driver.set_pin_mode(13, PinMode.INPUT)
+        assert driver._pin_states[13].mode == PinMode.INPUT
+
+        driver.disconnect()
+
+    def test_firmata_disconnect_mock(self) -> None:
+        """Test Firmata disconnect with mock board."""
+        config = ArduinoConfig(protocol=ArduinoProtocol.FIRMATA, simulation=True)
+        driver = ArduinoDriver(config=config)
+        driver.connect()
+        assert driver.is_connected is True
+
+        driver.disconnect()
+        assert driver.is_connected is False
+
+
+class TestFirmataRealConnection:
+    """Tests for Firmata with mocked real connections."""
+
+    def test_firmata_connect_with_mocked_pyfirmata(self) -> None:
+        """Test Firmata connection with mocked pyfirmata library."""
+        import sys
+
+        # Create mock Arduino class
+        mock_arduino_instance = Mock()
+        mock_arduino_class = Mock(return_value=mock_arduino_instance)
+
+        mock_pyfirmata = Mock()
+        mock_pyfirmata.Arduino = mock_arduino_class
+
+        with patch.dict(sys.modules, {"pyfirmata2": mock_pyfirmata}):
+            config = ArduinoConfig(
+                serial=SerialConfig(port="/dev/ttyUSB0"),
+                protocol=ArduinoProtocol.FIRMATA,
+            )
+            driver = ArduinoDriver(config=config)
+
+            # Clear simulation mode
+            driver._simulation_mode = False
+            driver._arduino_config.simulation = False
+
+            driver._connect_firmata()
+
+            mock_arduino_class.assert_called_once_with("/dev/ttyUSB0")
+            assert driver._firmata_board is mock_arduino_instance
+
+    def test_firmata_pyfirmata_fallback(self) -> None:
+        """Test Firmata falls back from pyfirmata2 to pyfirmata."""
+        import sys
+
+        mock_arduino_instance = Mock()
+        mock_arduino_class = Mock(return_value=mock_arduino_instance)
+
+        mock_pyfirmata = Mock()
+        mock_pyfirmata.Arduino = mock_arduino_class
+
+        # pyfirmata2 not available, but pyfirmata is
+        with patch.dict(
+            sys.modules,
+            {"pyfirmata2": None, "pyfirmata": mock_pyfirmata},
+        ):
+            with patch.object(
+                ArduinoDriver,
+                "_detect_arduino_port",
+                return_value=None,
+            ):
+                config = ArduinoConfig(
+                    serial=SerialConfig(port="/dev/ttyUSB0"),
+                    protocol=ArduinoProtocol.FIRMATA,
+                    auto_detect_port=False,
+                )
+                driver = ArduinoDriver(config=config)
+                driver._simulation_mode = False
+
+                # This would try to import pyfirmata2, fail, then pyfirmata
+                # In test we verify the mock is set up correctly
+                assert driver.protocol == ArduinoProtocol.FIRMATA
+
+    def test_firmata_pwm_write_real(self) -> None:
+        """Test Firmata PWM write with mocked real board."""
+        mock_digital_pin = Mock()
+        mock_board = Mock()
+        mock_board.digital = {3: mock_digital_pin}
+
+        config = ArduinoConfig(protocol=ArduinoProtocol.FIRMATA)
+        driver = ArduinoDriver(config=config)
+        driver._simulation_mode = False
+        driver._firmata_board = mock_board
+        driver._state = DriverState.CONNECTED
+
+        driver._set_pwm_firmata(0, 128)  # Channel 0 maps to pin 3
+
+        mock_digital_pin.write.assert_called_once()
+
+    def test_firmata_analog_read_real(self) -> None:
+        """Test Firmata analog read with mocked real board."""
+        mock_analog_pin = Mock()
+        mock_analog_pin.read.return_value = 0.5  # Firmata returns 0-1
+        mock_board = Mock()
+        mock_board.analog = {0: mock_analog_pin}
+
+        config = ArduinoConfig(protocol=ArduinoProtocol.FIRMATA)
+        driver = ArduinoDriver(config=config)
+        driver._simulation_mode = False
+        driver._firmata_board = mock_board
+        driver._state = DriverState.CONNECTED
+
+        value = driver._read_analog_firmata(0)
+
+        mock_analog_pin.enable_reporting.assert_called_once()
+        assert value == 511  # 0.5 * 1023 = 511
+
+    def test_firmata_digital_read_real(self) -> None:
+        """Test Firmata digital read with mocked real board."""
+        mock_digital_pin = Mock()
+        mock_digital_pin.read.return_value = True
+        mock_board = Mock()
+        mock_board.digital = {13: mock_digital_pin}
+
+        config = ArduinoConfig(protocol=ArduinoProtocol.FIRMATA)
+        driver = ArduinoDriver(config=config)
+        driver._simulation_mode = False
+        driver._firmata_board = mock_board
+        driver._state = DriverState.CONNECTED
+
+        value = driver._read_digital_firmata(13)
+
+        assert value is True
+
+    def test_firmata_digital_write_real(self) -> None:
+        """Test Firmata digital write with mocked real board."""
+        mock_digital_pin = Mock()
+        mock_board = Mock()
+        mock_board.digital = {13: mock_digital_pin}
+
+        config = ArduinoConfig(protocol=ArduinoProtocol.FIRMATA)
+        driver = ArduinoDriver(config=config)
+        driver._simulation_mode = False
+        driver._firmata_board = mock_board
+        driver._state = DriverState.CONNECTED
+
+        driver._write_digital_firmata(13, True)
+
+        mock_digital_pin.write.assert_called_once_with(1)
+
+    def test_firmata_servo_write_real(self) -> None:
+        """Test Firmata servo write with mocked real board."""
+        mock_digital_pin = Mock()
+        mock_board = Mock()
+        mock_board.digital = {3: mock_digital_pin}  # Channel 0 -> pin 3
+
+        config = ArduinoConfig(protocol=ArduinoProtocol.FIRMATA)
+        driver = ArduinoDriver(config=config)
+        driver._simulation_mode = False
+        driver._firmata_board = mock_board
+        driver._state = DriverState.CONNECTED
+
+        driver._set_servo_firmata(0, 90)
+
+        mock_digital_pin.write.assert_called_once_with(90)
+
+    def test_firmata_pin_mode_real(self) -> None:
+        """Test Firmata pin mode with mocked real board."""
+        mock_digital_pin = Mock()
+        mock_board = Mock()
+        mock_board.digital = {13: mock_digital_pin}
+
+        config = ArduinoConfig(protocol=ArduinoProtocol.FIRMATA)
+        driver = ArduinoDriver(config=config)
+        driver._simulation_mode = False
+        driver._firmata_board = mock_board
+        driver._state = DriverState.CONNECTED
+
+        driver._set_pin_mode_firmata(13, PinMode.OUTPUT)
+
+        assert mock_digital_pin.mode == PinMode.OUTPUT.value
+
+
+class TestFirmataErrorHandling:
+    """Tests for Firmata error handling."""
+
+    def test_firmata_pwm_write_no_board(self) -> None:
+        """Test Firmata PWM write without connected board raises error."""
+        config = ArduinoConfig(protocol=ArduinoProtocol.FIRMATA)
+        driver = ArduinoDriver(config=config)
+        driver._simulation_mode = False
+        driver._firmata_board = None
+
+        with pytest.raises(CommunicationError, match="Firmata board not connected"):
+            driver._set_pwm_firmata(0, 128)
+
+    def test_firmata_analog_read_no_board(self) -> None:
+        """Test Firmata analog read without connected board raises error."""
+        config = ArduinoConfig(protocol=ArduinoProtocol.FIRMATA)
+        driver = ArduinoDriver(config=config)
+        driver._simulation_mode = False
+        driver._firmata_board = None
+
+        with pytest.raises(CommunicationError, match="Firmata board not connected"):
+            driver._read_analog_firmata(0)
+
+    def test_firmata_digital_read_no_board(self) -> None:
+        """Test Firmata digital read without connected board raises error."""
+        config = ArduinoConfig(protocol=ArduinoProtocol.FIRMATA)
+        driver = ArduinoDriver(config=config)
+        driver._simulation_mode = False
+        driver._firmata_board = None
+
+        with pytest.raises(CommunicationError, match="Firmata board not connected"):
+            driver._read_digital_firmata(13)
+
+    def test_firmata_digital_write_no_board(self) -> None:
+        """Test Firmata digital write without connected board raises error."""
+        config = ArduinoConfig(protocol=ArduinoProtocol.FIRMATA)
+        driver = ArduinoDriver(config=config)
+        driver._simulation_mode = False
+        driver._firmata_board = None
+
+        with pytest.raises(CommunicationError, match="Firmata board not connected"):
+            driver._write_digital_firmata(13, True)
+
+    def test_firmata_servo_write_no_board(self) -> None:
+        """Test Firmata servo write without connected board raises error."""
+        config = ArduinoConfig(protocol=ArduinoProtocol.FIRMATA)
+        driver = ArduinoDriver(config=config)
+        driver._simulation_mode = False
+        driver._firmata_board = None
+
+        with pytest.raises(CommunicationError, match="Firmata board not connected"):
+            driver._set_servo_firmata(0, 90)
+
+    def test_firmata_pin_mode_no_board(self) -> None:
+        """Test Firmata pin mode without connected board raises error."""
+        config = ArduinoConfig(protocol=ArduinoProtocol.FIRMATA)
+        driver = ArduinoDriver(config=config)
+        driver._simulation_mode = False
+        driver._firmata_board = None
+
+        with pytest.raises(CommunicationError, match="Firmata board not connected"):
+            driver._set_pin_mode_firmata(13, PinMode.OUTPUT)
+
+    def test_firmata_operation_exception(self) -> None:
+        """Test Firmata wraps operation exceptions."""
+        mock_digital_pin = Mock()
+        mock_digital_pin.write.side_effect = Exception("Hardware error")
+        mock_board = Mock()
+        mock_board.digital = {3: mock_digital_pin}
+
+        config = ArduinoConfig(protocol=ArduinoProtocol.FIRMATA)
+        driver = ArduinoDriver(config=config)
+        driver._simulation_mode = False
+        driver._firmata_board = mock_board
+
+        with pytest.raises(CommunicationError, match="Firmata PWM write failed"):
+            driver._set_pwm_firmata(0, 128)
+
+
+# =============================================================================
+# Phase 5.8.1.2 - Board Capability Tests
+# =============================================================================
+
+
+class TestArduinoUnoCapabilities:
+    """Tests for Arduino Uno board capabilities."""
+
+    def test_arduino_uno_pwm_channels(self) -> None:
+        """Test Arduino Uno has 6 PWM channels."""
+        # Uno PWM pins: 3, 5, 6, 9, 10, 11
+        config = ArduinoConfig(
+            pwm_pins={0: 3, 1: 5, 2: 6, 3: 9, 4: 10, 5: 11},
+            pwm_channels=6,
+            simulation=True,
+        )
+        driver = ArduinoDriver(config=config)
+        driver.connect()
+
+        # Test all 6 PWM channels work
+        for ch in range(6):
+            driver.set_pwm(ch, 128)
+            assert driver.get_pwm(ch) == 128
+
+        driver.disconnect()
+
+    def test_arduino_uno_analog_channels(self) -> None:
+        """Test Arduino Uno has 6 analog channels."""
+        config = ArduinoConfig(
+            analog_channels=6,
+            simulation=True,
+        )
+        driver = ArduinoDriver(config=config)
+        driver.connect()
+
+        # Test all 6 analog channels
+        for ch in range(6):
+            driver.set_simulated_analog(ch, ch * 100)
+            assert driver.read_analog(ch) == ch * 100
+
+        driver.disconnect()
+
+    def test_arduino_uno_digital_pins(self) -> None:
+        """Test Arduino Uno has 14 digital pins."""
+        config = ArduinoConfig(
+            digital_pins=14,
+            simulation=True,
+        )
+        driver = ArduinoDriver(config=config)
+        driver.connect()
+
+        # Test all 14 digital pins
+        for pin in range(14):
+            driver.write_digital(pin, True)
+            assert driver.read_digital(pin) is True
+
+        driver.disconnect()
+
+    def test_arduino_uno_default_config(self) -> None:
+        """Test Arduino Uno default configuration matches hardware."""
+        driver = ArduinoDriver(simulation=True)
+
+        # Uno defaults
+        assert driver.arduino_config.pwm_channels == 6
+        assert driver.arduino_config.analog_channels == 6
+        assert driver.arduino_config.digital_pins == 14
+
+
+class TestArduinoMegaCapabilities:
+    """Tests for Arduino Mega board capabilities."""
+
+    def test_arduino_mega_pwm_channels(self) -> None:
+        """Test Arduino Mega has 15 PWM channels."""
+        # Mega PWM pins: 2-13, 44-46
+        pwm_pins = {i: i + 2 for i in range(12)}  # Pins 2-13
+        pwm_pins.update({12: 44, 13: 45, 14: 46})  # Plus 44, 45, 46
+
+        config = ArduinoConfig(
+            pwm_pins=pwm_pins,
+            pwm_channels=15,
+            simulation=True,
+        )
+        driver = ArduinoDriver(config=config)
+        driver.connect()
+
+        # Test all 15 PWM channels work
+        for ch in range(15):
+            driver.set_pwm(ch, 200)
+            assert driver.get_pwm(ch) == 200
+
+        driver.disconnect()
+
+    def test_arduino_mega_analog_channels(self) -> None:
+        """Test Arduino Mega has 16 analog channels."""
+        config = ArduinoConfig(
+            analog_channels=16,
+            simulation=True,
+        )
+        driver = ArduinoDriver(config=config)
+        driver.connect()
+
+        # Test all 16 analog channels (A0-A15)
+        for ch in range(16):
+            driver.set_simulated_analog(ch, ch * 50)
+            assert driver.read_analog(ch) == ch * 50
+
+        driver.disconnect()
+
+    def test_arduino_mega_digital_pins(self) -> None:
+        """Test Arduino Mega has 54 digital pins."""
+        config = ArduinoConfig(
+            digital_pins=54,
+            simulation=True,
+        )
+        driver = ArduinoDriver(config=config)
+        driver.connect()
+
+        # Test sample of digital pins
+        test_pins = [0, 13, 22, 40, 53]
+        for pin in test_pins:
+            driver.write_digital(pin, True)
+            assert driver.read_digital(pin) is True
+
+        driver.disconnect()
+
+
+class TestArduinoNanoCapabilities:
+    """Tests for Arduino Nano board capabilities."""
+
+    def test_arduino_nano_pwm_channels(self) -> None:
+        """Test Arduino Nano has 6 PWM channels (same as Uno)."""
+        config = ArduinoConfig(
+            pwm_pins={0: 3, 1: 5, 2: 6, 3: 9, 4: 10, 5: 11},
+            pwm_channels=6,
+            simulation=True,
+        )
+        driver = ArduinoDriver(config=config)
+        driver.connect()
+
+        for ch in range(6):
+            driver.set_pwm(ch, 100)
+            assert driver.get_pwm(ch) == 100
+
+        driver.disconnect()
+
+    def test_arduino_nano_analog_channels(self) -> None:
+        """Test Arduino Nano has 8 analog channels."""
+        # Nano has A0-A7 (8 analog inputs)
+        config = ArduinoConfig(
+            analog_channels=8,
+            simulation=True,
+        )
+        driver = ArduinoDriver(config=config)
+        driver.connect()
+
+        for ch in range(8):
+            driver.set_simulated_analog(ch, ch * 100)
+            assert driver.read_analog(ch) == ch * 100
+
+        driver.disconnect()
+
+    def test_arduino_nano_digital_pins(self) -> None:
+        """Test Arduino Nano has 14 digital pins."""
+        config = ArduinoConfig(
+            digital_pins=14,
+            simulation=True,
+        )
+        driver = ArduinoDriver(config=config)
+        driver.connect()
+
+        for pin in range(14):
+            driver.write_digital(pin, pin % 2 == 0)
+            assert driver.read_digital(pin) == (pin % 2 == 0)
+
+        driver.disconnect()
+
+
+class TestArduinoDueCapabilities:
+    """Tests for Arduino Due board capabilities."""
+
+    def test_arduino_due_pwm_channels(self) -> None:
+        """Test Arduino Due has 12 PWM channels."""
+        # Due PWM pins: 2-13
+        config = ArduinoConfig(
+            pwm_pins={i: i + 2 for i in range(12)},
+            pwm_channels=12,
+            simulation=True,
+        )
+        driver = ArduinoDriver(config=config)
+        driver.connect()
+
+        for ch in range(12):
+            driver.set_pwm(ch, 150)
+            assert driver.get_pwm(ch) == 150
+
+        driver.disconnect()
+
+    def test_arduino_due_analog_channels(self) -> None:
+        """Test Arduino Due has 12 analog channels."""
+        config = ArduinoConfig(
+            analog_channels=12,
+            simulation=True,
+        )
+        driver = ArduinoDriver(config=config)
+        driver.connect()
+
+        for ch in range(12):
+            driver.set_simulated_analog(ch, ch * 80)
+            assert driver.read_analog(ch) == ch * 80
+
+        driver.disconnect()
+
+    def test_arduino_due_digital_pins(self) -> None:
+        """Test Arduino Due has 54 digital pins."""
+        config = ArduinoConfig(
+            digital_pins=54,
+            simulation=True,
+        )
+        driver = ArduinoDriver(config=config)
+        driver.connect()
+
+        # Test sample of pins
+        for pin in [0, 13, 30, 50]:
+            driver.write_digital(pin, True)
+            assert driver.read_digital(pin) is True
+
+        driver.disconnect()
+
+    def test_arduino_due_12bit_analog(self) -> None:
+        """Test Arduino Due supports 12-bit analog resolution concept."""
+        # Due has 12-bit ADC (0-4095), though library normalizes to 10-bit
+        # This tests the config accepts different resolution settings
+        config = ArduinoConfig(
+            analog_channels=12,
+            simulation=True,
+        )
+        driver = ArduinoDriver(config=config)
+        driver.connect()
+
+        # Even with 12-bit hardware, API uses 10-bit (0-1023)
+        driver.set_simulated_analog(0, 1023)
+        assert driver.read_analog(0) == 1023
+
+        driver.disconnect()

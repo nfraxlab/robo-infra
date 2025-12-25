@@ -363,3 +363,335 @@ class TestODriveEnums:
         """Test encoder mode enum values."""
         assert EncoderMode.INCREMENTAL == 0
         assert EncoderMode.HALL == 1
+
+
+# =============================================================================
+# Phase 5.8.4.1 - ODrive Comprehensive Tests
+# =============================================================================
+
+
+class TestODriveInitialization:
+    """Comprehensive tests for ODrive initialization."""
+
+    def test_default_channels(self) -> None:
+        """Test default number of channels (axes)."""
+        driver = ODriveDriver()
+        assert driver._config.channels == 2
+
+    def test_default_auto_connect(self) -> None:
+        """Test auto_connect is disabled by default."""
+        driver = ODriveDriver()
+        assert driver._config.auto_connect is False
+
+    def test_default_name(self) -> None:
+        """Test default driver name."""
+        driver = ODriveDriver()
+        assert driver._config.name == "ODrive"
+
+    def test_custom_name(self) -> None:
+        """Test custom driver name."""
+        driver = ODriveDriver(name="ODrive Pro")
+        assert driver._config.name == "ODrive Pro"
+
+    def test_simulation_state_init(self) -> None:
+        """Test simulated state initialization."""
+        driver = ODriveDriver()
+        assert driver._sim_positions == {0: 0.0, 1: 0.0}
+        assert driver._sim_velocities == {0: 0.0, 1: 0.0}
+        assert driver._sim_states[0] == AxisState.IDLE
+        assert driver._sim_states[1] == AxisState.IDLE
+
+    def test_simulation_control_modes_init(self) -> None:
+        """Test simulated control modes initialization."""
+        driver = ODriveDriver()
+        assert driver._sim_control_modes[0] == ControlMode.POSITION_CONTROL
+        assert driver._sim_control_modes[1] == ControlMode.POSITION_CONTROL
+
+
+class TestODriveAxisStateAdvanced:
+    """Advanced tests for ODrive axis state control."""
+
+    @pytest.fixture
+    def driver(self) -> ODriveDriver:
+        """Create connected driver."""
+        drv = ODriveDriver()
+        drv.connect()
+        return drv
+
+    def test_all_axis_states_defined(self) -> None:
+        """Test all axis states are properly defined."""
+        assert AxisState.UNDEFINED == 0
+        assert AxisState.IDLE == 1
+        assert AxisState.STARTUP_SEQUENCE == 2
+        assert AxisState.FULL_CALIBRATION_SEQUENCE == 3
+        assert AxisState.MOTOR_CALIBRATION == 4
+        assert AxisState.ENCODER_INDEX_SEARCH == 6
+        assert AxisState.ENCODER_OFFSET_CALIBRATION == 7
+        assert AxisState.CLOSED_LOOP_CONTROL == 8
+        assert AxisState.LOCKIN_SPIN == 9
+        assert AxisState.ENCODER_DIR_FIND == 10
+        assert AxisState.HOMING == 11
+
+    def test_calibrate_both_axes(self, driver: ODriveDriver) -> None:
+        """Test calibrating both axes."""
+        driver.calibrate(0)
+        driver.calibrate(1)
+        assert driver.get_axis_state(0) == AxisState.IDLE
+        assert driver.get_axis_state(1) == AxisState.IDLE
+
+    def test_state_transition_idle_to_closed_loop(self, driver: ODriveDriver) -> None:
+        """Test state transition from idle to closed loop."""
+        assert driver.get_axis_state(0) == AxisState.IDLE
+        driver.set_closed_loop(0)
+        assert driver.get_axis_state(0) == AxisState.CLOSED_LOOP_CONTROL
+
+
+class TestODrivePositionControl:
+    """Tests for ODrive position control mode."""
+
+    @pytest.fixture
+    def driver(self) -> ODriveDriver:
+        """Create connected driver."""
+        drv = ODriveDriver()
+        drv.connect()
+        return drv
+
+    def test_position_control_mode_set(self, driver: ODriveDriver) -> None:
+        """Test position control mode is set."""
+        driver.set_position(0, 5.0)
+        assert driver.get_control_mode(0) == ControlMode.POSITION_CONTROL
+
+    def test_position_negative(self, driver: ODriveDriver) -> None:
+        """Test negative position values."""
+        driver.set_position(0, -10.0)
+        assert driver.get_encoder_position(0) == -10.0
+
+    def test_position_with_velocity_feedforward(self, driver: ODriveDriver) -> None:
+        """Test position with velocity feedforward."""
+        driver.set_position(0, 5.0, velocity_feedforward=2.0)
+        assert driver.get_encoder_position(0) == 5.0
+
+    def test_position_with_torque_feedforward(self, driver: ODriveDriver) -> None:
+        """Test position with torque feedforward."""
+        driver.set_position(0, 3.0, torque_feedforward=0.5)
+        assert driver.get_encoder_position(0) == 3.0
+
+    def test_position_control_both_axes(self, driver: ODriveDriver) -> None:
+        """Test position control on both axes."""
+        driver.set_position(0, 10.0)
+        driver.set_position(1, 20.0)
+        assert driver.get_encoder_position(0) == 10.0
+        assert driver.get_encoder_position(1) == 20.0
+
+
+class TestODriveVelocityControl:
+    """Tests for ODrive velocity control mode."""
+
+    @pytest.fixture
+    def driver(self) -> ODriveDriver:
+        """Create connected driver."""
+        drv = ODriveDriver()
+        drv.connect()
+        return drv
+
+    def test_velocity_control_mode_set(self, driver: ODriveDriver) -> None:
+        """Test velocity control mode is set."""
+        driver.set_velocity(0, 10.0)
+        assert driver.get_control_mode(0) == ControlMode.VELOCITY_CONTROL
+
+    def test_velocity_negative(self, driver: ODriveDriver) -> None:
+        """Test negative velocity (reverse direction)."""
+        driver.set_velocity(0, -5.0)
+        assert driver.get_encoder_velocity(0) == -5.0
+
+    def test_velocity_zero(self, driver: ODriveDriver) -> None:
+        """Test zero velocity (stop)."""
+        driver.set_velocity(0, 10.0)
+        driver.set_velocity(0, 0.0)
+        assert driver.get_encoder_velocity(0) == 0.0
+
+    def test_velocity_control_both_axes(self, driver: ODriveDriver) -> None:
+        """Test velocity control on both axes."""
+        driver.set_velocity(0, 5.0)
+        driver.set_velocity(1, -5.0)
+        assert driver.get_encoder_velocity(0) == 5.0
+        assert driver.get_encoder_velocity(1) == -5.0
+
+
+class TestODriveTorqueControl:
+    """Tests for ODrive torque control mode."""
+
+    @pytest.fixture
+    def driver(self) -> ODriveDriver:
+        """Create connected driver."""
+        drv = ODriveDriver()
+        drv.connect()
+        return drv
+
+    def test_torque_control_mode_set(self, driver: ODriveDriver) -> None:
+        """Test torque control mode is set."""
+        driver.set_torque(0, 1.0)
+        assert driver.get_control_mode(0) == ControlMode.TORQUE_CONTROL
+
+    def test_torque_enters_closed_loop(self, driver: ODriveDriver) -> None:
+        """Test torque control enters closed loop."""
+        driver.set_torque(0, 1.0)
+        assert driver.get_axis_state(0) == AxisState.CLOSED_LOOP_CONTROL
+
+    def test_torque_both_axes(self, driver: ODriveDriver) -> None:
+        """Test torque control on both axes."""
+        driver.set_torque(0, 1.5)
+        driver.set_torque(1, 2.0)
+        assert driver.get_control_mode(0) == ControlMode.TORQUE_CONTROL
+        assert driver.get_control_mode(1) == ControlMode.TORQUE_CONTROL
+
+
+class TestODriveCalibrationAdvanced:
+    """Advanced tests for ODrive calibration."""
+
+    @pytest.fixture
+    def driver(self) -> ODriveDriver:
+        """Create connected driver."""
+        drv = ODriveDriver()
+        drv.connect()
+        return drv
+
+    def test_calibration_returns_to_idle(self, driver: ODriveDriver) -> None:
+        """Test calibration returns to idle state."""
+        driver.calibrate(0)
+        assert driver.get_axis_state(0) == AxisState.IDLE
+
+    def test_calibration_both_axes_sequential(self, driver: ODriveDriver) -> None:
+        """Test sequential calibration of both axes."""
+        driver.calibrate(0)
+        driver.calibrate(1)
+        assert driver.get_axis_state(0) == AxisState.IDLE
+        assert driver.get_axis_state(1) == AxisState.IDLE
+
+
+class TestODriveInputModes:
+    """Tests for ODrive input modes."""
+
+    def test_all_input_modes_defined(self) -> None:
+        """Test all input modes are properly defined."""
+        assert InputMode.INACTIVE == 0
+        assert InputMode.PASSTHROUGH == 1
+        assert InputMode.VEL_RAMP == 2
+        assert InputMode.POS_FILTER == 3
+        assert InputMode.MIX_CHANNELS == 4
+        assert InputMode.TRAP_TRAJ == 5
+        assert InputMode.TORQUE_RAMP == 6
+        assert InputMode.MIRROR == 7
+        assert InputMode.TUNING == 8
+
+
+class TestODriveMotorTypes:
+    """Tests for ODrive motor types."""
+
+    def test_all_motor_types_defined(self) -> None:
+        """Test all motor types are properly defined."""
+        assert MotorType.HIGH_CURRENT == 0
+        assert MotorType.GIMBAL == 2
+        assert MotorType.ACIM == 3
+
+
+class TestODriveEncoderModes:
+    """Tests for ODrive encoder modes."""
+
+    def test_all_encoder_modes_defined(self) -> None:
+        """Test all encoder modes are properly defined."""
+        assert EncoderMode.INCREMENTAL == 0
+        assert EncoderMode.HALL == 1
+        assert EncoderMode.SINCOS == 2
+        assert EncoderMode.SPI_ABS_CUI == 256
+        assert EncoderMode.SPI_ABS_AMS == 257
+        assert EncoderMode.SPI_ABS_AEAT == 258
+        assert EncoderMode.SPI_ABS_RLS == 259
+        assert EncoderMode.SPI_ABS_MA732 == 260
+
+
+class TestODriveConfigOptions:
+    """Tests for ODrive configuration options."""
+
+    def test_config_velocity_limit_range(self) -> None:
+        """Test velocity limit configuration."""
+        config = ODriveConfig(velocity_limit=100.0)
+        assert config.velocity_limit == 100.0
+
+    def test_config_current_limit_range(self) -> None:
+        """Test current limit configuration."""
+        config = ODriveConfig(current_limit=120.0)
+        assert config.current_limit == 120.0
+
+    def test_config_timeout_range(self) -> None:
+        """Test timeout configuration."""
+        config = ODriveConfig(timeout=30.0)
+        assert config.timeout == 30.0
+
+    def test_config_serial_number_format(self) -> None:
+        """Test serial number configuration."""
+        config = ODriveConfig(serial_number="ABCD1234EFGH")
+        assert config.serial_number == "ABCD1234EFGH"
+
+
+class TestODriveErrorsAdvanced:
+    """Advanced tests for ODrive error handling."""
+
+    @pytest.fixture
+    def driver(self) -> ODriveDriver:
+        """Create connected driver."""
+        drv = ODriveDriver()
+        drv.connect()
+        return drv
+
+    def test_errors_structure(self, driver: ODriveDriver) -> None:
+        """Test errors dictionary structure."""
+        errors = driver.get_errors(0)
+        assert "axis" in errors
+        assert "motor" in errors
+        assert "encoder" in errors
+        assert "controller" in errors
+
+    def test_errors_both_axes(self, driver: ODriveDriver) -> None:
+        """Test getting errors for both axes."""
+        errors0 = driver.get_errors(0)
+        errors1 = driver.get_errors(1)
+        assert errors0["axis"] == 0
+        assert errors1["axis"] == 0
+
+    def test_clear_errors_both_axes(self, driver: ODriveDriver) -> None:
+        """Test clearing errors on both axes."""
+        driver.clear_errors(0)
+        driver.clear_errors(1)
+        # Should not raise
+
+
+class TestODriveStatusAdvanced:
+    """Advanced tests for ODrive status."""
+
+    @pytest.fixture
+    def driver(self) -> ODriveDriver:
+        """Create connected driver."""
+        drv = ODriveDriver()
+        drv.connect()
+        return drv
+
+    def test_status_structure(self, driver: ODriveDriver) -> None:
+        """Test status dictionary structure."""
+        status = driver.get_status()
+        assert "connected" in status
+        assert "serial_number" in status
+        assert "simulation" in status
+        assert "bus_voltage" in status
+        assert "axes" in status
+
+    def test_status_axes_structure(self, driver: ODriveDriver) -> None:
+        """Test axes status structure."""
+        status = driver.get_status()
+        assert len(status["axes"]) == 2
+        for axis_status in status["axes"]:
+            assert "state" in axis_status
+            assert "control_mode" in axis_status
+            assert "position" in axis_status
+            assert "velocity" in axis_status
+            assert "errors" in axis_status

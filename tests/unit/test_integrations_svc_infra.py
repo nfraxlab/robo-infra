@@ -1065,3 +1065,437 @@ class TestRouterFromObjectUsage:
         assert any("public-method" in p for p in route_paths)
         # private_helper should be excluded
         assert not any("private-helper" in p for p in route_paths)
+
+
+# =============================================================================
+# WebSocket Tests (Phase 5.7.5.1)
+# =============================================================================
+
+
+class TestWebSocketHandlerCreation:
+    """Tests for WebSocket handler creation."""
+
+    def test_websocket_handler_creation(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """Test WebSocket handler can be created."""
+        import warnings
+
+        from robo_infra.integrations.svc_infra import create_websocket_handler
+
+        with warnings.catch_warnings(record=True):
+            warnings.simplefilter("always")
+            handler = create_websocket_handler(mock_controller)
+            assert handler is not None
+            assert callable(handler)
+
+    def test_websocket_handler_is_async(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """Test WebSocket handler is an async function."""
+        import asyncio
+        import warnings
+
+        from robo_infra.integrations.svc_infra import create_websocket_handler
+
+        with warnings.catch_warnings(record=True):
+            warnings.simplefilter("always")
+            handler = create_websocket_handler(mock_controller)
+            assert asyncio.iscoroutinefunction(handler)
+
+    def test_websocket_handler_deprecated(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """Test WebSocket handler emits deprecation warning."""
+        import warnings
+
+        from robo_infra.integrations.svc_infra import create_websocket_handler
+
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            _ = create_websocket_handler(mock_controller)
+            deprecation_warnings = [
+                warning for warning in w
+                if issubclass(warning.category, DeprecationWarning)
+            ]
+            assert len(deprecation_warnings) >= 1
+
+
+class TestWebSocketRouterCreation:
+    """Tests for WebSocket router creation."""
+
+    def test_websocket_router_creation(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """Test WebSocket router can be created."""
+        from robo_infra.integrations.svc_infra import create_websocket_router
+
+        router = create_websocket_router(mock_controller)
+        assert router is not None
+
+    def test_websocket_router_has_routes(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """Test WebSocket router has routes."""
+        from robo_infra.integrations.svc_infra import create_websocket_router
+
+        router = create_websocket_router(mock_controller)
+        assert hasattr(router, "routes")
+        assert len(router.routes) > 0
+
+    def test_websocket_router_with_prefix(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """Test WebSocket router with custom prefix."""
+        from robo_infra.integrations.svc_infra import create_websocket_router
+
+        router = create_websocket_router(mock_controller, prefix="/ws/arm")
+        assert router.prefix == "/ws/arm"
+
+    def test_websocket_router_with_tags(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """Test WebSocket router with custom tags."""
+        from robo_infra.integrations.svc_infra import create_websocket_router
+
+        router = create_websocket_router(
+            mock_controller, tags=["WebSocket", "Robotics"]
+        )
+        assert "WebSocket" in router.tags
+
+    def test_websocket_router_auth_required_false(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """Test WebSocket router with auth_required=False."""
+        from robo_infra.integrations.svc_infra import create_websocket_router
+
+        router = create_websocket_router(mock_controller, auth_required=False)
+        assert router is not None
+
+    def test_websocket_router_auth_required_true(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """Test WebSocket router with auth_required=True."""
+        from robo_infra.integrations.svc_infra import create_websocket_router
+
+        router = create_websocket_router(mock_controller, auth_required=True)
+        assert router is not None
+
+    def test_websocket_router_custom_update_rate(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """Test WebSocket router with custom update rate."""
+        from robo_infra.integrations.svc_infra import create_websocket_router
+
+        router = create_websocket_router(mock_controller, update_rate_hz=30.0)
+        assert router is not None
+
+
+class TestWebSocketStatusBroadcast:
+    """Tests for WebSocket status broadcast functionality."""
+
+    def test_status_broadcast_function_exists(self) -> None:
+        """Test status broadcast-related exports exist."""
+        from robo_infra.integrations.svc_infra import create_websocket_router
+
+        assert callable(create_websocket_router)
+
+    def test_websocket_router_has_ws_endpoint(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """Test WebSocket router has /ws endpoint."""
+        from robo_infra.integrations.svc_infra import create_websocket_router
+
+        router = create_websocket_router(mock_controller, prefix="/arm")
+        route_paths = [str(route.path) for route in router.routes]
+        # Should have a WebSocket route
+        assert any("/ws" in path for path in route_paths)
+
+
+class TestWebSocketCommandHandling:
+    """Tests for WebSocket command handling."""
+
+    @pytest.mark.asyncio
+    async def test_handle_ws_command_move(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """Test WebSocket command handling for move."""
+        from robo_infra.integrations.svc_infra import _handle_ws_command
+
+        mock_controller.enable()
+        mock_controller.home()
+
+        command = {"type": "move", "targets": {"shoulder": 45.0}}
+        response = await _handle_ws_command(mock_controller, command)
+        assert response["status"] == "ok"
+        assert response["command"] == "move"
+
+    @pytest.mark.asyncio
+    async def test_handle_ws_command_home(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """Test WebSocket command handling for home."""
+        from robo_infra.integrations.svc_infra import _handle_ws_command
+
+        mock_controller.enable()
+
+        command = {"type": "home"}
+        response = await _handle_ws_command(mock_controller, command)
+        assert response["status"] == "ok"
+        assert response["command"] == "home"
+
+    @pytest.mark.asyncio
+    async def test_handle_ws_command_stop(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """Test WebSocket command handling for stop."""
+        from robo_infra.integrations.svc_infra import _handle_ws_command
+
+        mock_controller.enable()
+
+        command = {"type": "stop"}
+        response = await _handle_ws_command(mock_controller, command)
+        assert response["status"] == "ok"
+        assert response["command"] == "stop"
+
+    @pytest.mark.asyncio
+    async def test_handle_ws_command_enable(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """Test WebSocket command handling for enable."""
+        from robo_infra.integrations.svc_infra import _handle_ws_command
+
+        command = {"type": "enable"}
+        response = await _handle_ws_command(mock_controller, command)
+        assert response["status"] == "ok"
+        assert response["command"] == "enable"
+
+    @pytest.mark.asyncio
+    async def test_handle_ws_command_disable(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """Test WebSocket command handling for disable."""
+        from robo_infra.integrations.svc_infra import _handle_ws_command
+
+        mock_controller.enable()
+
+        command = {"type": "disable"}
+        response = await _handle_ws_command(mock_controller, command)
+        assert response["status"] == "ok"
+        assert response["command"] == "disable"
+
+    @pytest.mark.asyncio
+    async def test_handle_ws_command_status(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """Test WebSocket command handling for status."""
+        from robo_infra.integrations.svc_infra import _handle_ws_command
+
+        command = {"type": "status"}
+        response = await _handle_ws_command(mock_controller, command)
+        assert response["status"] == "ok"
+        assert response["command"] == "status"
+        assert "data" in response
+        assert "state" in response["data"]
+
+    @pytest.mark.asyncio
+    async def test_handle_ws_command_unknown(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """Test WebSocket command handling for unknown command."""
+        from robo_infra.integrations.svc_infra import _handle_ws_command
+
+        command = {"type": "unknown_command"}
+        response = await _handle_ws_command(mock_controller, command)
+        assert response["status"] == "error"
+        assert "Unknown command" in response["error"]
+
+    @pytest.mark.asyncio
+    async def test_handle_ws_command_error_handling(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """Test WebSocket command error handling."""
+        from robo_infra.integrations.svc_infra import _handle_ws_command
+
+        # Try to move without enabling first
+        command = {"type": "move", "targets": {"shoulder": 45.0}}
+        response = await _handle_ws_command(mock_controller, command)
+        # Should return error status
+        assert response["status"] == "error"
+        assert "error" in response
+
+
+# =============================================================================
+# Router Tests (Phase 5.7.5.1)
+# =============================================================================
+
+
+class TestRouterAuthRequired:
+    """Tests for router auth_required parameter."""
+
+    def test_controller_router_auth_required_true(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """Test controller router with auth_required=True."""
+        router = controller_to_router(mock_controller, auth_required=True)
+        assert router is not None
+        assert hasattr(router, "routes")
+
+    def test_controller_router_auth_required_false(
+        self,
+        mock_controller: SimulatedController,
+    ) -> None:
+        """Test controller router with auth_required=False."""
+        router = controller_to_router(mock_controller, auth_required=False)
+        assert router is not None
+        assert hasattr(router, "routes")
+
+    def test_actuator_router_auth_required_true(
+        self,
+        simple_actuator: SimulatedActuator,
+    ) -> None:
+        """Test actuator router with auth_required=True."""
+        router = actuator_to_router(simple_actuator, auth_required=True)
+        assert router is not None
+
+    def test_actuator_router_auth_required_false(
+        self,
+        simple_actuator: SimulatedActuator,
+    ) -> None:
+        """Test actuator router with auth_required=False."""
+        router = actuator_to_router(simple_actuator, auth_required=False)
+        assert router is not None
+
+
+class TestRouterErrorHandling:
+    """Tests for router error handling."""
+
+    def test_move_invalid_joint_error(
+        self,
+        homed_test_client: TestClient,
+    ) -> None:
+        """Test move with invalid joint returns error."""
+        response = homed_test_client.post(
+            "/arm/move",
+            json={"targets": {"invalid_joint": 45.0}},
+        )
+        assert response.status_code in (400, 422, 500)
+
+    def test_move_out_of_range_error(
+        self,
+        homed_test_client: TestClient,
+    ) -> None:
+        """Test move with out-of-range value returns error."""
+        response = homed_test_client.post(
+            "/arm/move",
+            json={"targets": {"shoulder": 999.0}},
+        )
+        assert response.status_code in (400, 422, 500)
+
+    def test_position_not_found_error(
+        self,
+        homed_test_client: TestClient,
+    ) -> None:
+        """Test accessing non-existent position returns error."""
+        response = homed_test_client.post("/arm/positions/does_not_exist")
+        assert response.status_code in (404, 500)
+
+    def test_enable_when_already_enabled(
+        self,
+        enabled_test_client: TestClient,
+    ) -> None:
+        """Test enable when already enabled is safe."""
+        response = enabled_test_client.post("/arm/enable")
+        # Should not raise error, just confirm enabled
+        assert response.status_code == 200
+
+    def test_stop_always_succeeds(
+        self,
+        test_client: TestClient,
+    ) -> None:
+        """Test stop always returns success status."""
+        response = test_client.post("/arm/stop")
+        assert response.status_code == 200
+        data = response.json()
+        assert "stopped" in data["status"]
+
+
+class TestRouterValidation:
+    """Tests for router request validation."""
+
+    def test_move_missing_targets_field(
+        self,
+        homed_test_client: TestClient,
+    ) -> None:
+        """Test move without targets field fails validation."""
+        response = homed_test_client.post(
+            "/arm/move",
+            json={},  # Missing "targets" field
+        )
+        assert response.status_code == 422  # Pydantic validation error
+
+    def test_move_invalid_json(
+        self,
+        homed_test_client: TestClient,
+    ) -> None:
+        """Test move with invalid JSON returns error."""
+        response = homed_test_client.post(
+            "/arm/move",
+            content="not valid json",
+            headers={"Content-Type": "application/json"},
+        )
+        assert response.status_code == 422
+
+    def test_move_targets_wrong_type(
+        self,
+        homed_test_client: TestClient,
+    ) -> None:
+        """Test move with wrong targets type fails validation."""
+        response = homed_test_client.post(
+            "/arm/move",
+            json={"targets": "not a dict"},
+        )
+        assert response.status_code == 422
+
+    def test_actuator_set_value_validation(
+        self,
+        actuator_test_client: TestClient,
+    ) -> None:
+        """Test actuator set validates value range."""
+        # Value outside limits (0-180 for test_servo)
+        response = actuator_test_client.post(
+            "/servo/set",
+            json={"value": 999.0},
+        )
+        assert response.status_code == 422  # Pydantic validation
+
+    def test_actuator_set_missing_value(
+        self,
+        actuator_test_client: TestClient,
+    ) -> None:
+        """Test actuator set without value fails validation."""
+        response = actuator_test_client.post(
+            "/servo/set",
+            json={},
+        )
+        assert response.status_code == 422

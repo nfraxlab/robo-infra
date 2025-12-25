@@ -8,6 +8,7 @@ from __future__ import annotations
 import os
 from unittest.mock import patch
 
+import numpy as np
 import pytest
 
 from robo_infra.sensors.camera import (
@@ -425,3 +426,248 @@ class TestListOakCameras:
         with patch.object(OAKCamera, "list_devices", return_value=[]):
             cameras = list_oak_cameras()
             assert cameras == []
+
+
+# =============================================================================
+# Phase 5.5.4.3 - Additional OAK Camera Tests
+# =============================================================================
+
+
+class TestOAKStreams:
+    """Tests for OAK camera streams (5.5.4.3)."""
+
+    @pytest.fixture
+    def simulated_camera(self):
+        """Create a simulated OAK camera."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            camera = OAKCamera()
+            camera.enable()
+            yield camera
+            camera.disable()
+
+    def test_rgb_stream(self, simulated_camera):
+        """Test RGB stream capture."""
+        frame = simulated_camera.capture()
+
+        assert isinstance(frame, Frame)
+        assert frame.format == PixelFormat.RGB
+        assert frame.channels == 3
+
+    def test_mono_left_stream(self, simulated_camera):
+        """Test mono left stream capture."""
+        left, right, depth = simulated_camera.capture_stereo()
+
+        assert isinstance(left, Frame)
+        # Mono frames should be grayscale
+        assert left.width > 0
+        assert left.height > 0
+
+    def test_mono_right_stream(self, simulated_camera):
+        """Test mono right stream capture."""
+        left, right, depth = simulated_camera.capture_stereo()
+
+        assert isinstance(right, Frame)
+        assert right.width > 0
+        assert right.height > 0
+
+    def test_stereo_depth_stream(self, simulated_camera):
+        """Test stereo depth stream capture."""
+        left, right, depth = simulated_camera.capture_stereo()
+
+        assert isinstance(depth, DepthFrame)
+        assert depth.data.dtype == np.uint16
+
+
+class TestOAKDepthSettings:
+    """Tests for OAK depth settings (5.5.4.3)."""
+
+    def test_depth_median_filter_5x5(self):
+        """Test 5x5 median filter."""
+        config = OAKConfig(depth_median_filter="kernel_5x5")
+        assert config.depth_median_filter == "kernel_5x5"
+
+    def test_depth_median_filter_7x7(self):
+        """Test 7x7 median filter."""
+        config = OAKConfig(depth_median_filter="kernel_7x7")
+        assert config.depth_median_filter == "kernel_7x7"
+
+    def test_lrc_check_enabled(self):
+        """Test left-right consistency check."""
+        config = OAKConfig(depth_lrc_check=True)
+        assert config.depth_lrc_check is True
+
+    def test_lrc_check_disabled(self):
+        """Test left-right consistency check disabled."""
+        config = OAKConfig(depth_lrc_check=False)
+        assert config.depth_lrc_check is False
+
+
+class TestOAKIRProjector:
+    """Tests for OAK IR projector settings (5.5.4.3)."""
+
+    def test_ir_projector_enabled(self):
+        """Test IR projector enabled."""
+        config = OAKConfig(
+            enable_ir_projector=True,
+            ir_projector_brightness=0.7,
+        )
+
+        assert config.enable_ir_projector is True
+        assert config.ir_projector_brightness == 0.7
+
+    def test_ir_projector_disabled(self):
+        """Test IR projector disabled."""
+        config = OAKConfig(enable_ir_projector=False)
+        assert config.enable_ir_projector is False
+
+
+class TestOAKNeuralNetwork:
+    """Extended tests for OAK neural network inference (5.5.4.3)."""
+
+    @pytest.fixture
+    def simulated_camera_with_nn(self):
+        """Create a simulated OAK camera with NN loaded."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            camera = OAKCamera()
+            camera.enable()
+            camera._nn_loaded = True
+            yield camera
+            camera.disable()
+
+    def test_detection_output_format(self, simulated_camera_with_nn):
+        """Test detection output format."""
+        detections = simulated_camera_with_nn.detect()
+
+        for det in detections:
+            assert hasattr(det, "label")
+            assert hasattr(det, "confidence")
+            assert hasattr(det, "bbox")
+            assert len(det.bbox) == 4
+
+    def test_spatial_detection(self, simulated_camera_with_nn):
+        """Test spatial detection with coordinates."""
+        # Run multiple times to get some detections
+        all_detections = []
+        for _ in range(10):
+            detections = simulated_camera_with_nn.detect()
+            all_detections.extend(detections)
+
+        # Check that detections have spatial coordinates
+        for det in all_detections:
+            if det.spatial_coords is not None:
+                assert len(det.spatial_coords) == 3
+                x, y, z = det.spatial_coords
+                assert isinstance(x, float)
+                assert isinstance(y, float)
+                assert isinstance(z, float)
+
+    def test_nn_confidence_threshold(self):
+        """Test NN confidence threshold configuration."""
+        config = OAKConfig(nn_confidence_threshold=0.8)
+        assert config.nn_confidence_threshold == 0.8
+
+    def test_nn_spatial_detection_enabled(self):
+        """Test spatial detection configuration."""
+        config = OAKConfig(nn_spatial_detection=True)
+        assert config.nn_spatial_detection is True
+
+
+class TestOAKUSBSpeed:
+    """Tests for OAK USB speed settings (5.5.4.3)."""
+
+    def test_usb3_speed(self):
+        """Test USB3 speed configuration."""
+        config = OAKConfig(usb_speed="usb3")
+        assert config.usb_speed == "usb3"
+
+    def test_usb2_speed(self):
+        """Test USB2 speed configuration."""
+        config = OAKConfig(usb_speed="usb2")
+        assert config.usb_speed == "usb2"
+
+
+class TestOAKProperties:
+    """Tests for OAK camera properties (5.5.4.3)."""
+
+    @pytest.fixture
+    def simulated_camera(self):
+        """Create a simulated OAK camera."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            camera = OAKCamera()
+            camera.enable()
+            yield camera
+            camera.disable()
+
+    def test_device_name(self, simulated_camera):
+        """Test device name property."""
+        name = simulated_camera.device_name
+        assert "OAK" in name or "Simulated" in name
+
+    def test_has_depth(self, simulated_camera):
+        """Test has_depth property."""
+        assert simulated_camera.has_depth is True
+
+    def test_get_intrinsics(self, simulated_camera):
+        """Test getting camera intrinsics."""
+        intrinsics = simulated_camera.get_intrinsics()
+
+        assert isinstance(intrinsics, CameraIntrinsics)
+        assert intrinsics.fx > 0
+        assert intrinsics.fy > 0
+
+
+class TestOAKAsync:
+    """Tests for OAK async streaming (5.5.4.3)."""
+
+    @pytest.fixture
+    def simulated_camera(self):
+        """Create a simulated OAK camera."""
+        with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
+            camera = OAKCamera()
+            camera.enable()
+            yield camera
+            camera.disable()
+
+    @pytest.mark.asyncio
+    async def test_async_stream(self, simulated_camera):
+        """Test async frame streaming."""
+        frame_count = 0
+        async for frame in simulated_camera.stream():
+            assert isinstance(frame, Frame)
+            frame_count += 1
+            if frame_count >= 3:
+                break
+
+        assert frame_count == 3
+
+
+class TestDetectionAdvanced:
+    """Advanced tests for Detection dataclass (5.5.4.3)."""
+
+    def test_detection_to_dict(self):
+        """Test detection to dictionary conversion."""
+        det = Detection(
+            label=0,
+            label_name="person",
+            confidence=0.95,
+            bbox=(0.1, 0.2, 0.4, 0.6),
+            depth=2.5,
+        )
+
+        # Detection should have basic properties
+        assert det.label == 0
+        assert det.label_name == "person"
+        assert det.confidence == 0.95
+
+    def test_detection_iou_calculation(self):
+        """Test detection properties for IoU calculation."""
+        det = Detection(
+            label=0,
+            confidence=0.9,
+            bbox=(0.0, 0.0, 0.5, 0.5),
+        )
+
+        assert det.width == 0.5
+        assert det.height == 0.5
+        assert det.area == 0.25
+        assert det.center == (0.25, 0.25)
