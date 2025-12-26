@@ -637,8 +637,11 @@ class TestModuleExports:
         """Test that observability is exported from integrations package."""
         from robo_infra.integrations import (
             SafetyTriggerType,
+            add_robotics_health_routes,
             create_actuator_health_check,
             create_controller_health_check,
+            get_robotics_request_id,
+            log_with_context,
             record_command,
             record_estop_triggered,
             record_limit_exceeded,
@@ -647,6 +650,8 @@ class TestModuleExports:
             record_safety_trigger,
             record_sensor_value,
             record_watchdog_timeout,
+            register_controller_health_checks,
+            set_robotics_request_id,
             setup_robotics_logging,
             track_command,
         )
@@ -663,6 +668,299 @@ class TestModuleExports:
         assert callable(track_command)
         assert callable(create_controller_health_check)
         assert callable(create_actuator_health_check)
+        assert callable(register_controller_health_checks)
+        assert callable(add_robotics_health_routes)
+        assert callable(get_robotics_request_id)
+        assert callable(set_robotics_request_id)
+        assert callable(log_with_context)
         assert callable(setup_robotics_logging)
         # Verify class
         assert SafetyTriggerType.ESTOP == "estop"
+
+
+# --- Health Check Registration Tests (5.14.4) ---
+
+
+class TestRegisterControllerHealthChecks:
+    """Tests for register_controller_health_checks function."""
+
+    def test_register_single_controller(
+        self, mock_controller: SimulatedController
+    ) -> None:
+        """Test registering a single controller's health check."""
+        from robo_infra.integrations.observability import register_controller_health_checks
+
+        mock_registry = MagicMock()
+
+        register_controller_health_checks(mock_registry, [mock_controller])
+
+        mock_registry.add.assert_called_once()
+        call_args = mock_registry.add.call_args
+        assert call_args[0][0] == "controller:test_arm"
+        assert callable(call_args[0][1])  # The check function
+        assert call_args[1]["critical"] is True
+
+    def test_register_multiple_controllers(self) -> None:
+        """Test registering multiple controllers' health checks."""
+        from robo_infra.integrations.observability import register_controller_health_checks
+
+        controller1 = SimulatedController(name="arm")
+        controller2 = SimulatedController(name="conveyor")
+        mock_registry = MagicMock()
+
+        register_controller_health_checks(mock_registry, [controller1, controller2])
+
+        assert mock_registry.add.call_count == 2
+        call_names = [call[0][0] for call in mock_registry.add.call_args_list]
+        assert "controller:arm" in call_names
+        assert "controller:conveyor" in call_names
+
+    def test_register_with_custom_prefix(
+        self, mock_controller: SimulatedController
+    ) -> None:
+        """Test registering with a custom prefix."""
+        from robo_infra.integrations.observability import register_controller_health_checks
+
+        mock_registry = MagicMock()
+
+        register_controller_health_checks(
+            mock_registry, [mock_controller], prefix="robot:"
+        )
+
+        call_args = mock_registry.add.call_args
+        assert call_args[0][0] == "robot:test_arm"
+
+    def test_register_with_custom_timeout(
+        self, mock_controller: SimulatedController
+    ) -> None:
+        """Test registering with a custom timeout."""
+        from robo_infra.integrations.observability import register_controller_health_checks
+
+        mock_registry = MagicMock()
+
+        register_controller_health_checks(
+            mock_registry, [mock_controller], timeout=10.0
+        )
+
+        call_args = mock_registry.add.call_args
+        assert call_args[1]["timeout"] == 10.0
+
+
+class TestAddRoboticsHealthRoutes:
+    """Tests for add_robotics_health_routes function."""
+
+    def test_adds_health_routes_to_app(
+        self, mock_controller: SimulatedController
+    ) -> None:
+        """Test that health routes are added to FastAPI app."""
+        from robo_infra.integrations.observability import add_robotics_health_routes
+
+        mock_app = MagicMock()
+        mock_registry = MagicMock()
+
+        with patch(
+            "svc_infra.health.HealthRegistry", return_value=mock_registry
+        ), patch("svc_infra.health.add_health_routes"):
+            result = add_robotics_health_routes(mock_app, [mock_controller])
+
+            # Should return a registry
+            assert result is mock_registry
+
+    def test_registers_controller_health_checks(
+        self, mock_controller: SimulatedController
+    ) -> None:
+        """Test that controller health checks are registered."""
+        from robo_infra.integrations.observability import add_robotics_health_routes
+
+        mock_app = MagicMock()
+        mock_registry = MagicMock()
+
+        with patch(
+            "svc_infra.health.HealthRegistry", return_value=mock_registry
+        ), patch("svc_infra.health.add_health_routes"):
+            add_robotics_health_routes(mock_app, [mock_controller])
+
+            # Should have registered the controller
+            mock_registry.add.assert_called_once()
+
+    def test_custom_prefix(self, mock_controller: SimulatedController) -> None:
+        """Test using a custom prefix for health routes."""
+        from robo_infra.integrations.observability import add_robotics_health_routes
+
+        mock_app = MagicMock()
+        mock_registry = MagicMock()
+
+        with patch(
+            "svc_infra.health.HealthRegistry", return_value=mock_registry
+        ), patch("svc_infra.health.add_health_routes") as mock_add_routes:
+            add_robotics_health_routes(
+                mock_app, [mock_controller], prefix="/_robotics_health"
+            )
+
+            mock_add_routes.assert_called_once()
+            call_kwargs = mock_add_routes.call_args[1]
+            assert call_kwargs["prefix"] == "/_robotics_health"
+
+
+# --- Correlation ID Tests (5.14.5) ---
+
+
+class TestRequestIdFunctions:
+    """Tests for request ID / correlation ID functions."""
+
+    def test_set_and_get_request_id_with_svc_infra(self) -> None:
+        """Test set/get request ID using svc-infra."""
+        from robo_infra.integrations.observability import (
+            get_robotics_request_id,
+            set_robotics_request_id,
+        )
+
+        # Test with svc-infra available
+        set_robotics_request_id("test-correlation-123")
+        result = get_robotics_request_id()
+        assert result == "test-correlation-123"
+
+        # Clean up
+        set_robotics_request_id(None)
+        assert get_robotics_request_id() is None
+
+    def test_get_request_id_fallback_without_svc_infra(self) -> None:
+        """Test request ID fallback when svc-infra not available."""
+        from robo_infra.integrations import observability
+
+        # When svc-infra returns None, should fall back to local context var
+        with patch("svc_infra.http.client.get_request_id", return_value=None):
+            # Clear any existing value
+            observability._robotics_correlation_id.set(None)
+
+            # Should return None from the fallback context var
+            result = observability.get_robotics_request_id()
+            assert result is None
+
+            # Set via the fallback mechanism
+            observability._robotics_correlation_id.set("fallback-id")
+            result = observability.get_robotics_request_id()
+            # svc-infra returns None, so we get fallback
+            assert result == "fallback-id"
+
+            # Clean up
+            observability._robotics_correlation_id.set(None)
+
+    def test_set_request_id_clears_on_none(self) -> None:
+        """Test that setting None clears the request ID."""
+        from robo_infra.integrations.observability import (
+            get_robotics_request_id,
+            set_robotics_request_id,
+        )
+
+        set_robotics_request_id("some-id")
+        assert get_robotics_request_id() == "some-id"
+
+        set_robotics_request_id(None)
+        assert get_robotics_request_id() is None
+
+
+class TestLogWithContext:
+    """Tests for log_with_context function."""
+
+    def test_logs_with_controller_context(self) -> None:
+        """Test logging with controller context."""
+        from robo_infra.integrations.observability import log_with_context
+
+        with patch("robo_infra.integrations.observability.logger") as mock_logger:
+            log_with_context(
+                "info",
+                "Test message",
+                controller="arm",
+            )
+
+            mock_logger.info.assert_called_once()
+            call_args = mock_logger.info.call_args
+            assert call_args[0][0] == "Test message"
+            assert call_args[1]["extra"]["controller"] == "arm"
+
+    def test_logs_with_actuator_context(self) -> None:
+        """Test logging with actuator context."""
+        from robo_infra.integrations.observability import log_with_context
+
+        with patch("robo_infra.integrations.observability.logger") as mock_logger:
+            log_with_context(
+                "debug",
+                "Actuator moved",
+                controller="arm",
+                actuator="joint1",
+            )
+
+            mock_logger.debug.assert_called_once()
+            call_args = mock_logger.debug.call_args
+            assert call_args[1]["extra"]["controller"] == "arm"
+            assert call_args[1]["extra"]["actuator"] == "joint1"
+
+    def test_logs_with_command_context(self) -> None:
+        """Test logging with command context."""
+        from robo_infra.integrations.observability import log_with_context
+
+        with patch("robo_infra.integrations.observability.logger") as mock_logger:
+            log_with_context(
+                "info",
+                "Command completed",
+                controller="arm",
+                command="move",
+            )
+
+            call_args = mock_logger.info.call_args
+            assert call_args[1]["extra"]["command"] == "move"
+
+    def test_logs_with_extra_context(self) -> None:
+        """Test logging with additional context fields."""
+        from robo_infra.integrations.observability import log_with_context
+
+        with patch("robo_infra.integrations.observability.logger") as mock_logger:
+            log_with_context(
+                "warning",
+                "Approaching limit",
+                controller="arm",
+                current_position=175.0,
+                limit=180.0,
+            )
+
+            call_args = mock_logger.warning.call_args
+            assert call_args[1]["extra"]["current_position"] == 175.0
+            assert call_args[1]["extra"]["limit"] == 180.0
+
+    def test_logs_include_request_id_when_set(self) -> None:
+        """Test that request ID is included in logs when set."""
+        from robo_infra.integrations.observability import (
+            log_with_context,
+            set_robotics_request_id,
+        )
+
+        set_robotics_request_id("corr-456")
+
+        try:
+            with patch(
+                "robo_infra.integrations.observability.logger"
+            ) as mock_logger:
+                log_with_context("info", "Test with correlation")
+
+                call_args = mock_logger.info.call_args
+                assert call_args[1]["extra"]["request_id"] == "corr-456"
+        finally:
+            set_robotics_request_id(None)
+
+    def test_logs_different_levels(self) -> None:
+        """Test logging at different levels."""
+        from robo_infra.integrations.observability import log_with_context
+
+        with patch("robo_infra.integrations.observability.logger") as mock_logger:
+            log_with_context("debug", "Debug msg")
+            mock_logger.debug.assert_called()
+
+            log_with_context("info", "Info msg")
+            mock_logger.info.assert_called()
+
+            log_with_context("warning", "Warning msg")
+            mock_logger.warning.assert_called()
+
+            log_with_context("error", "Error msg")
+            mock_logger.error.assert_called()

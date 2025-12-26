@@ -31,10 +31,8 @@ packages = [{ include = "robo_infra", from = "src" }]
 python = ">=3.11,<4.0"
 pydantic = ">=2.0"
 typing-extensions = ">=4.0"
-# ai-infra >= 0.1.164 provides tools_from_object()
-# svc-infra >= 0.1.714 provides router_from_object()
-svc-infra = "^0.1.715"
 ai-infra = "^0.1.165"
+svc-infra = "^0.1.715"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.0"

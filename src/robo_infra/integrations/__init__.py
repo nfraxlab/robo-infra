@@ -47,8 +47,11 @@ from robo_infra.integrations.ai_infra import (
 )
 from robo_infra.integrations.observability import (
     SafetyTriggerType,
+    add_robotics_health_routes,
     create_actuator_health_check,
     create_controller_health_check,
+    get_robotics_request_id,
+    log_with_context,
     record_command,
     record_estop_triggered,
     record_limit_exceeded,
@@ -57,6 +60,8 @@ from robo_infra.integrations.observability import (
     record_safety_trigger,
     record_sensor_value,
     record_watchdog_timeout,
+    register_controller_health_checks,
+    set_robotics_request_id,
     setup_robotics_logging,
     track_command,
 )
@@ -80,19 +85,15 @@ from robo_infra.integrations.svc_infra import (
 
 
 __all__ = [
-    # ROS2 integration
     "ControllerROS2Node",
     "LaunchConfig",
     "ROS2NodeConfig",
-    # Observability integration
     "SafetyTriggerType",
     "actuator_to_ros2_node",
-    # svc-infra integration
     "actuator_to_router",
-    # ai-infra integration (deprecated dict format)
     "actuator_to_tool",
-    # ai-infra integration (new function tools format)
     "actuator_to_tools",
+    "add_robotics_health_routes",
     "controller_to_ros2_node",
     "controller_to_router",
     "controller_to_schema_tools",
@@ -112,8 +113,10 @@ __all__ = [
     "create_websocket_router",
     "generate_launch_file",
     "generate_parameters_file",
+    "get_robotics_request_id",
     "is_ros2_available",
     "is_ros2_mock_mode",
+    "log_with_context",
     "record_command",
     "record_estop_triggered",
     "record_limit_exceeded",
@@ -122,6 +125,8 @@ __all__ = [
     "record_safety_trigger",
     "record_sensor_value",
     "record_watchdog_timeout",
+    "register_controller_health_checks",
+    "set_robotics_request_id",
     "setup_robotics_logging",
     "track_command",
 ]

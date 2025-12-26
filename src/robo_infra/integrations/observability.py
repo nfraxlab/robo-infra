@@ -42,6 +42,7 @@ from __future__ import annotations
 import functools
 import logging
 import time
+from contextvars import ContextVar
 from typing import TYPE_CHECKING, Any, ParamSpec, TypeVar
 
 
@@ -635,9 +636,195 @@ def create_actuator_health_check(
     return health_check
 
 
+def register_controller_health_checks(
+    registry: Any,  # HealthRegistry
+    controllers: list[Controller],
+    *,
+    timeout: float = 5.0,
+    prefix: str = "controller:",
+) -> None:
+    """Register health checks for multiple controllers.
+
+    Convenience function to add health checks for a list of controllers
+    to a svc-infra HealthRegistry.
+
+    Args:
+        registry: svc-infra HealthRegistry instance.
+        controllers: List of controllers to register.
+        timeout: Timeout for each health check in seconds.
+        prefix: Prefix for health check names (e.g., "controller:arm").
+
+    Example:
+        >>> from svc_infra.health import HealthRegistry
+        >>> registry = HealthRegistry()
+        >>> register_controller_health_checks(registry, [arm, conveyor])
+        >>> # Creates checks: "controller:arm", "controller:conveyor"
+    """
+    for controller in controllers:
+        name = getattr(controller, "name", f"controller_{id(controller)}")
+        check_fn = create_controller_health_check(controller, timeout=timeout)
+        registry.add(f"{prefix}{name}", check_fn, critical=True, timeout=timeout)
+        logger.debug(f"Registered health check for controller: {prefix}{name}")
+
+
+def add_robotics_health_routes(
+    app: Any,  # FastAPI
+    controllers: list[Controller],
+    *,
+    prefix: str = "/_health",
+    timeout: float = 5.0,
+) -> Any:  # HealthRegistry
+    """Add health check routes for robotics controllers to a FastAPI app.
+
+    Creates a HealthRegistry, registers all controller health checks,
+    and adds probe endpoints (/_health/live, /_health/ready, etc.).
+
+    Args:
+        app: FastAPI application instance.
+        controllers: List of controllers to monitor.
+        prefix: URL prefix for health routes.
+        timeout: Timeout for health checks in seconds.
+
+    Returns:
+        The HealthRegistry instance for additional customization.
+
+    Example:
+        >>> from fastapi import FastAPI
+        >>> app = FastAPI()
+        >>> registry = add_robotics_health_routes(app, [arm, conveyor])
+        >>> # Adds routes: /_health/live, /_health/ready, /_health/startup
+    """
+    from svc_infra.health import HealthRegistry, add_health_routes
+
+    registry = HealthRegistry()
+    register_controller_health_checks(
+        registry,
+        controllers,
+        timeout=timeout,
+    )
+    add_health_routes(app, registry, prefix=prefix)
+
+    logger.info(
+        f"Robotics health routes added at {prefix}",
+        extra={
+            "prefix": prefix,
+            "controller_count": len(controllers),
+        },
+    )
+
+    return registry
+
+
 # =============================================================================
 # Structured Logging Setup
 # =============================================================================
+
+
+# Context variable for robotics correlation ID (uses svc-infra when available)
+_robotics_correlation_id: ContextVar[str | None] = ContextVar(
+    "robotics_request_id", default=None
+)
+
+
+def get_robotics_request_id() -> str | None:
+    """Get the current request/correlation ID for logging.
+
+    Uses svc-infra's request ID context when available,
+    falls back to robotics-specific context variable.
+
+    Returns:
+        The current correlation ID, or None if not set.
+    """
+    try:
+        from svc_infra.http.client import get_request_id
+
+        request_id = get_request_id()
+        if request_id:
+            return request_id
+    except ImportError:
+        pass
+
+    # Fallback to local context
+    return _robotics_correlation_id.get()
+
+
+def set_robotics_request_id(request_id: str | None) -> None:
+    """Set the current request/correlation ID.
+
+    Uses svc-infra's request ID context when available,
+    falls back to robotics-specific context variable.
+
+    Args:
+        request_id: The correlation ID to set, or None to clear.
+    """
+    try:
+        from svc_infra.http.client import set_request_id
+
+        set_request_id(request_id)
+        return
+    except ImportError:
+        pass
+
+    # Fallback to local context
+    _robotics_correlation_id.set(request_id)
+
+
+def log_with_context(
+    level: str,
+    message: str,
+    *,
+    controller: str | None = None,
+    actuator: str | None = None,
+    command: str | None = None,
+    **extra: Any,
+) -> None:
+    """Log a message with robotics context automatically included.
+
+    Automatically adds:
+    - request_id: Current correlation ID (if set)
+    - controller: Controller name (if provided)
+    - actuator: Actuator name (if provided)
+    - command: Command name (if provided)
+
+    Args:
+        level: Log level ("debug", "info", "warning", "error").
+        message: Log message.
+        controller: Optional controller name for context.
+        actuator: Optional actuator name for context.
+        command: Optional command name for context.
+        **extra: Additional context fields to include.
+
+    Example:
+        >>> log_with_context(
+        ...     "info",
+        ...     "Move command completed",
+        ...     controller="arm",
+        ...     actuator="joint1",
+        ...     target=45.0,
+        ...     duration_ms=150,
+        ... )
+    """
+    context: dict[str, Any] = {}
+
+    # Add correlation ID
+    request_id = get_robotics_request_id()
+    if request_id:
+        context["request_id"] = request_id
+
+    # Add robotics context
+    if controller:
+        context["controller"] = controller
+    if actuator:
+        context["actuator"] = actuator
+    if command:
+        context["command"] = command
+
+    # Merge additional context
+    context.update(extra)
+
+    # Get appropriate logger method
+    log_fn = getattr(logger, level.lower(), logger.info)
+    log_fn(message, extra=context)
 
 
 def setup_robotics_logging(
@@ -683,12 +870,12 @@ def setup_robotics_logging(
 # =============================================================================
 
 __all__ = [
-    # Safety constants
     "SafetyTriggerType",
-    # Health checks
+    "add_robotics_health_routes",
     "create_actuator_health_check",
     "create_controller_health_check",
-    # Metric recording
+    "get_robotics_request_id",
+    "log_with_context",
     "record_command",
     "record_estop_triggered",
     "record_limit_exceeded",
@@ -697,8 +884,8 @@ __all__ = [
     "record_safety_trigger",
     "record_sensor_value",
     "record_watchdog_timeout",
-    # Logging
+    "register_controller_health_checks",
+    "set_robotics_request_id",
     "setup_robotics_logging",
-    # Decorator
     "track_command",
 ]
