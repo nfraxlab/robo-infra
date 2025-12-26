@@ -2,14 +2,14 @@
 
 [[package]]
 name = "ai-infra"
-version = "0.1.165"
+version = "0.1.166"
 description = "Infrastructure for efficient and scalable AI applications."
 optional = false
 python-versions = "<4.0,>=3.11"
 groups = ["main"]
 files = [
-    {file = "ai_infra-0.1.165-py3-none-any.whl", hash = "sha256:c1dee0aa68a2c961f5b1d1eb570b5968044bf48aef6c1cc7726e20d68fd2b778"},
-    {file = "ai_infra-0.1.165.tar.gz", hash = "sha256:7761ef4d2986a91dd68de0c3152a5db6bab31e96b7ebe9c6958c5a7d9333767d"},
+    {file = "ai_infra-0.1.166-py3-none-any.whl", hash = "sha256:d1a9da80092eea51beb0c59b32c4cc5125166af43f75c1bcd080fadbbec4fcb9"},
+    {file = "ai_infra-0.1.166.tar.gz", hash = "sha256:1463f316d560ab7b2bfc5f970a147eb03196a208be37673747a0ea33ab54f93c"},
 ]
 
 [package.dependencies]
@@ -4330,14 +4330,14 @@ files = [
 
 [[package]]
 name = "svc-infra"
-version = "0.1.715"
+version = "0.1.716"
 description = "Infrastructure for building and deploying prod-ready services"
 optional = false
 python-versions = "<4.0,>=3.11"
 groups = ["main"]
 files = [
-    {file = "svc_infra-0.1.715-py3-none-any.whl", hash = "sha256:95683d92ce8e5e72e5716dc404c8eb5b5a59d5fc0f2df451000a068f75c7baa4"},
-    {file = "svc_infra-0.1.715.tar.gz", hash = "sha256:298412a121ccced9b15e8cb57ef00555e6839346dd3f3406eaaa23b5b2da9649"},
+    {file = "svc_infra-0.1.716-py3-none-any.whl", hash = "sha256:5bfad7c6030b43653c504a66b9a2fcd9a6d923eaef6d3eec13d2c3c7e9abfb5c"},
+    {file = "svc_infra-0.1.716.tar.gz", hash = "sha256:fcf2b3209685b84b2fab64473830b19b168d50a85fc8956ca4e184d495a5310e"},
 ]
 
 [package.dependencies]
@@ -5159,4 +5159,4 @@ cffi = ["cffi (>=1.17,<2.0) ; platform_python_implementation != \"PyPy\" and pyt
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<4.0"
-content-hash = "d2bade4c1c12c41facb2b18e74f69f46a78fe6da26e64a9b031921148d7f527b"
+content-hash = "ba8049d450e507d99ca34012dddbb93ea06959e3b0734442d7d24ab9b40bff01"
