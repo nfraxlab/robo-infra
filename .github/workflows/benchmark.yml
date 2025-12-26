@@ -1,0 +1,139 @@
+name: Benchmarks
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'tests/benchmarks/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'tests/benchmarks/**'
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  benchmark:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --no-root
+
+      - name: Install project
+        run: poetry install --no-interaction
+
+      - name: Run benchmarks
+        run: |
+          poetry run pytest tests/benchmarks/ -v --tb=short \
+            --benchmark-disable \
+            --durations=20 2>&1 | tee benchmark_output.txt
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: benchmark_output.txt
+          retention-days: 30
+
+      - name: Check benchmark failures
+        run: |
+          if grep -q "FAILED" benchmark_output.txt; then
+            echo "❌ Some benchmarks failed to meet performance targets"
+            grep "FAILED" benchmark_output.txt
+            exit 1
+          else
+            echo "✅ All benchmarks passed performance targets"
+          fi
+
+  memory-profile:
+    name: Memory Profiling
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: |
+          poetry install --no-interaction --no-root
+          poetry run pip install memory-profiler
+
+      - name: Install project
+        run: poetry install --no-interaction
+
+      - name: Run memory profiling
+        run: |
+          poetry run python -c "
+          from robo_infra.core import SimulatedController, SimulatedActuator, SimulatedSensor, Limits
+          import tracemalloc
+          
+          tracemalloc.start()
+          
+          # Create controller with components
+          controller = SimulatedController(name='test')
+          for i in range(6):
+              actuator = SimulatedActuator(name=f'joint_{i}', limits=Limits(min=-180, max=180))
+              controller.add_actuator(f'joint_{i}', actuator)
+          for i in range(4):
+              sensor = SimulatedSensor(name=f'sensor_{i}', limits=Limits(min=0, max=100))
+              controller.add_sensor(f'sensor_{i}', sensor)
+          
+          current, peak = tracemalloc.get_traced_memory()
+          tracemalloc.stop()
+          
+          print(f'Memory usage:')
+          print(f'  Current: {current / 1024:.2f} KB')
+          print(f'  Peak: {peak / 1024:.2f} KB')
+          
+          # Set threshold at 1MB
+          if peak > 1024 * 1024:
+              print('❌ Memory usage exceeds 1MB threshold')
+              exit(1)
+          else:
+              print('✅ Memory usage within acceptable limits')
+          "

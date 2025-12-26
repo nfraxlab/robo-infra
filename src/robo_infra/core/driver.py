@@ -354,6 +354,40 @@ class Driver(ABC):
         """Context manager exit - disconnect from hardware."""
         self.disconnect()
 
+    async def __aenter__(self) -> Driver:
+        """Async context manager entry - connect to hardware.
+
+        For drivers with async connect, override connect_async().
+        Default implementation calls sync connect().
+        """
+        await self.connect_async()
+        return self
+
+    async def __aexit__(
+        self,
+        exc_type: type | None,
+        exc_val: Exception | None,
+        exc_tb: object,
+    ) -> None:
+        """Async context manager exit - disconnect from hardware."""
+        await self.disconnect_async()
+
+    async def connect_async(self) -> None:
+        """Async version of connect.
+
+        Override this for drivers that need async initialization.
+        Default implementation calls sync connect().
+        """
+        self.connect()
+
+    async def disconnect_async(self) -> None:
+        """Async version of disconnect.
+
+        Override this for drivers that need async cleanup.
+        Default implementation calls sync disconnect().
+        """
+        self.disconnect()
+
     # -------------------------------------------------------------------------
     # Channel Operations
     # -------------------------------------------------------------------------

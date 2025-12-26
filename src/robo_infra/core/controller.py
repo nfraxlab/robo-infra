@@ -29,9 +29,10 @@ import asyncio
 import logging
 import time
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field
 
@@ -837,7 +838,7 @@ class Controller(ABC):
             This is a placeholder. Full implementation will be in Phase 7
             when integrating with ai-infra.
         """
-        tools = []
+        tools: list[dict[str, Any] | Callable[..., Any]] = []
 
         # Basic movement tool
         tools.append(
@@ -961,6 +962,40 @@ class Controller(ABC):
 
     def __exit__(self, exc_type: type | None, exc_val: Exception | None, exc_tb: Any) -> None:
         """Exit context manager - disable controller."""
+        self.disable()
+
+    async def __aenter__(self) -> Controller:
+        """Async context manager entry - enable controller.
+
+        For controllers with async initialization, override enable_async().
+        Default implementation calls sync enable().
+        """
+        await self.enable_async()
+        return self
+
+    async def __aexit__(
+        self,
+        exc_type: type | None,
+        exc_val: Exception | None,
+        exc_tb: Any,
+    ) -> None:
+        """Async context manager exit - disable controller."""
+        await self.disable_async()
+
+    async def enable_async(self) -> None:
+        """Async version of enable.
+
+        Override this for controllers that need async initialization.
+        Default implementation calls sync enable().
+        """
+        self.enable()
+
+    async def disable_async(self) -> None:
+        """Async version of disable.
+
+        Override this for controllers that need async cleanup.
+        Default implementation calls sync disable().
+        """
         self.disable()
 
     def __repr__(self) -> str:
@@ -1136,6 +1171,30 @@ class ControllerGroup:
     def __exit__(self, exc_type: type | None, exc_val: Exception | None, exc_tb: Any) -> None:
         """Exit context - disable all."""
         self.disable_all()
+
+    async def __aenter__(self) -> ControllerGroup:
+        """Async context manager entry - enable all controllers."""
+        await self.enable_all_async()
+        return self
+
+    async def __aexit__(
+        self,
+        exc_type: type | None,
+        exc_val: Exception | None,
+        exc_tb: Any,
+    ) -> None:
+        """Async context manager exit - disable all controllers."""
+        await self.disable_all_async()
+
+    async def enable_all_async(self) -> None:
+        """Enable all controllers asynchronously."""
+        for controller in self.controllers.values():
+            await controller.enable_async()
+
+    async def disable_all_async(self) -> None:
+        """Disable all controllers asynchronously."""
+        for controller in self.controllers.values():
+            await controller.disable_async()
 
 
 # =============================================================================
