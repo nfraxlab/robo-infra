@@ -20,6 +20,21 @@ from robo_infra.core.types import Limits
 from robo_infra.integrations.ai_infra import controller_to_tools
 from robo_infra.integrations.svc_infra import controller_to_router
 
+# Check for optional dependencies
+try:
+    import ai_infra  # noqa: F401
+
+    HAS_AI_INFRA = True
+except ImportError:
+    HAS_AI_INFRA = False
+
+try:
+    import fastapi  # noqa: F401
+
+    HAS_FASTAPI = True
+except ImportError:
+    HAS_FASTAPI = False
+
 
 # =============================================================================
 # Fixtures
@@ -207,6 +222,7 @@ class TestCreateArmWithServos:
 # =============================================================================
 
 
+@pytest.mark.skipif(not HAS_AI_INFRA, reason="ai-infra not installed")
 class TestArmWithAITools:
     """Test robot arm integration with ai-infra tools for LLM control."""
 
@@ -292,6 +308,7 @@ class TestArmWithAITools:
 # =============================================================================
 
 
+@pytest.mark.skipif(not HAS_FASTAPI, reason="fastapi not installed")
 class TestArmWithAPI:
     """Test robot arm integration with svc-infra REST API."""
 
@@ -459,6 +476,7 @@ class TestArmWithAPI:
 # =============================================================================
 
 
+@pytest.mark.skipif(not HAS_AI_INFRA or not HAS_FASTAPI, reason="ai-infra or fastapi not installed")
 class TestFullE2EFlow:
     """Test complete end-to-end integration of all components."""
 

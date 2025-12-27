@@ -22,6 +22,21 @@ from robo_infra.core.types import Limits
 from robo_infra.integrations.ai_infra import controller_to_tools
 from robo_infra.integrations.svc_infra import controller_to_router
 
+# Check for optional dependencies
+try:
+    import ai_infra  # noqa: F401
+
+    HAS_AI_INFRA = True
+except ImportError:
+    HAS_AI_INFRA = False
+
+try:
+    import fastapi  # noqa: F401
+
+    HAS_FASTAPI = True
+except ImportError:
+    HAS_FASTAPI = False
+
 
 # =============================================================================
 # Fixtures
@@ -196,6 +211,7 @@ class TestCreateRoverWithMotors:
 # =============================================================================
 
 
+@pytest.mark.skipif(not HAS_AI_INFRA, reason="ai-infra not installed")
 class TestRoverWithAITools:
     """Test rover integration with ai-infra tools for LLM control."""
 
@@ -349,6 +365,7 @@ class TestRoverWithUltrasonicSensor:
         assert "front" in readings
         assert readings["front"] >= 0
 
+    @pytest.mark.skipif(not HAS_AI_INFRA, reason="ai-infra not installed")
     def test_sensor_appears_in_tools(
         self,
         rover: DifferentialDrive,
@@ -370,6 +387,7 @@ class TestRoverWithUltrasonicSensor:
 # =============================================================================
 
 
+@pytest.mark.skipif(not HAS_FASTAPI, reason="fastapi not installed")
 class TestRoverWithAPI:
     """Test rover integration with svc-infra REST API."""
 
@@ -468,6 +486,7 @@ class TestRoverWithAPI:
 # =============================================================================
 
 
+@pytest.mark.skipif(not HAS_AI_INFRA or not HAS_FASTAPI, reason="ai-infra or fastapi not installed")
 class TestFullE2EFlow:
     """Test complete end-to-end integration of all components."""
 
