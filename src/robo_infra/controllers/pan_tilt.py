@@ -43,7 +43,7 @@ from __future__ import annotations
 
 import logging
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field
 
@@ -51,6 +51,8 @@ from robo_infra.core.controller import Controller, ControllerConfig
 
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from robo_infra.core.actuator import Actuator
 
 

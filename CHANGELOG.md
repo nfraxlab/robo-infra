@@ -4,6 +4,85 @@ All notable changes to this project will be documented in this file.
 
 This file is auto-generated from conventional commits using [git-cliff](https://git-cliff.org/).
 
+## [0.2.0] - 2025-12-26
+
+### 🎉 Highlights
+
+This release marks the transition from Alpha to **Beta** with major improvements in testing infrastructure, observability, resilience, and production readiness.
+
+- **5,200+ tests** with 74%+ coverage
+- **190 integration tests** for end-to-end validation
+- **Prometheus metrics** and health check integration
+- **Resilience utilities** with circuit breakers, retries, and timeouts
+- **Battery monitoring** with chemistry-aware state tracking
+
+### Features
+
+- **Observability Integration**: Add Prometheus metrics and health checks for production monitoring
+  - Prometheus counter, histogram, and gauge metrics
+  - `/health`, `/ready`, `/live` endpoints for Kubernetes
+  - Structured logging with correlation IDs
+  - Span tracing for operation timing
+
+- **Resilience Utilities**: Add robust error handling for production systems
+  - Circuit breaker pattern for failing dependencies
+  - Exponential backoff retry with jitter
+  - Configurable timeouts for all operations
+  - Graceful degradation patterns
+
+- **Battery Monitoring**: Add comprehensive power management
+  - Support for LiPo, Li-ion, NiMH, Lead-acid chemistries
+  - State-of-charge estimation
+  - Low battery warnings and critical alerts
+  - Current draw and capacity tracking
+
+- **Integration Testing Enhancement**: Add 95 new integration tests
+  - Sensor fusion E2E tests (IMU → orientation)
+  - Safety integration tests (E-stop, watchdog, limits)
+  - API integration tests (REST API → controller)
+  - AI integration tests (tool calls → actuator)
+  - Mock external systems for testing
+
+### Testing
+
+- Add unit tests for resource management and security utilities
+- Add unit tests for watchdog module to improve coverage
+- Add unit tests for Turntable and ROS2 integration
+- Add unit tests for Leg controller and related components
+- Add unit tests for Quadcopter controller and related components
+- Add unit tests for power distribution and drivers modules
+- Add unit tests for Modbus, GPS, and LIDAR sensor implementations
+- Add unit tests for VESC brushless motor controller driver
+- Add unit tests for vision marker detection and processing utilities
+- Add unit tests for SCARA and Stewart platform kinematics
+- Add unit tests for IK solvers and motion transforms
+- Add unit tests for ESP32 and Jetson platform implementations
+- Add unit tests for platform abstraction layer and Raspberry Pi platform
+- Add unit tests for PID controller and trajectory generation
+
+### Documentation
+
+- Add examples for Gripper, Lock, and Rover with comprehensive documentation
+- Add integration guides for AI and API usage
+- Enhanced test coverage documentation
+
+### Other Changes
+
+- Update package versions for ai-infra (0.1.166) and svc-infra (0.1.716)
+- Add optional name parameter to StepDirConfig
+- Fix CI race condition in docs-changelog workflow
+- Register error handlers for FastAPI integration
+
+---
+
+## [0.1.12] - 2025-12-20
+
+### Other Changes
+
+- Minor version bump for CI release process improvements
+
+---
+
 ## [0.1.11] - 2025-12-19
 
 

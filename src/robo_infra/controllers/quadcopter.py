@@ -35,7 +35,7 @@ import math
 import time
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -44,6 +44,8 @@ from robo_infra.core.exceptions import DisabledError, SafetyError
 
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from robo_infra.actuators.brushless import BrushlessMotor
     from robo_infra.sensors.imu import IMU
 

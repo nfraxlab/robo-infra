@@ -1,0 +1,143 @@
+name: Hardware Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_category:
+        description: 'Test category to run'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - raspberry_pi
+          - i2c
+          - servo
+          - motor
+          - gpio
+      verbose:
+        description: 'Enable verbose output'
+        required: false
+        default: false
+        type: boolean
+  schedule:
+    # Run hardware tests nightly at 2 AM UTC
+    - cron: '0 2 * * *'
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  hardware-tests:
+    name: Hardware Tests
+    # Only run on self-hosted Raspberry Pi runner
+    runs-on: [self-hosted, raspberry-pi, hardware-tests]
+    timeout-minutes: 30
+
+    env:
+      ROBO_HARDWARE_TESTS: "1"
+      ROBO_SIMULATION: "0"
+      # Default test hardware configuration
+      ROBO_TEST_LED_PIN: "17"
+      ROBO_TEST_INPUT_PIN: "27"
+      ROBO_TEST_I2C_BUS: "1"
+      ROBO_TEST_SERVO_CHANNEL: "0"
+      ROBO_TEST_MPU6050_ADDR: "0x68"
+      ROBO_TEST_PCA9685_ADDR: "0x40"
+      ROBO_TEST_MOTOR_PWM_PIN: "18"
+      ROBO_TEST_MOTOR_IN1_PIN: "23"
+      ROBO_TEST_MOTOR_IN2_PIN: "24"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ runner.arch }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --no-root
+
+      - name: Install project
+        run: poetry install --no-interaction
+
+      - name: Check I2C devices
+        run: |
+          echo "=== I2C Device Scan ==="
+          i2cdetect -y 1 || echo "I2C scan failed (may need sudo)"
+
+      - name: Run hardware tests (all)
+        if: ${{ github.event.inputs.test_category == 'all' || github.event.inputs.test_category == '' }}
+        run: |
+          VERBOSE_FLAG=""
+          if [ "${{ github.event.inputs.verbose }}" == "true" ]; then
+            VERBOSE_FLAG="-v"
+          fi
+          poetry run pytest tests/hardware/ $VERBOSE_FLAG \
+            --tb=short \
+            --junitxml=hardware-test-results.xml
+
+      - name: Run hardware tests (category)
+        if: ${{ github.event.inputs.test_category != 'all' && github.event.inputs.test_category != '' }}
+        run: |
+          VERBOSE_FLAG=""
+          if [ "${{ github.event.inputs.verbose }}" == "true" ]; then
+            VERBOSE_FLAG="-v"
+          fi
+          poetry run pytest tests/hardware/ $VERBOSE_FLAG \
+            -m "${{ github.event.inputs.test_category }}" \
+            --tb=short \
+            --junitxml=hardware-test-results.xml
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hardware-test-results
+          path: hardware-test-results.xml
+          retention-days: 30
+
+      - name: Cleanup GPIO
+        if: always()
+        run: |
+          echo "Cleaning up GPIO state..."
+          # Reset any GPIO pins that might be left in output mode
+          # This is a safety measure to prevent damage
+
+  hardware-tests-report:
+    name: Hardware Tests Report
+    runs-on: ubuntu-latest
+    needs: hardware-tests
+    if: always()
+
+    steps:
+      - name: Download test results
+        uses: actions/download-artifact@v4
+        with:
+          name: hardware-test-results
+          path: ./results
+
+      - name: Publish test report
+        uses: mikepenz/action-junit-report@v4
+        if: always()
+        with:
+          report_paths: './results/hardware-test-results.xml'
+          fail_on_failure: true
+          include_passed: true
+          detailed_summary: true

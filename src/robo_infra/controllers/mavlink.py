@@ -38,12 +38,16 @@ import logging
 import time
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field
 
 from robo_infra.core.controller import Controller, ControllerConfig
 from robo_infra.core.exceptions import CommunicationError, DisabledError, SafetyError
+
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 logger = logging.getLogger(__name__)
