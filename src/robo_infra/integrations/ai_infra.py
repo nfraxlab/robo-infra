@@ -54,7 +54,23 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
 # Import tools_from_object from ai-infra for base method extraction
-from ai_infra.tools import tool_exclude, tools_from_object
+try:
+    from ai_infra.tools import tool_exclude, tools_from_object
+
+    _AI_INFRA_AVAILABLE = True
+except ImportError:
+    _AI_INFRA_AVAILABLE = False
+    tool_exclude = None  # type: ignore[assignment]
+    tools_from_object = None  # type: ignore[assignment]
+
+
+def _check_ai_infra() -> None:
+    """Raise ImportError if ai-infra is not available."""
+    if not _AI_INFRA_AVAILABLE:
+        raise ImportError(
+            "ai-infra is required for AI integration. "
+            "Install with: pip install robo-infra[ai]"
+        )
 
 
 if TYPE_CHECKING:
@@ -122,7 +138,11 @@ def controller_to_tools(controller: "Controller") -> list[Callable]:
         basic method extraction. Robotics-specific tools (move, status,
         sensors) are created with enhanced docstrings that include runtime
         information about actuator limits and available sensors.
+
+    Raises:
+        ImportError: If ai-infra is not installed.
     """
+    _check_ai_infra()
     tools: list[Callable] = []
     name = controller.name
 
@@ -311,7 +331,11 @@ def actuator_to_tools(actuator: "Actuator") -> list[Callable]:
         >>> from ai_infra import Agent
         >>> agent = Agent(tools=tools)
         >>> agent.run("Set the servo to 90 degrees")
+
+    Raises:
+        ImportError: If ai-infra is not installed.
     """
+    _check_ai_infra()
     tools: list[Callable] = []
     name = actuator.name
     limits = actuator.limits
@@ -431,7 +455,11 @@ def controller_to_schema_tools(controller: "Controller") -> list[Callable]:
     Note:
         These tools use Pydantic BaseModel for input validation,
         providing stricter type checking than plain function tools.
+
+    Raises:
+        ImportError: If ai-infra is not installed.
     """
+    _check_ai_infra()
     try:
         from pydantic import BaseModel, Field
     except ImportError as e:

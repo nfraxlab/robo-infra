@@ -31,8 +31,55 @@ packages = [{ include = "robo_infra", from = "src" }]
 python = ">=3.11,<4.0"
 pydantic = ">=2.0"
 typing-extensions = ">=4.0"
-svc-infra = "^0.1.716"
-ai-infra = "^0.1.166"
+
+# Optional infrastructure integrations
+svc-infra = {version = "^0.1.716", optional = true}
+ai-infra = {version = "^0.1.166", optional = true}
+
+# Optional hardware communication
+smbus2 = {version = ">=0.4", optional = true}
+spidev = {version = ">=3.6", optional = true, markers = "sys_platform == 'linux'"}
+pyserial = {version = ">=3.5", optional = true}
+python-can = {version = ">=4.0", optional = true}
+
+# Optional GPIO libraries
+gpiozero = {version = ">=2.0", optional = true, markers = "sys_platform == 'linux'"}
+lgpio = {version = ">=0.2", optional = true, markers = "sys_platform == 'linux'"}
+
+# Optional vision libraries
+opencv-python-headless = {version = ">=4.8", optional = true}
+
+# Optional camera SDKs
+pyrealsense2 = {version = ">=2.50", optional = true}
+depthai = {version = ">=2.20", optional = true}
+picamera2 = {version = ">=0.3", optional = true, markers = "sys_platform == 'linux'"}
+
+[tool.poetry.extras]
+# Core integration extras
+ai = ["ai-infra"]
+api = ["svc-infra"]
+
+# Hardware communication extras (granular)
+i2c = ["smbus2"]
+spi = ["spidev"]
+serial = ["pyserial"]
+can = ["python-can"]
+gpio = ["gpiozero", "lgpio"]
+
+# Vision/camera extras (granular)
+vision = ["opencv-python-headless"]
+realsense = ["pyrealsense2"]
+oak = ["depthai"]
+picamera = ["picamera2"]
+
+# Platform-specific bundles
+raspberry-pi = ["smbus2", "spidev", "pyserial", "gpiozero", "lgpio", "picamera2"]
+jetson = ["smbus2", "spidev", "pyserial"]
+
+# Convenience bundles
+hardware = ["smbus2", "spidev", "pyserial", "python-can", "gpiozero", "lgpio"]
+cameras = ["opencv-python-headless", "pyrealsense2", "depthai"]
+full = ["ai-infra", "svc-infra", "smbus2", "spidev", "pyserial", "python-can", "gpiozero", "lgpio", "opencv-python-headless"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.0"
@@ -47,14 +94,6 @@ mkdocs-material = ">=9.5.0"
 mkdocstrings = {extras = ["python"], version = ">=0.25.0"}
 bandit = "^1.9.2"
 types-pyserial = "^3.5.0.20251001"
-
-[tool.poetry.group.hardware]
-optional = true
-
-[tool.poetry.group.hardware.dependencies]
-smbus2 = ">=0.4"
-spidev = ">=3.6"
-pyserial = ">=3.5"
 
 [tool.poetry.scripts]
 robo-infra = "robo_infra.cli:main"

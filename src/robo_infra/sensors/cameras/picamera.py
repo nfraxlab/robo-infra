@@ -275,7 +275,8 @@ class PiCamera(Camera):
                 return
             raise ImportError(
                 "No camera library available. Install picamera2:\n"
-                "  sudo apt install python3-picamera2"
+                "  pip install robo-infra[picamera]\n"
+                "  or: sudo apt install python3-picamera2"
             )
 
         if self._library == "picamera2":

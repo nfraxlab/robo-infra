@@ -303,7 +303,7 @@ class RealSenseCamera(Camera):
                 return
             raise ImportError(
                 "pyrealsense2 required for RealSense cameras:\n"
-                "  pip install pyrealsense2"
+                "  pip install robo-infra[realsense]"
             ) from e
 
         self._rs = rs

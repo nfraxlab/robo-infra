@@ -40,25 +40,73 @@
 
 ## Installation
 
+### Core Only (Minimal)
+
+For embedded systems or when you just need robotics abstractions:
+
 ```bash
-# Core package (simulation only)
 pip install robo-infra
-
-# With Raspberry Pi support
-pip install robo-infra[raspberry-pi]
-
-# With all hardware support
-pip install robo-infra[hardware]
-
-# With AI integration
-pip install robo-infra[ai]
-
-# With API integration
-pip install robo-infra[api]
-
-# Everything
-pip install robo-infra[all]
 ```
+
+### With AI Integration
+
+For LLM-controlled robots using `ai-infra`:
+
+```bash
+pip install robo-infra[ai]
+```
+
+### With API Integration
+
+For REST/WebSocket APIs using `svc-infra`:
+
+```bash
+pip install robo-infra[api]
+```
+
+### With Hardware Support
+
+For real hardware buses (I2C, SPI, Serial, CAN):
+
+```bash
+pip install robo-infra[hardware]
+```
+
+### Full Installation
+
+Install everything:
+
+```bash
+pip install robo-infra[full]
+```
+
+### Platform-Specific Bundles
+
+| Platform | Command |
+|----------|---------|
+| Raspberry Pi | `pip install robo-infra[raspberry-pi]` |
+| NVIDIA Jetson | `pip install robo-infra[jetson]` |
+| Generic Linux | `pip install robo-infra[hardware]` |
+
+### Granular Hardware Extras
+
+| Feature | Extra | Command |
+|---------|-------|---------|
+| I2C sensors | `[i2c]` | `pip install robo-infra[i2c]` |
+| SPI devices | `[spi]` | `pip install robo-infra[spi]` |
+| Serial/UART | `[serial]` | `pip install robo-infra[serial]` |
+| CAN bus | `[can]` | `pip install robo-infra[can]` |
+| GPIO | `[gpio]` | `pip install robo-infra[gpio]` |
+
+### Vision & Camera Extras
+
+| Feature | Extra | Command |
+|---------|-------|---------|
+| OpenCV | `[vision]` | `pip install robo-infra[vision]` |
+| Intel RealSense | `[realsense]` | `pip install robo-infra[realsense]` |
+| Luxonis OAK | `[oak]` | `pip install robo-infra[oak]` |
+| Raspberry Pi Camera | `[picamera]` | `pip install robo-infra[picamera]` |
+| All cameras | `[cameras]` | `pip install robo-infra[cameras]` |
 
 ## Quick Start
 

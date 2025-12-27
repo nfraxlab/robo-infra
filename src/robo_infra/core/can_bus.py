@@ -614,7 +614,8 @@ class PythonCANBus(CANBus):
             import can
         except ImportError as e:
             raise HardwareNotFoundError(
-                "python-can library not installed. Install with: pip install python-can"
+                "python-can library not installed. "
+                "Install with: pip install robo-infra[can]"
             ) from e
 
         try:

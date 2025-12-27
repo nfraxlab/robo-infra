@@ -32,19 +32,42 @@ import asyncio
 from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING
 
-# Re-export from svc-infra
-from svc_infra.resilience import (
-    CircuitBreaker,
-    CircuitBreakerError,
-    CircuitBreakerStats,
-    CircuitState,
-    RetryConfig,
-    RetryExhaustedError,
-    retry_sync,
-    with_retry,
-)
+# Re-export from svc-infra (optional dependency)
+try:
+    from svc_infra.resilience import (
+        CircuitBreaker,
+        CircuitBreakerError,
+        CircuitBreakerStats,
+        CircuitState,
+        RetryConfig,
+        RetryExhaustedError,
+        retry_sync,
+        with_retry,
+    )
+
+    _SVC_INFRA_AVAILABLE = True
+except ImportError:
+    _SVC_INFRA_AVAILABLE = False
+    # Create placeholders for type checking
+    CircuitBreaker = None  # type: ignore[assignment, misc]
+    CircuitBreakerError = None  # type: ignore[assignment, misc]
+    CircuitBreakerStats = None  # type: ignore[assignment, misc]
+    CircuitState = None  # type: ignore[assignment, misc]
+    RetryConfig = None  # type: ignore[assignment, misc]
+    RetryExhaustedError = None  # type: ignore[assignment, misc]
+    retry_sync = None  # type: ignore[assignment]
+    with_retry = None  # type: ignore[assignment]
 
 from robo_infra.core.exceptions import TimeoutError as RoboTimeoutError
+
+
+def _check_svc_infra_resilience() -> None:
+    """Raise ImportError if svc-infra resilience is not available."""
+    if not _SVC_INFRA_AVAILABLE:
+        raise ImportError(
+            "svc-infra is required for resilience utilities. "
+            "Install with: pip install robo-infra[api]"
+        )
 
 
 if TYPE_CHECKING:

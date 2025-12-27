@@ -307,7 +307,7 @@ class OAKCamera(Camera):
                 return
             raise ImportError(
                 "depthai required for OAK cameras:\n"
-                "  pip install depthai"
+                "  pip install robo-infra[oak]"
             ) from e
 
         self._dai = dai

@@ -43,13 +43,32 @@ import logging
 from typing import TYPE_CHECKING, Any
 
 # Import router utilities from svc-infra for router pattern integration
-from svc_infra.api.fastapi import (
-    DEFAULT_EXCEPTION_MAP,
-    STATUS_TITLES,
-    endpoint_exclude,
-    map_exception_to_http,
-    router_from_object,
-)
+try:
+    from svc_infra.api.fastapi import (
+        DEFAULT_EXCEPTION_MAP,
+        STATUS_TITLES,
+        endpoint_exclude,
+        map_exception_to_http,
+        router_from_object,
+    )
+
+    _SVC_INFRA_AVAILABLE = True
+except ImportError:
+    _SVC_INFRA_AVAILABLE = False
+    DEFAULT_EXCEPTION_MAP = {}  # type: ignore[misc]
+    STATUS_TITLES = {}  # type: ignore[misc]
+    endpoint_exclude = None  # type: ignore[assignment]
+    map_exception_to_http = None  # type: ignore[assignment]
+    router_from_object = None  # type: ignore[assignment]
+
+
+def _check_svc_infra() -> None:
+    """Raise ImportError if svc-infra is not available."""
+    if not _SVC_INFRA_AVAILABLE:
+        raise ImportError(
+            "svc-infra is required for API integration. "
+            "Install with: pip install robo-infra[api]"
+        )
 
 
 if TYPE_CHECKING:
@@ -267,6 +286,7 @@ def controller_to_router(
         >>> # Authenticated access
         >>> router = controller_to_router(arm, prefix="/arm", auth_required=True)
     """
+    _check_svc_infra()
     try:
         from pydantic import BaseModel
     except ImportError as e:
@@ -462,7 +482,11 @@ def actuator_to_router(
 
     Returns:
         DualAPIRouter instance from svc-infra.
+
+    Raises:
+        ImportError: If svc-infra is not installed.
     """
+    _check_svc_infra()
     try:
         from pydantic import BaseModel, Field
     except ImportError as e:
@@ -622,6 +646,7 @@ def create_websocket_router(
         >>> app.include_router(router)
         >>> # Connect to ws://host/arm/ws
     """
+    _check_svc_infra()
     try:
         from fastapi import WebSocket, WebSocketDisconnect
     except ImportError as e:
@@ -718,6 +743,7 @@ def create_websocket_handler(controller: "Controller") -> Any:
         stacklevel=2,
     )
 
+    _check_svc_infra()
     try:
         from fastapi import WebSocket, WebSocketDisconnect
     except ImportError as e:

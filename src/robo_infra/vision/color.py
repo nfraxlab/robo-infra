@@ -60,7 +60,7 @@ def _get_cv2():
     except ImportError as e:
         raise ImportError(
             "OpenCV (cv2) is required for color detection. "
-            "Install with: pip install opencv-python"
+            "Install with: pip install robo-infra[vision]"
         ) from e
 
 

@@ -59,7 +59,7 @@ def _get_cv2() -> Any:
     except ImportError as e:
         raise ImportError(
             "OpenCV (cv2) is required for USB camera support. "
-            "Install with: pip install opencv-python"
+            "Install with: pip install robo-infra[vision]"
         ) from e
 
 

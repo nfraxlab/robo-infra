@@ -63,7 +63,7 @@ def _get_cv2():
     except ImportError as e:
         raise ImportError(
             "OpenCV (cv2) is required for marker detection. "
-            "Install with: pip install opencv-contrib-python"
+            "Install with: pip install robo-infra[vision]"
         ) from e
 
 
@@ -83,7 +83,7 @@ def _get_aruco():
     if not hasattr(cv2, "aruco"):
         raise ImportError(
             "OpenCV ArUco module not available. "
-            "Install with: pip install opencv-contrib-python"
+            "Install with: pip install robo-infra[vision] or pip install opencv-contrib-python"
         )
     return cv2.aruco
 

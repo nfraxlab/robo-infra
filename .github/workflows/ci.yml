@@ -195,3 +195,77 @@ jobs:
           # Run integration tests with 'not hardware' marker
           # Exit code 5 means no tests collected - that's OK for now
           poetry run pytest tests/integration -q -m "not hardware" || test $? -eq 5
+
+  # Test that extras install correctly
+  test-extras:
+    name: Test Extras (${{ matrix.extra }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        extra: [ai, api, hardware, vision, can, gpio, i2c, spi, serial]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install with extra
+        run: pip install .[${{ matrix.extra }}]
+
+      - name: Test core import
+        run: python -c "import robo_infra; print(f'robo-infra {robo_infra.__version__} with [${{ matrix.extra }}]')"
+
+      - name: Test extra-specific imports
+        run: |
+          if [ "${{ matrix.extra }}" = "vision" ]; then
+            python -c "from robo_infra.vision.processing import _has_cv2; assert _has_cv2(), 'OpenCV not available'"
+          elif [ "${{ matrix.extra }}" = "can" ]; then
+            python -c "import can; print(f'python-can {can.__version__}')"
+          elif [ "${{ matrix.extra }}" = "i2c" ]; then
+            python -c "import smbus2; print('smbus2 available')"
+          elif [ "${{ matrix.extra }}" = "spi" ]; then
+            python -c "import spidev; print('spidev available')" || echo "spidev may not work outside Linux"
+          elif [ "${{ matrix.extra }}" = "serial" ]; then
+            python -c "import serial; print(f'pyserial {serial.VERSION}')"
+          elif [ "${{ matrix.extra }}" = "gpio" ]; then
+            python -c "import gpiozero; print('gpiozero available')" || echo "gpiozero may not work outside Pi"
+          fi
+
+  # Test minimal installation (no extras)
+  test-minimal:
+    name: Test Minimal Install
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install minimal (no extras)
+        run: pip install .
+
+      - name: Test core imports work
+        run: |
+          python -c "
+          from robo_infra.core.controller import SimulatedController
+          from robo_infra.core.actuator import SimulatedActuator
+          from robo_infra.core.sensor import SimulatedSensor
+          from robo_infra.core.types import Limits
+          print('Core imports work without extras')
+          "
+
+      - name: Test optional imports fail gracefully
+        run: |
+          python -c "
+          try:
+              from robo_infra.integrations.ai_infra import controller_to_tools
+              # If ai-infra happens to be installed, this is fine
+          except ImportError as e:
+              assert 'pip install robo-infra[ai]' in str(e), f'Bad error message: {e}'
+              print('AI import fails gracefully with correct hint')
+          "
