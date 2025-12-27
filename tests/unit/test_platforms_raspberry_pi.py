@@ -1234,7 +1234,6 @@ class TestPlatformInfoExtended:
     def test_info_capabilities_has_gpio(self):
         """Test capabilities includes GPIO."""
         platform = RaspberryPiPlatform(backend=GPIOBackend.SIMULATION)
-        from robo_infra.platforms.base import PlatformCapability
 
         caps = platform.capabilities
         # Simulation may have all capabilities

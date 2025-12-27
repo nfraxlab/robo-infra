@@ -32,6 +32,7 @@ import asyncio
 from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING
 
+
 # Re-export from svc-infra (optional dependency)
 try:
     from svc_infra.resilience import (

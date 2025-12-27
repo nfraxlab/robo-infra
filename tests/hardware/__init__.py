@@ -22,7 +22,6 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any
 
 import pytest
 
@@ -76,7 +75,7 @@ def requires_platform(*platform_types: str):
     Args:
         platform_types: Platform type names (e.g., "raspberry_pi", "jetson")
     """
-    from robo_infra.platforms import PlatformType, detect_platform
+    from robo_infra.platforms import detect_platform
 
     def check() -> bool:
         if not hardware_tests_enabled():

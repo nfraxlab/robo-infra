@@ -23,6 +23,7 @@ import time
 
 import pytest
 
+
 pytestmark = [
     pytest.mark.hardware,
     pytest.mark.i2c,

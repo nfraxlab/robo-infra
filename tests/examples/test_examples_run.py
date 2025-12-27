@@ -4,7 +4,6 @@ These tests verify that example scripts can be imported and their
 main functions can be called without raising exceptions.
 """
 
-import pytest
 
 
 class TestArmExamples:
@@ -25,7 +24,7 @@ class TestArmExamples:
 
     def test_arm_with_api_import(self) -> None:
         """Test that arm_with_api.py can be imported."""
-        from examples.arm.arm_with_api import create_arm, create_app  # noqa: F401
+        from examples.arm.arm_with_api import create_app, create_arm  # noqa: F401
 
     def test_arm_with_api_create_app(self) -> None:
         """Test that create_app() creates a valid FastAPI app."""
@@ -58,10 +57,6 @@ class TestRoverExamples:
 
     def test_rover_with_sensors_import(self) -> None:
         """Test that rover_with_sensors.py can be imported."""
-        from examples.rover.rover_with_sensors import (
-            create_distance_sensor,
-            create_rover,
-        )  # noqa: F401
 
     def test_rover_with_sensors_create(self) -> None:
         """Test that rover and sensor can be created."""

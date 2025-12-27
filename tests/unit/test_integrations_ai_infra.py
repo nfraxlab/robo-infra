@@ -12,7 +12,6 @@ The new format uses callable Python functions with:
 from __future__ import annotations
 
 import inspect
-from typing import Callable
 
 import pytest
 

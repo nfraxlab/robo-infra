@@ -13,37 +13,38 @@ from __future__ import annotations
 import pytest
 
 from robo_infra.motion import (
+    # IK solvers
+    CCDIKSolver,
+    # Trajectory
+    CubicTrajectory,
+    DampedLeastSquaresIK,
     # Kinematics chains
     EndEffectorPose,
+    GradientDescentIK,
+    IKSolverConfig,
+    LinearInterpolator,
+    # Path planning
+    LinearPathPlanner,
+    QuinticTrajectory,
+    RRTPathPlanner,
+    SCurveTrajectory,
     ThreeLinkArm,
+    TrajectoryGenerator,
+    TrajectoryProfile,
+    TrapezoidalProfile,
     TwoLinkArm,
+    # Delta robot
+    create_delta,
     # DH presets
     create_planar_3dof,
     create_puma_560,
-    create_ur5,
-    # IK solvers
-    CCDIKSolver,
-    DampedLeastSquaresIK,
-    GradientDescentIK,
-    IKSolverConfig,
-    # Trajectory
-    CubicTrajectory,
-    LinearInterpolator,
-    QuinticTrajectory,
-    SCurveTrajectory,
-    TrapezoidalProfile,
-    TrajectoryGenerator,
-    TrajectoryProfile,
-    # Delta robot
-    create_delta,
     # SCARA
     create_scara,
-    # Path planning
-    LinearPathPlanner,
-    RRTPathPlanner,
+    create_ur5,
 )
 
 from . import Benchmarker, format_time
+
 
 # Performance targets (in seconds)
 TARGET_FK_2DOF = 0.0001  # 0.1ms

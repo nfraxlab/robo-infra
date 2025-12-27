@@ -919,7 +919,7 @@ class TestModbusCRC16Validation:
         """Test verify_crc16 with invalid CRC."""
         data = bytes([0x01, 0x03, 0x00, 0x00, 0x00, 0x01])
         # Append wrong CRC
-        frame = data + bytes([0x00, 0x00])
+        data + bytes([0x00, 0x00])
         # Calculate what the CRC should be
         correct_crc = calculate_crc16(data)
         # If the appended CRC is wrong, verify should fail

@@ -21,6 +21,7 @@ from robo_infra.core import (
 
 from . import Benchmarker, format_time
 
+
 # Performance targets (in seconds)
 TARGET_CREATE = 0.010  # 10ms
 TARGET_OPERATION = 0.001  # 1ms
@@ -189,7 +190,7 @@ class TestActuatorOperations:
         positions = [0.0, 30.0, 60.0, 90.0, 120.0, 150.0]
 
         def set_all() -> None:
-            for a, p in zip(actuators, positions):
+            for a, p in zip(actuators, positions, strict=True):
                 a.set(p)
 
         result = benchmarker.run(

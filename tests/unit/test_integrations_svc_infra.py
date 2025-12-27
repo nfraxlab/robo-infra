@@ -115,7 +115,6 @@ def test_client(mock_controller: SimulatedController) -> TestClient:
     """Create a FastAPI test client with the controller router."""
     from fastapi import FastAPI
     from fastapi.testclient import TestClient
-
     from svc_infra.api.fastapi.middleware.errors.handlers import register_error_handlers
 
     app = FastAPI()
@@ -131,7 +130,6 @@ def enabled_test_client(enabled_controller: SimulatedController) -> TestClient:
     """Create a test client with an enabled controller."""
     from fastapi import FastAPI
     from fastapi.testclient import TestClient
-
     from svc_infra.api.fastapi.middleware.errors.handlers import register_error_handlers
 
     app = FastAPI()
@@ -147,7 +145,6 @@ def homed_test_client(homed_controller: SimulatedController) -> TestClient:
     """Create a test client with a homed controller."""
     from fastapi import FastAPI
     from fastapi.testclient import TestClient
-
     from svc_infra.api.fastapi.middleware.errors.handlers import register_error_handlers
 
     app = FastAPI()
@@ -163,7 +160,6 @@ def actuator_test_client(simple_actuator: SimulatedActuator) -> TestClient:
     """Create a test client for a single actuator."""
     from fastapi import FastAPI
     from fastapi.testclient import TestClient
-
     from svc_infra.api.fastapi.middleware.errors.handlers import register_error_handlers
 
     app = FastAPI()

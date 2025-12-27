@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
+
 if TYPE_CHECKING:
     from _pytest.config import Config
     from _pytest.nodes import Item
@@ -142,7 +143,6 @@ def require_spi() -> None:
 def platform_info() -> dict:
     """Get information about the current platform."""
     from robo_infra.platforms import (
-        PlatformType,
         detect_platform,
         get_platform_capabilities,
     )

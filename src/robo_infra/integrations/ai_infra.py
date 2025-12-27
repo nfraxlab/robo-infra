@@ -53,6 +53,7 @@ import warnings
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
+
 # Import tools_from_object from ai-infra for base method extraction
 try:
     from ai_infra.tools import tool_exclude, tools_from_object

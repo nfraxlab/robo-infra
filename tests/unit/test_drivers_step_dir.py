@@ -616,16 +616,16 @@ class TestA4988DriverAdvanced:
             8: (True, True, False),    # Eighth step
             16: (True, True, True),    # Sixteenth step
         }
-        assert A4988Driver.MICROSTEP_TABLE == expected
+        assert expected == A4988Driver.MICROSTEP_TABLE
 
     def test_a4988_driver_name(self) -> None:
         """Test A4988 driver default name."""
-        driver = A4988Driver(step_pin=2, dir_pin=3)
+        A4988Driver(step_pin=2, dir_pin=3)
         # Check driver has name set
 
     def test_a4988_custom_name(self) -> None:
         """Test A4988 driver with custom name."""
-        driver = A4988Driver(step_pin=2, dir_pin=3, name="X-Axis")
+        A4988Driver(step_pin=2, dir_pin=3, name="X-Axis")
         # Custom name should be applied
 
     def test_a4988_status_contents(self) -> None:
@@ -634,7 +634,7 @@ class TestA4988DriverAdvanced:
         driver.connect()
         driver.move_to(100)
         status = driver.get_status()
-        
+
         assert status["enabled"] is False
         assert status["direction"] == "forward"
         assert status["position"] == 100
@@ -655,7 +655,7 @@ class TestDRV8825DriverAdvanced:
             16: (False, False, True),  # Sixteenth step
             32: (True, False, True),   # 1/32 step
         }
-        assert DRV8825Driver.MICROSTEP_TABLE == expected
+        assert expected == DRV8825Driver.MICROSTEP_TABLE
 
     def test_drv8825_fault_pin_stored(self) -> None:
         """Test DRV8825 fault pin is stored."""
@@ -672,7 +672,7 @@ class TestDRV8825DriverAdvanced:
         driver = DRV8825Driver(step_pin=2, dir_pin=3, fault_pin=8)
         driver.connect()
         status = driver.get_status()
-        
+
         assert "fault" in status
         assert status["fault"] is False
 
@@ -681,7 +681,7 @@ class TestDRV8825DriverAdvanced:
         driver = DRV8825Driver(step_pin=2, dir_pin=3)
         driver.connect()
         status = driver.get_status()
-        
+
         assert "fault" in status
         assert status["fault"] is False
 
@@ -718,7 +718,7 @@ class TestStepDirConfigAdvanced:
         """Test enable inversion configuration (active low by default)."""
         config_default = StepDirConfig(step_pin=17, dir_pin=27)
         assert config_default.invert_enable is True  # Active low
-        
+
         config_custom = StepDirConfig(step_pin=17, dir_pin=27, invert_enable=False)
         assert config_custom.invert_enable is False
 

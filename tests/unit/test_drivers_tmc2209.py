@@ -324,7 +324,7 @@ class TestTMC2209UARTRead:
         driver._register_cache[TMC2209Register.GCONF] = 0x00000001
         driver._register_cache[TMC2209Register.IHOLD_IRUN] = 0x00001F1F
         driver._register_cache[TMC2209Register.CHOPCONF] = 0x10000053
-        
+
         assert driver._read_register(TMC2209Register.GCONF) == 0x00000001
         assert driver._read_register(TMC2209Register.IHOLD_IRUN) == 0x00001F1F
         assert driver._read_register(TMC2209Register.CHOPCONF) == 0x10000053
@@ -683,7 +683,7 @@ class TestTMC2209AddressConfiguration:
         config1 = TMC2209Config(address=0)
         config2 = TMC2209Config(address=1)
         config3 = TMC2209Config(address=2)
-        
+
         assert config1.address == 0
         assert config2.address == 1
         assert config3.address == 2

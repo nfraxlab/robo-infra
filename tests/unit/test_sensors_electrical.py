@@ -799,7 +799,7 @@ class TestEnergyIntegration:
             total_energy_joules += avg_power * sample_interval_seconds
 
         # Expected: average of adjacent pairs × time
-        expected = (110 + 115 + 120 + 122.5) * 1.0  # Simplified
+        (110 + 115 + 120 + 122.5) * 1.0  # Simplified
         assert total_energy_joules > 0
 
     def test_battery_capacity_calculation(self) -> None:

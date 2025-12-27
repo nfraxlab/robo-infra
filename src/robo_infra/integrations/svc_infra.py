@@ -42,6 +42,7 @@ Note:
 import logging
 from typing import TYPE_CHECKING, Any
 
+
 # Import router utilities from svc-infra for router pattern integration
 try:
     from svc_infra.api.fastapi import (

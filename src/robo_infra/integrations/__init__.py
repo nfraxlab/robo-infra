@@ -131,6 +131,7 @@ from robo_infra.integrations.ros2 import (
     is_ros2_mock_mode,
 )
 
+
 # SVC-infra integration (optional - requires: pip install robo-infra[api])
 try:
     from robo_infra.integrations.svc_infra import (
@@ -150,8 +151,8 @@ except ImportError:
     _SVC_EXPORTS = []
 
 
-__all__ = [
-    # ROS2 (always available - gracefully degrades internally)
+# ROS2 exports (always available - gracefully degrades internally)
+_ROS2_EXPORTS = [
     "ControllerROS2Node",
     "LaunchConfig",
     "ROS2NodeConfig",
@@ -161,8 +162,7 @@ __all__ = [
     "generate_parameters_file",
     "is_ros2_available",
     "is_ros2_mock_mode",
-    # Dynamic exports based on available dependencies
-    *_AI_EXPORTS,
-    *_OBS_EXPORTS,
-    *_SVC_EXPORTS,
 ]
+
+# Combine all exports - using list concatenation for ruff compatibility
+__all__ = _ROS2_EXPORTS + _AI_EXPORTS + _OBS_EXPORTS + _SVC_EXPORTS

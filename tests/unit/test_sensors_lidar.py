@@ -1078,8 +1078,8 @@ class TestRPLIDARErrorHandling:
 
     def test_rplidar_connection_error_no_pyserial(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test RPLIDAR raises error when pyserial not installed."""
-        from robo_infra.sensors.lidar import RPLIDAR
         from robo_infra.core.exceptions import HardwareNotFoundError
+        from robo_infra.sensors.lidar import RPLIDAR
 
         # Ensure not in simulation mode
         monkeypatch.delenv("ROBO_SIMULATION", raising=False)
@@ -1101,8 +1101,8 @@ class TestRPLIDARErrorHandling:
 
     def test_rplidar_scan_motor_not_running(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test RPLIDAR scan fails when motor not running."""
-        from robo_infra.sensors.lidar import RPLIDAR
         from robo_infra.core.exceptions import CommunicationError
+        from robo_infra.sensors.lidar import RPLIDAR
 
         monkeypatch.setenv("ROBO_SIMULATION", "true")
 
@@ -1118,8 +1118,8 @@ class TestRPLIDARErrorHandling:
 
     def test_rplidar_scan_disabled_error(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test RPLIDAR scan fails when sensor disabled."""
-        from robo_infra.sensors.lidar import RPLIDAR
         from robo_infra.core.exceptions import DisabledError
+        from robo_infra.sensors.lidar import RPLIDAR
 
         monkeypatch.setenv("ROBO_SIMULATION", "true")
 
@@ -1132,8 +1132,8 @@ class TestRPLIDARErrorHandling:
 
     def test_rplidar_start_motor_disabled_error(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test RPLIDAR start_motor fails when sensor disabled."""
-        from robo_infra.sensors.lidar import RPLIDAR
         from robo_infra.core.exceptions import DisabledError
+        from robo_infra.sensors.lidar import RPLIDAR
 
         monkeypatch.setenv("ROBO_SIMULATION", "true")
 
@@ -1317,8 +1317,8 @@ class TestSerialLIDARBase:
 
     def test_serial_lidar_send_command_not_connected(self) -> None:
         """Test _send_command raises error when not connected."""
-        from robo_infra.sensors.lidar import RPLIDAR
         from robo_infra.core.exceptions import CommunicationError
+        from robo_infra.sensors.lidar import RPLIDAR
 
         lidar = RPLIDAR()
         # Not connected
@@ -1328,8 +1328,8 @@ class TestSerialLIDARBase:
 
     def test_serial_lidar_read_response_not_connected(self) -> None:
         """Test _read_response raises error when not connected."""
-        from robo_infra.sensors.lidar import RPLIDAR
         from robo_infra.core.exceptions import CommunicationError
+        from robo_infra.sensors.lidar import RPLIDAR
 
         lidar = RPLIDAR()
         # Not connected
@@ -1343,7 +1343,6 @@ class TestGetLidarFactory:
 
     def test_get_lidar_rplidar_model(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test get_lidar returns RPLIDAR for rplidar models."""
-        from robo_infra.sensors.lidar import RPLIDAR
 
         monkeypatch.setenv("ROBO_SIMULATION", "true")
 

@@ -660,7 +660,7 @@ class TestArUcoDetectorDetectComprehensive:
         marker_ids = [1, 5, 10]
         positions = [(50, 50), (250, 50), (450, 50)]
 
-        for mid, (px, py) in zip(marker_ids, positions):
+        for mid, (px, py) in zip(marker_ids, positions, strict=True):
             marker_frame = ArUcoDetector.generate_marker("DICT_4X4_50", mid, size=100)
             data[py : py + 100, px : px + 100] = marker_frame.data
 

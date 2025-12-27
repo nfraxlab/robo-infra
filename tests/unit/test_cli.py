@@ -9,8 +9,6 @@ import sys
 from io import StringIO
 from unittest.mock import patch
 
-import pytest
-
 from robo_infra.cli import (
     AVAILABLE_DRIVERS,
     AVAILABLE_PLATFORMS,

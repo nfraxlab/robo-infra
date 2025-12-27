@@ -994,7 +994,7 @@ class TestJetsonCUDAVersion:
             assert version is None or isinstance(version, str)
 
 
-class TestJetsonPowerMode:
+class TestJetsonPowerModeManagement:
     """Tests for Jetson power mode management."""
 
     def test_power_mode_returns_enum(self) -> None:

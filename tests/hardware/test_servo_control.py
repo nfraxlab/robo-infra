@@ -27,6 +27,7 @@ import time
 
 import pytest
 
+
 pytestmark = [
     pytest.mark.hardware,
     pytest.mark.servo,

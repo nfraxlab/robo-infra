@@ -909,7 +909,7 @@ class TestDynamixelProtocolConstants:
     def test_header_constant(self) -> None:
         """Test header constant."""
         from robo_infra.drivers.dynamixel import HEADER
-        assert HEADER == bytes([0xFF, 0xFF, 0xFD, 0x00])
+        assert bytes([0xFF, 0xFF, 0xFD, 0x00]) == HEADER
 
     def test_broadcast_id_constant(self) -> None:
         """Test broadcast ID constant."""

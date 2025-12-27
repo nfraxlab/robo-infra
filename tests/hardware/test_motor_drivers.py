@@ -28,6 +28,7 @@ import time
 
 import pytest
 
+
 pytestmark = [
     pytest.mark.hardware,
     pytest.mark.motor,
@@ -58,7 +59,7 @@ class TestL298NDetection:
         require_gpio: None,
     ) -> None:
         """Test that motor control pins are accessible."""
-        from robo_infra.core.pin import GPIOPin, Direction
+        from robo_infra.core.pin import Direction, GPIOPin
 
         pwm_pin = get_motor_pwm_pin()
         in1_pin = get_motor_in1_pin()

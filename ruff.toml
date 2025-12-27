@@ -24,35 +24,51 @@ select = [
 
 ignore = [
     "E501",    # line too long (handled by formatter)
+    "E741",    # ambiguous variable name (intentional: l for length, etc.)
     "PLR0913", # too many arguments
     "PLR2004", # magic value comparison
     "PLR0911", # too many return statements
     "PLR0912", # too many branches
     "PLR0915", # too many statements
+    "PLR0133", # comparing two constants (intentional in tests)
     "PLC0415", # import not at top of file (intentional lazy imports for optional deps)
     "ARG001",  # unused function argument (common in ABCs)
     "ARG002",  # unused method argument (common in ABCs)
     "ERA001",  # commented-out code (too many false positives for format docs)
     "SIM105",  # use contextlib.suppress (not always clearer)
     "SIM108",  # use ternary (not always clearer)
+    "SIM102",  # nested if (not always clearer to collapse)
+    "SIM222",  # use True instead of ... or True (intentional in tests)
     "PTH123",  # Path.open() vs open() (not required)
     "PTH110",  # Path.exists() vs os.path.exists() (not required)
     "PLW2901", # redefined-loop-name (intentional in some cases)
     "RUF012",  # mutable class attr should be ClassVar (false positives)
+    "RUF002",  # ambiguous unicode chars in docstrings (intentional math symbols)
+    "RUF003",  # ambiguous unicode chars in comments (intentional math symbols)
+    "RUF059",  # unpacked variable unused (intentional in tuple unpacking)
     "PLW1641", # missing __hash__ (mutable dataclasses intentionally unhashable)
+    "B007",    # loop control variable not used (intentional iteration)
+    "B011",    # assert False (used in tests for expected failures)
 ]
 
 [lint.per-file-ignores]
 "tests/**/*.py" = [
     "ARG",     # Unused arguments in tests are fine
     "PLR2004", # Magic values in tests are fine
+    "RUF043",  # Pytest match= patterns are intentionally regex strings
 ]
 "src/robo_infra/core/*.py" = [
     "ARG001",  # ABCs have unused arguments
     "ARG002",
 ]
 "src/robo_infra/controllers/*.py" = [
-    "TC001",   # Controllers use runtime imports (not just type hints)
+    "TCH001",  # Controllers use runtime imports (not just type hints)
+    "TCH002",
+    "TCH003",
+]
+"src/robo_infra/integrations/__init__.py" = [
+    "F401",    # Dynamic exports with try/except - ruff can't trace them
+    "PLE0605", # __all__ built from list concatenation for composability
 ]
 
 [lint.isort]

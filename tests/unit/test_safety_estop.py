@@ -23,7 +23,7 @@ import logging
 import threading
 import time
 from dataclasses import dataclass
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 

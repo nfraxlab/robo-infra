@@ -7,10 +7,11 @@ allowing testing without ROS2 installed.
 from __future__ import annotations
 
 import os
-from typing import TYPE_CHECKING, Any
-from unittest.mock import MagicMock, patch
+from typing import Any
+from unittest.mock import MagicMock
 
 import pytest
+
 
 # Enable mock mode for testing
 os.environ["ROS2_MOCK"] = "true"
@@ -18,7 +19,6 @@ os.environ["ROS2_MOCK"] = "true"
 from robo_infra.actuators.servo import Servo
 from robo_infra.controllers.joint_group import JointGroup
 from robo_infra.integrations.ros2 import (
-    ControllerROS2Node,
     LaunchConfig,
     MockJointState,
     MockPose,
@@ -36,9 +36,6 @@ from robo_infra.integrations.ros2 import (
     is_ros2_available,
     is_ros2_mock_mode,
 )
-
-if TYPE_CHECKING:
-    from robo_infra.core.controller import Controller
 
 
 # =============================================================================

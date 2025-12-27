@@ -1096,23 +1096,22 @@ class TestFirmataRealConnection:
         with patch.dict(
             sys.modules,
             {"pyfirmata2": None, "pyfirmata": mock_pyfirmata},
+        ), patch.object(
+            ArduinoDriver,
+            "_detect_arduino_port",
+            return_value=None,
         ):
-            with patch.object(
-                ArduinoDriver,
-                "_detect_arduino_port",
-                return_value=None,
-            ):
-                config = ArduinoConfig(
-                    serial=SerialConfig(port="/dev/ttyUSB0"),
-                    protocol=ArduinoProtocol.FIRMATA,
-                    auto_detect_port=False,
-                )
-                driver = ArduinoDriver(config=config)
-                driver._simulation_mode = False
+            config = ArduinoConfig(
+                serial=SerialConfig(port="/dev/ttyUSB0"),
+                protocol=ArduinoProtocol.FIRMATA,
+                auto_detect_port=False,
+            )
+            driver = ArduinoDriver(config=config)
+            driver._simulation_mode = False
 
-                # This would try to import pyfirmata2, fail, then pyfirmata
-                # In test we verify the mock is set up correctly
-                assert driver.protocol == ArduinoProtocol.FIRMATA
+            # This would try to import pyfirmata2, fail, then pyfirmata
+            # In test we verify the mock is set up correctly
+            assert driver.protocol == ArduinoProtocol.FIRMATA
 
     def test_firmata_pwm_write_real(self) -> None:
         """Test Firmata PWM write with mocked real board."""

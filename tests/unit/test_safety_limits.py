@@ -21,9 +21,8 @@ Tests cover:
 from __future__ import annotations
 
 import logging
-import time
 from dataclasses import dataclass
-from unittest.mock import MagicMock, PropertyMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -894,7 +893,7 @@ class TestLimitGuard:
         mock_estop = MagicMock()
         mock_estop.register_actuator = MagicMock()
 
-        guard = LimitGuard(
+        LimitGuard(
             actuator=actuator,
             position_limits=(0.0, 100.0),
             estop=mock_estop,

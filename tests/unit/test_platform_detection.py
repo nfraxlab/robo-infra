@@ -12,16 +12,13 @@ Total target: 17+ tests
 from __future__ import annotations
 
 import logging
-import sys
 from pathlib import Path
-from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 from robo_infra.platforms.base import (
     PlatformCapability,
-    PlatformInfo,
     PlatformType,
 )
 from robo_infra.platforms.detection import (

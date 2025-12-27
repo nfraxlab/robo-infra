@@ -17,6 +17,7 @@ from robo_infra.motion.fusion import MadgwickConfig, MahonyConfig
 
 from . import Benchmarker, format_time
 
+
 # Performance targets (in seconds)
 TARGET_SENSOR_READ = 0.001  # 1ms
 TARGET_IMU_UPDATE = 0.002  # 2ms (500 Hz)

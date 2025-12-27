@@ -10,7 +10,6 @@ from robo_infra.core.exceptions import CommunicationError
 from robo_infra.core.pin import SimulatedAnalogPin, SimulatedDigitalPin
 from robo_infra.core.types import Unit
 from robo_infra.sensors.distance import (
-    DistanceSensor,
     IRDistance,
     IRDistanceConfig,
     IRDistanceStatus,
@@ -253,7 +252,7 @@ class TestUltrasonicMaxMinRange:
         assert reading.value == 0.0
 
 
-class TestUltrasonicStatus:
+class TestUltrasonicStatusTracking:
     """Tests for ultrasonic status tracking (5.5.3.2)."""
 
     def test_status_updated_after_read(self) -> None:
@@ -460,7 +459,7 @@ class TestToFRangeModes:
         assert reading.value > 1000  # Long range
 
 
-class TestToFStatus:
+class TestToFStatusTracking:
     """Tests for ToF status tracking (5.5.3.3)."""
 
     def test_tof_status_updated(self) -> None:

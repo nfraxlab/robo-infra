@@ -22,6 +22,7 @@ from robo_infra.core import (
 
 from . import Benchmarker, format_time
 
+
 # Performance targets (in seconds)
 TARGET_DRIVER_CREATE = 0.010  # 10ms
 TARGET_BUS_OP = 0.001  # 1ms

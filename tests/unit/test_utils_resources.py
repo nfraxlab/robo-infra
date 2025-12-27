@@ -6,8 +6,7 @@ Tests for context managers, connection pooling, cleanup handlers, and memory man
 from __future__ import annotations
 
 import asyncio
-from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -605,7 +604,7 @@ class TestLimitedBuffer:
         buffer: LimitedBuffer[int] = LimitedBuffer(max_size=10)
         buffer.extend([1, 2, 3])
 
-        items = [x for x in buffer]
+        items = list(buffer)
         assert items == [1, 2, 3]
 
     def test_bool_empty(self) -> None:
