@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 This file is auto-generated from conventional commits using [git-cliff](https://git-cliff.org/).
 
+## [0.2.2] - 2025-12-27
+
+
+### Other Changes
+
+- Add comprehensive utilities and vision documentation
+
+- Introduced a new utilities module covering resilience, graceful degradation, hardware utilities, resource management, and security.
+- Documented features such as retry mechanisms, circuit breakers, degraded mode controllers, and input validation.
+- Added vision module documentation detailing color detection, marker tracking, image processing, camera calibration, and coordinate transforms.
+- Included examples for practical usage of utilities and vision functionalities.
+
 ## [0.2.1] - 2025-12-27
 
 
