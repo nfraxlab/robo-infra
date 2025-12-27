@@ -45,17 +45,16 @@ ignore = [
     "RUF012",  # mutable class attr should be ClassVar (false positives)
     "RUF002",  # ambiguous unicode chars in docstrings (intentional math symbols)
     "RUF003",  # ambiguous unicode chars in comments (intentional math symbols)
-    "RUF059",  # unpacked variable unused (intentional in tuple unpacking)
     "PLW1641", # missing __hash__ (mutable dataclasses intentionally unhashable)
     "B007",    # loop control variable not used (intentional iteration)
     "B011",    # assert False (used in tests for expected failures)
+    "UP038",   # isinstance(x, (A, B)) is more readable than isinstance(x, A | B)
 ]
 
 [lint.per-file-ignores]
 "tests/**/*.py" = [
     "ARG",     # Unused arguments in tests are fine
     "PLR2004", # Magic values in tests are fine
-    "RUF043",  # Pytest match= patterns are intentionally regex strings
 ]
 "src/robo_infra/core/*.py" = [
     "ARG001",  # ABCs have unused arguments

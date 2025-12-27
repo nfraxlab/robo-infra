@@ -324,7 +324,7 @@ class TestInverseKinematics:
 
     def test_lateral_position(self) -> None:
         """Test IK for position to the side."""
-        coxa, femur, tibia = inverse_kinematics_3dof(
+        coxa, _femur, _tibia = inverse_kinematics_3dof(
             x=0.1,
             y=0.1,
             z=-0.1,
@@ -430,7 +430,7 @@ class TestForwardKinematics:
 
     def test_fully_extended(self) -> None:
         """Test FK with leg fully extended."""
-        x, y, z = forward_kinematics_3dof(
+        x, _y, z = forward_kinematics_3dof(
             coxa_angle=0.0,
             femur_angle=0.0,
             tibia_angle=0.0,  # Straight line with femur
@@ -445,7 +445,7 @@ class TestForwardKinematics:
 
     def test_coxa_rotation(self) -> None:
         """Test FK with coxa rotation."""
-        x, y, z = forward_kinematics_3dof(
+        x, y, _z = forward_kinematics_3dof(
             coxa_angle=90.0,  # Point to the side
             femur_angle=0.0,
             tibia_angle=-90.0,

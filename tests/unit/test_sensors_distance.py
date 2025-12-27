@@ -311,7 +311,7 @@ class TestUltrasonicInvalidUnit:
         driver.connect()
         driver.enable()
 
-        with pytest.raises(ValueError, match="CENTIMETERS or Unit.MILLIMETERS"):
+        with pytest.raises(ValueError, match=r"CENTIMETERS or Unit\.MILLIMETERS"):
             Ultrasonic(driver=driver, channel=0, unit=Unit.METERS)
 
 

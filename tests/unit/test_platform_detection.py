@@ -159,7 +159,7 @@ class TestDetectRaspberryPi:
             "robo_infra.platforms.detection.Path",
             return_value=mock_path,
         ):
-            is_pi, model = detect_raspberry_pi()
+            is_pi, _model = detect_raspberry_pi()
             assert isinstance(is_pi, bool)
 
     def test_not_detected_when_no_files(self) -> None:
@@ -185,7 +185,7 @@ class TestDetectRaspberryPi:
             "robo_infra.platforms.detection.Path",
             return_value=mock_path,
         ):
-            is_pi, model = detect_raspberry_pi()
+            is_pi, _model = detect_raspberry_pi()
             # Should handle error and continue
             assert isinstance(is_pi, bool)
 
@@ -446,7 +446,7 @@ class TestDetectArduino:
             "robo_infra.platforms.detection._list_usb_devices",
             return_value=[(0x2341, 0x0042)],  # Arduino Mega 2560 R3
         ):
-            is_arduino, model = detect_arduino()
+            is_arduino, _model = detect_arduino()
             assert is_arduino is True
 
     def test_detect_arduino_ch340_clone(self) -> None:
@@ -455,7 +455,7 @@ class TestDetectArduino:
             "robo_infra.platforms.detection._list_usb_devices",
             return_value=[(0x1A86, 0x7523)],  # CH340
         ):
-            is_arduino, model = detect_arduino()
+            is_arduino, _model = detect_arduino()
             assert is_arduino is True
 
     def test_detect_arduino_from_serial_port(self) -> None:
@@ -512,7 +512,7 @@ class TestDetectESP32:
             "robo_infra.platforms.detection._list_usb_devices",
             return_value=[(0x10C4, 0xEA60)],  # CP2102
         ):
-            is_esp, model = detect_esp32()
+            is_esp, _model = detect_esp32()
             assert is_esp is True
 
     def test_not_detected_when_no_devices(self) -> None:
@@ -569,7 +569,7 @@ class TestDetectPico:
             "robo_infra.platforms.detection._list_usb_devices",
             return_value=[(0x2E8A, 0x000A)],  # Pico W
         ):
-            is_pico, model = detect_pico()
+            is_pico, _model = detect_pico()
             assert is_pico is True
 
     def test_not_detected_when_no_devices(self) -> None:
@@ -627,7 +627,7 @@ class TestDetectLinuxGeneric:
             ),
             patch.object(Path, "glob", return_value=[]),
         ):
-            is_linux, desc = detect_linux_generic()
+            is_linux, _desc = detect_linux_generic()
             assert is_linux is False
 
 
@@ -1011,7 +1011,7 @@ class TestEdgeCases:
             "robo_infra.platforms.detection._list_usb_devices",
             return_value=[],
         ):
-            is_arduino, _ = detect_arduino()
+            _is_arduino, _ = detect_arduino()
             is_esp, _ = detect_esp32()
             is_mb, _ = detect_microbit()
             is_pico, _ = detect_pico()

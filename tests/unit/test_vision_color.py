@@ -1151,7 +1151,7 @@ class TestRgbToHsvComprehensive:
         """Test conversion of white."""
         from robo_infra.vision.color import rgb_to_hsv
 
-        h, s, v = rgb_to_hsv(255, 255, 255)
+        _h, s, v = rgb_to_hsv(255, 255, 255)
 
         assert s == 0  # No saturation
         assert v == 255  # Full value
@@ -1160,7 +1160,7 @@ class TestRgbToHsvComprehensive:
         """Test conversion of black."""
         from robo_infra.vision.color import rgb_to_hsv
 
-        h, s, v = rgb_to_hsv(0, 0, 0)
+        _h, _s, v = rgb_to_hsv(0, 0, 0)
 
         assert v == 0  # Zero value
 
@@ -1200,7 +1200,7 @@ class TestGetDominantColorComprehensive:
             frame_number=0,
         )
 
-        r, g, b = get_dominant_color(frame, k=1)
+        r, _g, _b = get_dominant_color(frame, k=1)
 
         assert r > 200  # Should be red
 
@@ -1211,7 +1211,7 @@ class TestGetDominantColorComprehensive:
         # Create frame with mostly one color
         frame = create_test_frame(color=(50, 100, 150))
 
-        r, g, b = get_dominant_color(frame, k=3)
+        r, g, _b = get_dominant_color(frame, k=3)
 
         # Should still get the dominant color
         assert 40 <= r <= 60
@@ -1269,7 +1269,7 @@ class TestColorDetectionIntegration:
             assert len(blobs) >= 1
 
             # Center should track
-            cx, cy = blobs[0].center
+            cx, _cy = blobs[0].center
             assert abs(cx - center[0]) < 10
 
     def test_custom_color_detection(self, cv2):

@@ -952,7 +952,7 @@ class TestMapExceptionToHttp:
         """KeyError should map to 404 status code."""
         from robo_infra.integrations.svc_infra import map_exception_to_http
 
-        status, title, detail = map_exception_to_http(KeyError("not found"))
+        status, title, _detail = map_exception_to_http(KeyError("not found"))
         assert status == 404
         assert title == "Not Found"
 
@@ -960,7 +960,7 @@ class TestMapExceptionToHttp:
         """PermissionError should map to 403 status code."""
         from robo_infra.integrations.svc_infra import map_exception_to_http
 
-        status, title, detail = map_exception_to_http(
+        status, title, _detail = map_exception_to_http(
             PermissionError("access denied")
         )
         assert status == 403
@@ -971,7 +971,7 @@ class TestMapExceptionToHttp:
         from robo_infra.integrations.svc_infra import map_exception_to_http
 
         custom = {ValueError: 422}  # Override default 400
-        status, title, detail = map_exception_to_http(
+        status, _title, _detail = map_exception_to_http(
             ValueError("validation"), custom
         )
         assert status == 422

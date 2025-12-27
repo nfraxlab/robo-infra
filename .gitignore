@@ -167,6 +167,16 @@ yarn-error.log
 .terraform/
 .terraform.lock.hcl
 
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.iml
+*.pypl-token
+.vscode/
+.codex/
+
 # GitHub Copilot/Agent instructions (optional - uncomment if desired)
 .github/copilot-instructions.md
 .github/AGENTS.md

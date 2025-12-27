@@ -564,7 +564,7 @@ class TestPowerDistributionBoard:
         config = PowerDistributionConfig(total_power_budget=100.0)
         pdb = PowerDistributionBoard(config=config)
 
-        within, current, budget = pdb.check_power_budget()
+        within, _current, budget = pdb.check_power_budget()
         assert within is True
         assert budget == 100.0
 

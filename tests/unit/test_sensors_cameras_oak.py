@@ -455,7 +455,7 @@ class TestOAKStreams:
 
     def test_mono_left_stream(self, simulated_camera):
         """Test mono left stream capture."""
-        left, right, depth = simulated_camera.capture_stereo()
+        left, _right, _depth = simulated_camera.capture_stereo()
 
         assert isinstance(left, Frame)
         # Mono frames should be grayscale
@@ -464,7 +464,7 @@ class TestOAKStreams:
 
     def test_mono_right_stream(self, simulated_camera):
         """Test mono right stream capture."""
-        left, right, depth = simulated_camera.capture_stereo()
+        _left, right, _depth = simulated_camera.capture_stereo()
 
         assert isinstance(right, Frame)
         assert right.width > 0
@@ -472,7 +472,7 @@ class TestOAKStreams:
 
     def test_stereo_depth_stream(self, simulated_camera):
         """Test stereo depth stream capture."""
-        left, right, depth = simulated_camera.capture_stereo()
+        _left, _right, depth = simulated_camera.capture_stereo()
 
         assert isinstance(depth, DepthFrame)
         assert depth.data.dtype == np.uint16

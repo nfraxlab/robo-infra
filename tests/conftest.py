@@ -7,6 +7,7 @@ Handles optional dependency detection and skip markers.
 from __future__ import annotations
 
 import logging
+import os
 from typing import TYPE_CHECKING
 
 import pytest
@@ -16,6 +17,38 @@ if TYPE_CHECKING:
     from _pytest.config import Config
 
 logger = logging.getLogger(__name__)
+
+
+# =============================================================================
+# Simulation Mode Setup
+# =============================================================================
+
+# Ensure simulation mode is enabled for all tests by default
+# This prevents hardware access attempts during testing
+os.environ.setdefault("ROBO_SIMULATION", "true")
+
+
+@pytest.fixture(autouse=True)
+def ensure_simulation_mode():
+    """Ensure ROBO_SIMULATION is set for every test.
+
+    This fixture runs before every test and restores the simulation env var
+    after to prevent test pollution from tests that modify the environment.
+    """
+    # Save original value
+    original = os.environ.get("ROBO_SIMULATION")
+
+    # Ensure it's set
+    if original is None:
+        os.environ["ROBO_SIMULATION"] = "true"
+
+    yield
+
+    # Restore after test
+    if original is None:
+        os.environ["ROBO_SIMULATION"] = "true"
+    else:
+        os.environ["ROBO_SIMULATION"] = original
 
 
 # =============================================================================

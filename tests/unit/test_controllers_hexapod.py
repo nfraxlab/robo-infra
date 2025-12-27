@@ -313,7 +313,7 @@ class TestFootTrajectory:
 
     def test_stance_phase_end(self) -> None:
         """Test trajectory at end of stance phase."""
-        x, y, z = calculate_foot_trajectory(
+        x, _y, z = calculate_foot_trajectory(
             phase=0.49,
             duty_factor=0.5,
             step_length=0.1,
@@ -326,7 +326,7 @@ class TestFootTrajectory:
 
     def test_swing_phase_mid(self) -> None:
         """Test trajectory at middle of swing phase."""
-        x, y, z = calculate_foot_trajectory(
+        _x, _y, z = calculate_foot_trajectory(
             phase=0.75,  # Middle of swing (0.5 to 1.0)
             duty_factor=0.5,
             step_length=0.1,
@@ -339,7 +339,7 @@ class TestFootTrajectory:
 
     def test_direction_forward(self) -> None:
         """Test trajectory for forward direction."""
-        x, y, z = calculate_foot_trajectory(
+        x, y, _z = calculate_foot_trajectory(
             phase=0.0,
             duty_factor=0.5,
             step_length=0.1,
@@ -351,7 +351,7 @@ class TestFootTrajectory:
 
     def test_direction_sideways(self) -> None:
         """Test trajectory for sideways direction."""
-        x, y, z = calculate_foot_trajectory(
+        x, y, _z = calculate_foot_trajectory(
             phase=0.0,
             duty_factor=0.5,
             step_length=0.1,
