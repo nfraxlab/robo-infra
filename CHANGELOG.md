@@ -4,6 +4,35 @@ All notable changes to this project will be documented in this file.
 
 This file is auto-generated from conventional commits using [git-cliff](https://git-cliff.org/).
 
+## [0.2.3] - 2025-12-27
+
+
+### Documentation
+
+- Add testing guidelines for safety systems
+
+
+### Other Changes
+
+- Simplify patch statements and improve readability in unit tests
+- Clean up imports and simplify boolean checks in platform detection
+- Remove deprecated functions and update bus access methods
+- Add unit tests for platform detection and factory functions
+
+- Implemented comprehensive unit tests for the `robo_infra.platforms.detection` module, covering platform detection functions, simulation mode detection, environment variable overrides, and platform info retrieval.
+- Added tests for individual platform detectors including Raspberry Pi, Jetson, Beaglebone, Arduino, ESP32, and others.
+- Created tests for factory functions in the `robo_infra.platforms.factory` module, including `get_gpio`, `get_i2c`, `get_spi`, and `get_uart`.
+- Included tests for error handling and integration scenarios to ensure robustness of platform factory functions.
+- Established fixtures for resetting platform state and simulating environments to enhance test reliability.
+- Enhance unit tests for SafetyMonitor and Watchdog
+
+- Updated test suite for SafetyMonitor to improve coverage from 28% to over 80%.
+- Added new test classes for state transitions, status dataclasses, limit configurations, hysteresis behavior, and violation tracking.
+- Extended tests for CollisionDetector to cover custom thresholds and multiple sensors.
+- Introduced additional tests for WatchdogError, WatchdogConfig, and WatchdogStatus to ensure robustness.
+- Enhanced tests for Watchdog initialization, heartbeat, timeout handling, and lifecycle management.
+- Improved logging and callback behavior tests for Watchdog.
+
 ## [0.2.2] - 2025-12-27
 
 
