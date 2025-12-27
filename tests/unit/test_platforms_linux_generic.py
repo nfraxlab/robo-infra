@@ -1271,3 +1271,222 @@ class TestLinuxPlatformCapabilities:
         platform = LinuxGenericPlatform(simulation=True)
         info = platform.get_info()
         assert "Generic" in info.model
+
+
+# =============================================================================
+# Bus Access Tests (Phase 8.8.1)
+# =============================================================================
+
+
+class TestLinuxGenericBusAccess:
+    """Tests for Linux Generic platform bus access."""
+
+    def test_get_bus_i2c_simulation(self) -> None:
+        """Test getting I2C bus in simulation mode returns SimulatedI2CBus."""
+        from robo_infra.core.bus import SimulatedI2CBus
+
+        platform = LinuxGenericPlatform(simulation=True)
+        bus = platform.get_bus("i2c", bus=1)
+        assert isinstance(bus, SimulatedI2CBus)
+
+    def test_get_bus_spi_simulation(self) -> None:
+        """Test getting SPI bus in simulation mode returns SimulatedSPIBus."""
+        from robo_infra.core.bus import SimulatedSPIBus
+
+        platform = LinuxGenericPlatform(simulation=True)
+        bus = platform.get_bus("spi", bus=0, device=0)
+        assert isinstance(bus, SimulatedSPIBus)
+
+    def test_get_bus_uart_simulation(self) -> None:
+        """Test getting UART bus in simulation mode returns SimulatedSerialBus."""
+        from robo_infra.core.bus import SimulatedSerialBus
+
+        platform = LinuxGenericPlatform(simulation=True)
+        bus = platform.get_bus("uart", port="/dev/ttyS0")
+        assert isinstance(bus, SimulatedSerialBus)
+
+    def test_get_bus_serial_alias(self) -> None:
+        """Test 'serial' is accepted as alias for 'uart'."""
+        from robo_infra.core.bus import SimulatedSerialBus
+
+        platform = LinuxGenericPlatform(simulation=True)
+        bus = platform.get_bus("serial", port="/dev/ttyS0")
+        assert isinstance(bus, SimulatedSerialBus)
+
+    def test_get_bus_unknown_type_raises(self) -> None:
+        """Test unknown bus type raises HardwareNotFoundError."""
+        from robo_infra.core.exceptions import HardwareNotFoundError
+
+        platform = LinuxGenericPlatform(simulation=True)
+        with pytest.raises(HardwareNotFoundError):
+            platform.get_bus("unknown_bus")
+
+    def test_get_bus_case_insensitive(self) -> None:
+        """Test bus type is case insensitive."""
+        from robo_infra.core.bus import SimulatedI2CBus
+
+        platform = LinuxGenericPlatform(simulation=True)
+        bus1 = platform.get_bus("I2C")
+        bus2 = platform.get_bus("i2c")
+        bus3 = platform.get_bus("I2c")
+        assert isinstance(bus1, SimulatedI2CBus)
+        assert isinstance(bus2, SimulatedI2CBus)
+        assert isinstance(bus3, SimulatedI2CBus)
+
+    @patch("robo_infra.platforms.linux_generic.LinuxGenericPlatform._create_i2c_bus")
+    def test_get_bus_i2c_passes_kwargs(self, mock_create: MagicMock) -> None:
+        """Test get_bus passes kwargs to _create_i2c_bus."""
+        mock_create.return_value = MagicMock()
+        platform = LinuxGenericPlatform(simulation=True)
+        platform.get_bus("i2c", bus=2)
+        mock_create.assert_called_once_with(bus=2)
+
+    @patch("robo_infra.platforms.linux_generic.LinuxGenericPlatform._create_spi_bus")
+    def test_get_bus_spi_passes_kwargs(self, mock_create: MagicMock) -> None:
+        """Test get_bus passes kwargs to _create_spi_bus."""
+        mock_create.return_value = MagicMock()
+        platform = LinuxGenericPlatform(simulation=True)
+        platform.get_bus("spi", bus=1, device=2)
+        mock_create.assert_called_once_with(bus=1, device=2)
+
+
+class TestLinuxGenericBusConvenienceMethods:
+    """Tests for bus convenience methods (get_i2c, get_spi, get_serial)."""
+
+    def test_get_i2c_default_bus(self) -> None:
+        """Test get_i2c with default bus number."""
+        from robo_infra.core.bus import SimulatedI2CBus
+
+        platform = LinuxGenericPlatform(simulation=True)
+        bus = platform.get_i2c()
+        assert isinstance(bus, SimulatedI2CBus)
+        assert bus.config.bus_number == 1
+
+    def test_get_i2c_custom_bus(self) -> None:
+        """Test get_i2c with custom bus number."""
+        from robo_infra.core.bus import SimulatedI2CBus
+
+        platform = LinuxGenericPlatform(simulation=True)
+        bus = platform.get_i2c(bus=2)
+        assert isinstance(bus, SimulatedI2CBus)
+        assert bus.config.bus_number == 2
+
+    def test_get_spi_default(self) -> None:
+        """Test get_spi with default parameters."""
+        from robo_infra.core.bus import SimulatedSPIBus
+
+        platform = LinuxGenericPlatform(simulation=True)
+        bus = platform.get_spi()
+        assert isinstance(bus, SimulatedSPIBus)
+        assert bus.config.bus == 0
+        assert bus.config.device == 0
+
+    def test_get_spi_custom(self) -> None:
+        """Test get_spi with custom bus and device."""
+        from robo_infra.core.bus import SimulatedSPIBus
+
+        platform = LinuxGenericPlatform(simulation=True)
+        bus = platform.get_spi(bus=1, device=1)
+        assert isinstance(bus, SimulatedSPIBus)
+        assert bus.config.bus == 1
+        assert bus.config.device == 1
+
+    def test_get_serial_default(self) -> None:
+        """Test get_serial with default parameters."""
+        from robo_infra.core.bus import SimulatedSerialBus
+
+        platform = LinuxGenericPlatform(simulation=True)
+        bus = platform.get_serial()
+        assert isinstance(bus, SimulatedSerialBus)
+        assert bus.config.port == "/dev/ttyS0"
+        assert bus.config.baudrate == 115200
+
+    def test_get_serial_custom(self) -> None:
+        """Test get_serial with custom port and baudrate."""
+        from robo_infra.core.bus import SimulatedSerialBus
+
+        platform = LinuxGenericPlatform(simulation=True)
+        bus = platform.get_serial(port="/dev/ttyUSB0", baudrate=9600)
+        assert isinstance(bus, SimulatedSerialBus)
+        assert bus.config.port == "/dev/ttyUSB0"
+        assert bus.config.baudrate == 9600
+
+
+class TestLinuxGenericRealBusAccess:
+    """Tests for real hardware bus access (with mocked libraries)."""
+
+    @patch("robo_infra.core.bus.SMBus2I2CBus.__init__", return_value=None)
+    def test_get_bus_i2c_real_uses_smbus2(self, mock_init: MagicMock) -> None:
+        """Test non-simulation mode attempts to use SMBus2I2CBus."""
+        # Create platform in non-simulation mode
+        platform = LinuxGenericPlatform(simulation=False)
+        platform._simulation = False  # Force non-simulation
+
+        # This will try to import and use SMBus2I2CBus
+        try:
+            bus = platform.get_bus("i2c", bus=1)
+            # If we get here, SMBus2I2CBus was used
+            from robo_infra.core.bus import SMBus2I2CBus
+            assert isinstance(bus, SMBus2I2CBus)
+        except ImportError:
+            # smbus2 not installed - falls back to simulated
+            from robo_infra.core.bus import SimulatedI2CBus
+            bus = platform.get_bus("i2c", bus=1)
+            assert isinstance(bus, SimulatedI2CBus)
+
+    @patch("robo_infra.core.bus.SpiDevSPIBus.__init__", return_value=None)
+    def test_get_bus_spi_real_uses_spidev(self, mock_init: MagicMock) -> None:
+        """Test non-simulation mode attempts to use SpiDevSPIBus."""
+        platform = LinuxGenericPlatform(simulation=False)
+        platform._simulation = False
+
+        try:
+            bus = platform.get_bus("spi", bus=0, device=0)
+            from robo_infra.core.bus import SpiDevSPIBus
+            assert isinstance(bus, SpiDevSPIBus)
+        except ImportError:
+            from robo_infra.core.bus import SimulatedSPIBus
+            bus = platform.get_bus("spi", bus=0, device=0)
+            assert isinstance(bus, SimulatedSPIBus)
+
+    @patch("robo_infra.core.bus.PySerialBus.__init__", return_value=None)
+    def test_get_bus_uart_real_uses_pyserial(self, mock_init: MagicMock) -> None:
+        """Test non-simulation mode attempts to use PySerialBus."""
+        platform = LinuxGenericPlatform(simulation=False)
+        platform._simulation = False
+
+        try:
+            bus = platform.get_bus("uart", port="/dev/ttyS0")
+            from robo_infra.core.bus import PySerialBus
+            assert isinstance(bus, PySerialBus)
+        except ImportError:
+            from robo_infra.core.bus import SimulatedSerialBus
+            bus = platform.get_bus("uart", port="/dev/ttyS0")
+            assert isinstance(bus, SimulatedSerialBus)
+
+    def test_get_bus_graceful_fallback_on_import_error(self) -> None:
+        """Test that bus access falls back gracefully when library not installed."""
+        # In simulation mode, should always return simulated bus
+        platform = LinuxGenericPlatform(simulation=True)
+
+        from robo_infra.core.bus import SimulatedI2CBus, SimulatedSerialBus, SimulatedSPIBus
+
+        i2c_bus = platform.get_bus("i2c")
+        spi_bus = platform.get_bus("spi")
+        uart_bus = platform.get_bus("uart")
+
+        assert isinstance(i2c_bus, SimulatedI2CBus)
+        assert isinstance(spi_bus, SimulatedSPIBus)
+        assert isinstance(uart_bus, SimulatedSerialBus)
+
+    def test_no_not_implemented_error(self) -> None:
+        """Test that NotImplementedError is NOT raised anymore."""
+        platform = LinuxGenericPlatform(simulation=False)
+
+        # These should NOT raise NotImplementedError
+        # They may raise ImportError if libs not installed, but that's caught internally
+        try:
+            bus = platform.get_bus("i2c")
+            assert bus is not None
+        except NotImplementedError:
+            pytest.fail("NotImplementedError should not be raised")

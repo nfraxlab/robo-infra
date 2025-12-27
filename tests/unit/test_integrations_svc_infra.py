@@ -792,22 +792,6 @@ class TestWebSocketRouter:
         router = create_websocket_router(mock_controller, update_rate_hz=20.0)
         assert router is not None
 
-    def test_deprecated_websocket_handler_warns(
-        self,
-        mock_controller: SimulatedController,
-    ) -> None:
-        """create_websocket_handler should issue deprecation warning."""
-        import warnings
-
-        from robo_infra.integrations.svc_infra import create_websocket_handler
-
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            handler = create_websocket_handler(mock_controller)
-            assert handler is not None
-            # Should have a deprecation warning
-            assert any(issubclass(warning.category, DeprecationWarning) for warning in w)
-
 
 class TestErrorResponses:
     """Tests for proper error response formatting."""
@@ -1056,57 +1040,6 @@ class TestRouterFromObjectUsage:
 # =============================================================================
 # WebSocket Tests (Phase 5.7.5.1)
 # =============================================================================
-
-
-class TestWebSocketHandlerCreation:
-    """Tests for WebSocket handler creation."""
-
-    def test_websocket_handler_creation(
-        self,
-        mock_controller: SimulatedController,
-    ) -> None:
-        """Test WebSocket handler can be created."""
-        import warnings
-
-        from robo_infra.integrations.svc_infra import create_websocket_handler
-
-        with warnings.catch_warnings(record=True):
-            warnings.simplefilter("always")
-            handler = create_websocket_handler(mock_controller)
-            assert handler is not None
-            assert callable(handler)
-
-    def test_websocket_handler_is_async(
-        self,
-        mock_controller: SimulatedController,
-    ) -> None:
-        """Test WebSocket handler is an async function."""
-        import asyncio
-        import warnings
-
-        from robo_infra.integrations.svc_infra import create_websocket_handler
-
-        with warnings.catch_warnings(record=True):
-            warnings.simplefilter("always")
-            handler = create_websocket_handler(mock_controller)
-            assert asyncio.iscoroutinefunction(handler)
-
-    def test_websocket_handler_deprecated(
-        self,
-        mock_controller: SimulatedController,
-    ) -> None:
-        """Test WebSocket handler emits deprecation warning."""
-        import warnings
-
-        from robo_infra.integrations.svc_infra import create_websocket_handler
-
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            _ = create_websocket_handler(mock_controller)
-            deprecation_warnings = [
-                warning for warning in w if issubclass(warning.category, DeprecationWarning)
-            ]
-            assert len(deprecation_warnings) >= 1
 
 
 class TestWebSocketRouterCreation:

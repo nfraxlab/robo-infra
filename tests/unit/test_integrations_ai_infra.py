@@ -20,7 +20,6 @@ from robo_infra.core.controller import SimulatedController
 from robo_infra.core.sensor import SimulatedSensor, Unit
 from robo_infra.core.types import Limits
 from robo_infra.integrations.ai_infra import (
-    actuator_to_tool,
     actuator_to_tools,
     controller_to_schema_tools,
     controller_to_tools,
@@ -28,8 +27,6 @@ from robo_infra.integrations.ai_infra import (
     create_enable_tool,
     create_home_tool,
     create_move_tool,
-    create_movement_tool,
-    create_safety_tools,
     create_sensors_tool,
     create_status_tool,
     create_stop_tool,
@@ -448,52 +445,6 @@ class TestControllerToSchemaTools:
         tools = controller_to_schema_tools(mock_controller)
         for tool in tools:
             assert tool.__doc__ is not None
-
-
-# --- Tests for Deprecated Functions ---
-
-
-class TestDeprecatedFunctions:
-    """Tests for deprecated functions (old dict format)."""
-
-    def test_actuator_to_tool_returns_dict(
-        self,
-        simple_actuator: SimulatedActuator,
-    ) -> None:
-        """actuator_to_tool (deprecated) should return a tool dict."""
-        with pytest.warns(DeprecationWarning):
-            tool = actuator_to_tool(simple_actuator)
-        assert isinstance(tool, dict)
-        assert "name" in tool
-        assert "description" in tool
-        assert "parameters" in tool
-        assert "handler" in tool
-
-    def test_create_movement_tool_returns_dict(
-        self,
-        mock_controller: SimulatedController,
-    ) -> None:
-        """create_movement_tool (deprecated) should return a tool dict."""
-        positions = {
-            "home": {"shoulder": 90.0, "elbow": 60.0},
-        }
-        with pytest.warns(DeprecationWarning):
-            tool = create_movement_tool("arm_positions", mock_controller, positions)
-        assert isinstance(tool, dict)
-        assert tool["name"] == "arm_positions"
-
-    def test_create_safety_tools_returns_list_of_dicts(
-        self,
-        mock_controller: SimulatedController,
-    ) -> None:
-        """create_safety_tools (deprecated) should return a list of tool dicts."""
-        with pytest.warns(DeprecationWarning):
-            tools = create_safety_tools(mock_controller)
-        assert isinstance(tools, list)
-        assert len(tools) >= 1
-        for tool in tools:
-            assert isinstance(tool, dict)
-            assert "name" in tool
 
 
 # --- Tests for Tool Handler Execution ---

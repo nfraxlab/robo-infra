@@ -49,7 +49,6 @@ Note:
 """
 
 import logging
-import warnings
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
@@ -82,7 +81,6 @@ logger = logging.getLogger(__name__)
 
 
 __all__ = [
-    "actuator_to_tool",  # Deprecated
     "actuator_to_tools",
     "controller_to_schema_tools",
     "controller_to_tools",
@@ -90,8 +88,6 @@ __all__ = [
     "create_enable_tool",
     "create_home_tool",
     "create_move_tool",
-    "create_movement_tool",  # Deprecated
-    "create_safety_tools",  # Deprecated
     "create_sensors_tool",
     "create_status_tool",
     "create_stop_tool",
@@ -760,130 +756,3 @@ Returns:
 """
     disable.__name__ = f"{name}_disable"
     return disable
-
-
-# =============================================================================
-# Deprecated Functions (for backwards compatibility)
-# =============================================================================
-
-
-def actuator_to_tool(actuator: "Actuator") -> dict[str, Any]:
-    """Convert a single actuator to an AI tool dict.
-
-    DEPRECATED: Use actuator_to_tools() instead which returns callable
-    functions compatible with ai-infra Agent.
-
-    Args:
-        actuator: The actuator to convert.
-
-    Returns:
-        Tool definition dictionary (deprecated format).
-    """
-    warnings.warn(
-        "actuator_to_tool() is deprecated. Use actuator_to_tools() instead "
-        "which returns callable functions for ai-infra Agent.",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-    name = actuator.name
-    limits = actuator.limits
-
-    return {
-        "name": f"{name}_set",
-        "description": f"Set {name} to a position between {limits.min} and {limits.max}",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "value": {
-                    "type": "number",
-                    "description": f"Target position ({limits.min} to {limits.max})",
-                    "minimum": limits.min,
-                    "maximum": limits.max,
-                }
-            },
-            "required": ["value"],
-        },
-        "handler": lambda value, a=actuator: a.set(value),
-    }
-
-
-def create_movement_tool(
-    name: str,
-    controller: "Controller",
-    positions: dict[str, dict[str, float]] | None = None,
-) -> dict[str, Any]:
-    """Create a high-level movement tool with predefined positions.
-
-    DEPRECATED: Use controller_to_tools() or controller_to_schema_tools()
-    instead for ai-infra compatible function tools.
-
-    Args:
-        name: Tool name.
-        controller: The controller.
-        positions: Optional predefined positions.
-
-    Returns:
-        Tool definition dictionary (deprecated format).
-    """
-    warnings.warn(
-        "create_movement_tool() is deprecated. Use controller_to_tools() or "
-        "controller_to_schema_tools() instead for ai-infra compatible tools.",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-    position_names = list(positions.keys()) if positions else list(controller.positions.keys())
-
-    return {
-        "name": name,
-        "description": f"Move to a named position. Available: {position_names}",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "position": {
-                    "type": "string",
-                    "enum": position_names,
-                    "description": "Name of the position to move to",
-                }
-            },
-            "required": ["position"],
-        },
-        "handler": lambda position, c=controller, p=positions: (
-            c.move_to(p[position]) if p and position in p else c.move_to_position(position)
-        ),
-    }
-
-
-def create_safety_tools(controller: "Controller") -> list[dict[str, Any]]:
-    """Create safety-focused tools for a controller.
-
-    DEPRECATED: Use controller_to_tools() instead which includes
-    stop and reset as callable functions.
-
-    Args:
-        controller: The controller.
-
-    Returns:
-        List of tool definition dictionaries (deprecated format).
-    """
-    warnings.warn(
-        "create_safety_tools() is deprecated. Use controller_to_tools() instead "
-        "which includes stop and safety tools as callable functions.",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-    name = controller.name
-
-    return [
-        {
-            "name": f"{name}_emergency_stop",
-            "description": f"EMERGENCY STOP {name} - USE ONLY IN EMERGENCIES",
-            "parameters": {"type": "object", "properties": {}},
-            "handler": lambda c=controller: c.stop(),
-        },
-        {
-            "name": f"{name}_reset_stop",
-            "description": f"Reset {name} from emergency stop state",
-            "parameters": {"type": "object", "properties": {}},
-            "handler": lambda c=controller: c.reset_stop(),
-        },
-    ]

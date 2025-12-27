@@ -87,7 +87,6 @@ __all__ = [
     "STATUS_TITLES",
     "actuator_to_router",
     "controller_to_router",
-    "create_websocket_handler",
     "create_websocket_router",
     "endpoint_exclude",
     "map_exception_to_http",
@@ -712,82 +711,6 @@ def create_websocket_router(
             logger.info("WebSocket disconnected for controller '%s'", name)
 
     return router
-
-
-def create_websocket_handler(controller: "Controller") -> Any:
-    """Create a WebSocket handler for real-time controller updates.
-
-    DEPRECATED: Use create_websocket_router() instead for svc-infra
-    dual router support. This function is kept for backwards compatibility.
-
-    Args:
-        controller: The controller.
-
-    Returns:
-        WebSocket route handler function.
-
-    Example:
-        >>> handler = create_websocket_handler(controller)
-        >>> app.add_websocket_route("/ws/arm", handler)
-    """
-    import warnings
-
-    warnings.warn(
-        "create_websocket_handler() is deprecated. "
-        "Use create_websocket_router() for svc-infra dual router support.",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-
-    _check_svc_infra()
-    try:
-        from fastapi import WebSocket, WebSocketDisconnect
-    except ImportError as e:
-        raise ImportError(
-            "FastAPI is required for WebSocket support. Install with: pip install fastapi"
-        ) from e
-
-    import asyncio
-    import json
-
-    async def websocket_handler(websocket: WebSocket) -> None:
-        """Handle WebSocket connection for controller updates."""
-        await websocket.accept()
-        logger.info("WebSocket connected for controller '%s'", controller.name)
-
-        try:
-            # Start background task to send updates
-            async def send_updates() -> None:
-                while True:
-                    data = {
-                        "type": "update",
-                        "controller": controller.name,
-                        "state": controller.status().state.value,
-                        "actuators": controller.get_actuator_values(),
-                        "sensors": controller.read_sensors(),
-                    }
-                    await websocket.send_json(data)
-                    await asyncio.sleep(0.1)  # 10 Hz updates
-
-            update_task = asyncio.create_task(send_updates())
-
-            try:
-                # Handle incoming commands
-                while True:
-                    message = await websocket.receive_text()
-                    try:
-                        command = json.loads(message)
-                        response = await _handle_ws_command(controller, command)
-                        await websocket.send_json(response)
-                    except json.JSONDecodeError:
-                        await websocket.send_json({"error": "Invalid JSON"})
-            finally:
-                update_task.cancel()
-
-        except WebSocketDisconnect:
-            logger.info("WebSocket disconnected for controller '%s'", controller.name)
-
-    return websocket_handler
 
 
 async def _handle_ws_command(

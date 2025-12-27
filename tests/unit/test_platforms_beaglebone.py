@@ -713,3 +713,211 @@ class TestBeagleBoneIntegration:
         pwm.stop()
 
         platform.cleanup()
+
+
+# =============================================================================
+# Bus Access Tests (Phase 8.8.2)
+# =============================================================================
+
+
+class TestBeagleBoneBusAccess:
+    """Tests for BeagleBone platform bus access."""
+
+    def test_get_bus_i2c_simulation(self) -> None:
+        """Test getting I2C bus in simulation mode returns SimulatedI2CBus."""
+        from robo_infra.core.bus import SimulatedI2CBus
+
+        platform = BeagleBonePlatform(simulation=True)
+        bus = platform.get_bus("i2c", bus=1)
+        assert isinstance(bus, SimulatedI2CBus)
+
+    def test_get_bus_spi_simulation(self) -> None:
+        """Test getting SPI bus in simulation mode returns SimulatedSPIBus."""
+        from robo_infra.core.bus import SimulatedSPIBus
+
+        platform = BeagleBonePlatform(simulation=True)
+        bus = platform.get_bus("spi", bus=0, device=0)
+        assert isinstance(bus, SimulatedSPIBus)
+
+    def test_get_bus_uart_simulation(self) -> None:
+        """Test getting UART bus in simulation mode returns SimulatedSerialBus."""
+        from robo_infra.core.bus import SimulatedSerialBus
+
+        platform = BeagleBonePlatform(simulation=True)
+        bus = platform.get_bus("uart", port="/dev/ttyO1")
+        assert isinstance(bus, SimulatedSerialBus)
+
+    def test_get_bus_serial_alias(self) -> None:
+        """Test 'serial' is accepted as alias for 'uart'."""
+        from robo_infra.core.bus import SimulatedSerialBus
+
+        platform = BeagleBonePlatform(simulation=True)
+        bus = platform.get_bus("serial", port="/dev/ttyO1")
+        assert isinstance(bus, SimulatedSerialBus)
+
+    def test_get_bus_unknown_type_raises(self) -> None:
+        """Test unknown bus type raises HardwareNotFoundError."""
+        from robo_infra.core.exceptions import HardwareNotFoundError
+
+        platform = BeagleBonePlatform(simulation=True)
+        with pytest.raises(HardwareNotFoundError):
+            platform.get_bus("unknown_bus")
+
+    def test_get_bus_case_insensitive(self) -> None:
+        """Test bus type is case insensitive."""
+        from robo_infra.core.bus import SimulatedI2CBus
+
+        platform = BeagleBonePlatform(simulation=True)
+        bus1 = platform.get_bus("I2C")
+        bus2 = platform.get_bus("i2c")
+        bus3 = platform.get_bus("I2c")
+        assert isinstance(bus1, SimulatedI2CBus)
+        assert isinstance(bus2, SimulatedI2CBus)
+        assert isinstance(bus3, SimulatedI2CBus)
+
+
+class TestBeagleBoneBusConvenienceMethods:
+    """Tests for bus convenience methods (get_i2c, get_spi, get_serial)."""
+
+    def test_get_i2c_default_bus(self) -> None:
+        """Test get_i2c with default bus number."""
+        from robo_infra.core.bus import SimulatedI2CBus
+
+        platform = BeagleBonePlatform(simulation=True)
+        bus = platform.get_i2c()
+        assert isinstance(bus, SimulatedI2CBus)
+        assert bus.config.bus_number == 1
+
+    def test_get_i2c_custom_bus(self) -> None:
+        """Test get_i2c with custom bus number (bus 2 for P9.19/P9.20)."""
+        from robo_infra.core.bus import SimulatedI2CBus
+
+        platform = BeagleBonePlatform(simulation=True)
+        bus = platform.get_i2c(bus=2)
+        assert isinstance(bus, SimulatedI2CBus)
+        assert bus.config.bus_number == 2
+
+    def test_get_spi_default(self) -> None:
+        """Test get_spi with default parameters."""
+        from robo_infra.core.bus import SimulatedSPIBus
+
+        platform = BeagleBonePlatform(simulation=True)
+        bus = platform.get_spi()
+        assert isinstance(bus, SimulatedSPIBus)
+        assert bus.config.bus == 0
+        assert bus.config.device == 0
+
+    def test_get_spi_custom(self) -> None:
+        """Test get_spi with custom bus and device (SPI1 CS1)."""
+        from robo_infra.core.bus import SimulatedSPIBus
+
+        platform = BeagleBonePlatform(simulation=True)
+        bus = platform.get_spi(bus=1, device=1)
+        assert isinstance(bus, SimulatedSPIBus)
+        assert bus.config.bus == 1
+        assert bus.config.device == 1
+
+    def test_get_serial_default(self) -> None:
+        """Test get_serial with default parameters (UART1)."""
+        from robo_infra.core.bus import SimulatedSerialBus
+
+        platform = BeagleBonePlatform(simulation=True)
+        bus = platform.get_serial()
+        assert isinstance(bus, SimulatedSerialBus)
+        assert bus.config.port == "/dev/ttyO1"
+        assert bus.config.baudrate == 115200
+
+    def test_get_serial_custom_uart2(self) -> None:
+        """Test get_serial with UART2 port."""
+        from robo_infra.core.bus import SimulatedSerialBus
+
+        platform = BeagleBonePlatform(simulation=True)
+        bus = platform.get_serial(port="/dev/ttyO2", baudrate=9600)
+        assert isinstance(bus, SimulatedSerialBus)
+        assert bus.config.port == "/dev/ttyO2"
+        assert bus.config.baudrate == 9600
+
+    def test_get_serial_custom_uart4(self) -> None:
+        """Test get_serial with UART4 port."""
+        from robo_infra.core.bus import SimulatedSerialBus
+
+        platform = BeagleBonePlatform(simulation=True)
+        bus = platform.get_serial(port="/dev/ttyO4", baudrate=57600)
+        assert isinstance(bus, SimulatedSerialBus)
+        assert bus.config.port == "/dev/ttyO4"
+        assert bus.config.baudrate == 57600
+
+
+class TestBeagleBoneRealBusAccess:
+    """Tests for real hardware bus access (with mocked libraries)."""
+
+    def test_get_bus_graceful_fallback_on_import_error(self) -> None:
+        """Test that bus access falls back gracefully when library not installed."""
+        platform = BeagleBonePlatform(simulation=True)
+
+        from robo_infra.core.bus import SimulatedI2CBus, SimulatedSerialBus, SimulatedSPIBus
+
+        i2c_bus = platform.get_bus("i2c")
+        spi_bus = platform.get_bus("spi")
+        uart_bus = platform.get_bus("uart")
+
+        assert isinstance(i2c_bus, SimulatedI2CBus)
+        assert isinstance(spi_bus, SimulatedSPIBus)
+        assert isinstance(uart_bus, SimulatedSerialBus)
+
+    def test_no_not_implemented_error(self) -> None:
+        """Test that NotImplementedError is NOT raised anymore."""
+        platform = BeagleBonePlatform(simulation=False)
+
+        # These should NOT raise NotImplementedError
+        # They may raise ImportError if libs not installed, but that's caught internally
+        try:
+            bus = platform.get_bus("i2c")
+            assert bus is not None
+        except NotImplementedError:
+            pytest.fail("NotImplementedError should not be raised")
+
+    def test_beaglebone_default_uart_port(self) -> None:
+        """Test BeagleBone uses /dev/ttyO1 as default UART port."""
+        from robo_infra.core.bus import SimulatedSerialBus
+
+        platform = BeagleBonePlatform(simulation=True)
+        bus = platform.get_serial()
+        assert isinstance(bus, SimulatedSerialBus)
+        # BeagleBone uses /dev/ttyO1 as default (not /dev/ttyS0)
+        assert bus.config.port == "/dev/ttyO1"
+
+    def test_beaglebone_i2c_bus_paths(self) -> None:
+        """Test BeagleBone I2C bus configurations."""
+        from robo_infra.core.bus import SimulatedI2CBus
+
+        platform = BeagleBonePlatform(simulation=True)
+
+        # Bus 1: P9.17 (SCL), P9.18 (SDA)
+        bus1 = platform.get_i2c(bus=1)
+        assert isinstance(bus1, SimulatedI2CBus)
+        assert bus1.config.bus_number == 1
+
+        # Bus 2: P9.19 (SCL), P9.20 (SDA)
+        bus2 = platform.get_i2c(bus=2)
+        assert isinstance(bus2, SimulatedI2CBus)
+        assert bus2.config.bus_number == 2
+
+    def test_beaglebone_spi_bus_paths(self) -> None:
+        """Test BeagleBone SPI bus configurations."""
+        from robo_infra.core.bus import SimulatedSPIBus
+
+        platform = BeagleBonePlatform(simulation=True)
+
+        # SPI0 CS0
+        spi0_0 = platform.get_spi(bus=0, device=0)
+        assert isinstance(spi0_0, SimulatedSPIBus)
+        assert spi0_0.config.bus == 0
+        assert spi0_0.config.device == 0
+
+        # SPI1 CS0
+        spi1_0 = platform.get_spi(bus=1, device=0)
+        assert isinstance(spi1_0, SimulatedSPIBus)
+        assert spi1_0.config.bus == 1
+        assert spi1_0.config.device == 0
+

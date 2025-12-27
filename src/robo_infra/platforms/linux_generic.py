@@ -1015,30 +1015,138 @@ class LinuxGenericPlatform(BasePlatform):
         """Get a communication bus.
 
         Args:
-            bus_type: Bus type ("i2c", "spi", "uart")
+            bus_type: Bus type ("i2c", "spi", "uart", "serial")
             **kwargs: Bus-specific configuration
 
         Returns:
             Bus instance
+
+        Raises:
+            HardwareNotFoundError: If bus type is not supported.
+            ImportError: If required library is not installed.
         """
+        bus_type_lower = bus_type.lower()
+
+        if bus_type_lower == "i2c":
+            return self._create_i2c_bus(**kwargs)
+        elif bus_type_lower == "spi":
+            return self._create_spi_bus(**kwargs)
+        elif bus_type_lower in ("uart", "serial"):
+            return self._create_uart_bus(**kwargs)
+        else:
+            raise HardwareNotFoundError(
+                device=f"Bus type: {bus_type}",
+                details="Supported: i2c, spi, uart",
+            )
+
+    def _create_i2c_bus(self, **kwargs: Any) -> Bus:
+        """Create an I2C bus.
+
+        Uses smbus2 if available, falls back to simulated.
+        """
+        from robo_infra.core.bus import I2CConfig, SimulatedI2CBus
+
+        bus_num = kwargs.get("bus", 1)
+        config = I2CConfig(bus_number=bus_num)
+
+        # Simulation mode uses simulated bus
         if self._simulation:
-            from robo_infra.core.bus import I2CBus, SPIBus, UARTBus
+            return SimulatedI2CBus(config=config)
 
-            if bus_type.lower() == "i2c":
-                bus_num = kwargs.get("bus", 1)
-                return I2CBus(bus_number=bus_num, simulation=True)
-            elif bus_type.lower() == "spi":
-                bus_num = kwargs.get("bus", 0)
-                device = kwargs.get("device", 0)
-                return SPIBus(bus_number=bus_num, device=device, simulation=True)
-            elif bus_type.lower() == "uart":
-                port = kwargs.get("port", "/dev/ttyS0")
-                baudrate = kwargs.get("baudrate", 115200)
-                return UARTBus(port=port, baudrate=baudrate, simulation=True)
-            else:
-                raise ValueError(f"Unknown bus type: {bus_type}")
+        # Try to use real smbus2 implementation
+        try:
+            from robo_infra.core.bus import SMBus2I2CBus
 
-        raise NotImplementedError("Hardware bus access not yet implemented")
+            return SMBus2I2CBus(config=config)
+        except ImportError:
+            logger.warning("smbus2 not available, using simulated I2C")
+            return SimulatedI2CBus(config=config)
+
+    def _create_spi_bus(self, **kwargs: Any) -> Bus:
+        """Create an SPI bus.
+
+        Uses spidev if available, falls back to simulated.
+        """
+        from robo_infra.core.bus import SimulatedSPIBus, SPIConfig
+
+        bus_num = kwargs.get("bus", 0)
+        device = kwargs.get("device", 0)
+        config = SPIConfig(bus=bus_num, device=device)
+
+        # Simulation mode uses simulated bus
+        if self._simulation:
+            return SimulatedSPIBus(config=config)
+
+        # Try to use real spidev implementation
+        try:
+            from robo_infra.core.bus import SpiDevSPIBus
+
+            return SpiDevSPIBus(config=config)
+        except ImportError:
+            logger.warning("spidev not available, using simulated SPI")
+            return SimulatedSPIBus(config=config)
+
+    def _create_uart_bus(self, **kwargs: Any) -> Bus:
+        """Create a UART/Serial bus.
+
+        Uses pyserial if available, falls back to simulated.
+        """
+        from robo_infra.core.bus import SerialConfig, SimulatedSerialBus
+
+        port = kwargs.get("port", "/dev/ttyS0")
+        baudrate = kwargs.get("baudrate", 115200)
+        config = SerialConfig(port=port, baudrate=baudrate)
+
+        # Simulation mode uses simulated bus
+        if self._simulation:
+            return SimulatedSerialBus(config=config)
+
+        # Try to use real pyserial implementation
+        try:
+            from robo_infra.core.bus import PySerialBus
+
+            return PySerialBus(config=config)
+        except ImportError:
+            logger.warning("pyserial not available, using simulated Serial")
+            return SimulatedSerialBus(config=config)
+
+    def get_i2c(self, bus: int = 1, **kwargs: Any) -> Bus:
+        """Get an I2C bus (convenience method).
+
+        Args:
+            bus: I2C bus number (default: 1 for /dev/i2c-1)
+            **kwargs: Additional configuration
+
+        Returns:
+            I2C bus instance
+        """
+        return self._create_i2c_bus(bus=bus, **kwargs)
+
+    def get_spi(self, bus: int = 0, device: int = 0, **kwargs: Any) -> Bus:
+        """Get an SPI bus (convenience method).
+
+        Args:
+            bus: SPI bus number (default: 0)
+            device: SPI device/chip-select (default: 0)
+            **kwargs: Additional configuration
+
+        Returns:
+            SPI bus instance
+        """
+        return self._create_spi_bus(bus=bus, device=device, **kwargs)
+
+    def get_serial(self, port: str = "/dev/ttyS0", baudrate: int = 115200, **kwargs: Any) -> Bus:
+        """Get a serial/UART bus (convenience method).
+
+        Args:
+            port: Serial port path (default: /dev/ttyS0)
+            baudrate: Baud rate (default: 115200)
+            **kwargs: Additional configuration
+
+        Returns:
+            Serial bus instance
+        """
+        return self._create_uart_bus(port=port, baudrate=baudrate, **kwargs)
 
     # -------------------------------------------------------------------------
     # Properties
