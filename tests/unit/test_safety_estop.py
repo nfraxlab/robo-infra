@@ -1096,6 +1096,7 @@ class TestCallbackOrder:
         def make_callback(n: int) -> MagicMock:
             def cb(event: EStopEvent) -> None:
                 call_order.append(n)
+
             return cb
 
         estop.register_callback(make_callback(1))

@@ -1157,7 +1157,9 @@ class TestViolationDetailsTracking:
 
         assert result == 95.0  # Value unchanged
         soft_violations = [
-            v for v in enforcer.recent_violations if v.violation_type == LimitViolationType.SOFT_LIMIT
+            v
+            for v in enforcer.recent_violations
+            if v.violation_type == LimitViolationType.SOFT_LIMIT
         ]
         assert len(soft_violations) == 1
         assert soft_violations[0].requested == 95.0
@@ -1222,10 +1224,14 @@ class TestPositionLimitsExtended:
         enforcer.enforce(150.0)  # Above max
 
         min_violations = [
-            v for v in enforcer.recent_violations if v.violation_type == LimitViolationType.POSITION_MIN
+            v
+            for v in enforcer.recent_violations
+            if v.violation_type == LimitViolationType.POSITION_MIN
         ]
         max_violations = [
-            v for v in enforcer.recent_violations if v.violation_type == LimitViolationType.POSITION_MAX
+            v
+            for v in enforcer.recent_violations
+            if v.violation_type == LimitViolationType.POSITION_MAX
         ]
 
         assert len(min_violations) == 1
@@ -1295,7 +1301,9 @@ class TestAccelerationLimitsExtended:
         enforcer.enforce(100.0, current_position=0.0, dt=0.1)
 
         accel_violations = [
-            v for v in enforcer.recent_violations if v.violation_type == LimitViolationType.ACCELERATION
+            v
+            for v in enforcer.recent_violations
+            if v.violation_type == LimitViolationType.ACCELERATION
         ]
         assert len(accel_violations) >= 1
 
@@ -1337,8 +1345,16 @@ class TestMultipleViolationTypes:
         # Way outside range - should hit both soft and hard limit
         enforcer.enforce(150.0)
 
-        soft = [v for v in enforcer.recent_violations if v.violation_type == LimitViolationType.SOFT_LIMIT]
-        hard = [v for v in enforcer.recent_violations if v.violation_type == LimitViolationType.POSITION_MAX]
+        soft = [
+            v
+            for v in enforcer.recent_violations
+            if v.violation_type == LimitViolationType.SOFT_LIMIT
+        ]
+        hard = [
+            v
+            for v in enforcer.recent_violations
+            if v.violation_type == LimitViolationType.POSITION_MAX
+        ]
 
         assert len(soft) >= 1
         assert len(hard) == 1

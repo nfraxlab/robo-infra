@@ -1427,10 +1427,12 @@ class TestLinuxGenericRealBusAccess:
             bus = platform.get_bus("i2c", bus=1)
             # If we get here, SMBus2I2CBus was used
             from robo_infra.core.bus import SMBus2I2CBus
+
             assert isinstance(bus, SMBus2I2CBus)
         except ImportError:
             # smbus2 not installed - falls back to simulated
             from robo_infra.core.bus import SimulatedI2CBus
+
             bus = platform.get_bus("i2c", bus=1)
             assert isinstance(bus, SimulatedI2CBus)
 
@@ -1443,9 +1445,11 @@ class TestLinuxGenericRealBusAccess:
         try:
             bus = platform.get_bus("spi", bus=0, device=0)
             from robo_infra.core.bus import SpiDevSPIBus
+
             assert isinstance(bus, SpiDevSPIBus)
         except ImportError:
             from robo_infra.core.bus import SimulatedSPIBus
+
             bus = platform.get_bus("spi", bus=0, device=0)
             assert isinstance(bus, SimulatedSPIBus)
 
@@ -1458,9 +1462,11 @@ class TestLinuxGenericRealBusAccess:
         try:
             bus = platform.get_bus("uart", port="/dev/ttyS0")
             from robo_infra.core.bus import PySerialBus
+
             assert isinstance(bus, PySerialBus)
         except ImportError:
             from robo_infra.core.bus import SimulatedSerialBus
+
             bus = platform.get_bus("uart", port="/dev/ttyS0")
             assert isinstance(bus, SimulatedSerialBus)
 

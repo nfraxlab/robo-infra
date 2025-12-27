@@ -122,9 +122,7 @@ class TestDetectPlatform:
                 "robo_infra.platforms.detection.detect_raspberry_pi",
                 return_value=(False, ""),
             ),
-            patch(
-                "robo_infra.platforms.detection.detect_jetson", return_value=(False, "")
-            ),
+            patch("robo_infra.platforms.detection.detect_jetson", return_value=(False, "")),
             patch(
                 "robo_infra.platforms.detection.detect_beaglebone",
                 return_value=(False, ""),
@@ -137,23 +135,17 @@ class TestDetectPlatform:
                 "robo_infra.platforms.detection.detect_rock_pi",
                 return_value=(False, ""),
             ),
-            patch(
-                "robo_infra.platforms.detection.detect_pine64", return_value=(False, "")
-            ),
+            patch("robo_infra.platforms.detection.detect_pine64", return_value=(False, "")),
             patch(
                 "robo_infra.platforms.detection.detect_arduino",
                 return_value=(False, ""),
             ),
-            patch(
-                "robo_infra.platforms.detection.detect_esp32", return_value=(False, "")
-            ),
+            patch("robo_infra.platforms.detection.detect_esp32", return_value=(False, "")),
             patch(
                 "robo_infra.platforms.detection.detect_microbit",
                 return_value=(False, ""),
             ),
-            patch(
-                "robo_infra.platforms.detection.detect_pico", return_value=(False, "")
-            ),
+            patch("robo_infra.platforms.detection.detect_pico", return_value=(False, "")),
             patch(
                 "robo_infra.platforms.detection.detect_linux_generic",
                 return_value=(False, ""),
@@ -272,9 +264,10 @@ class TestDetectRaspberryPi:
     def test_detect_raspberry_pi_from_device_tree(self) -> None:
         """detect_raspberry_pi detects from device tree model."""
         mock_model = "Raspberry Pi 4 Model B Rev 1.4"
-        with patch.object(
-            Path, "exists", return_value=True
-        ), patch.object(Path, "read_text", return_value=mock_model):
+        with (
+            patch.object(Path, "exists", return_value=True),
+            patch.object(Path, "read_text", return_value=mock_model),
+        ):
             _is_detected, _model = detect_raspberry_pi()
             # Note: May not work due to path-specific mocking
             # This test verifies the interface

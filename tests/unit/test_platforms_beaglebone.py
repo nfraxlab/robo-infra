@@ -920,4 +920,3 @@ class TestBeagleBoneRealBusAccess:
         assert isinstance(spi1_0, SimulatedSPIBus)
         assert spi1_0.config.bus == 1
         assert spi1_0.config.device == 0
-
