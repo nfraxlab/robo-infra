@@ -121,6 +121,97 @@ while running:
     watchdog.feed()  # Must call every 100ms
 ```
 
+## Documentation
+
+### Getting Started
+
+<div class="grid cards" markdown>
+
+-   :material-rocket-launch:{ .lg .middle } **Getting Started**
+
+    ---
+
+    Installation, first robot, connecting to hardware.
+
+    [:octicons-arrow-right-24: Getting Started](getting-started.md)
+
+-   :material-floor-plan:{ .lg .middle } **Architecture**
+
+    ---
+
+    System architecture, module hierarchy, data flow, and extension points.
+
+    [:octicons-arrow-right-24: Architecture](architecture.md)
+
+-   :material-book-open-variant:{ .lg .middle } **Core Concepts**
+
+    ---
+
+    Controller pattern, driver abstraction, bus system, simulation mode.
+
+    [:octicons-arrow-right-24: Core Concepts](core-concepts.md)
+
+-   :material-tools:{ .lg .middle } **Platforms**
+
+    ---
+
+    Raspberry Pi, Jetson, BeagleBone, Arduino integration.
+
+    [:octicons-arrow-right-24: Platforms](platforms.md)
+
+</div>
+
+### Hardware Interfaces
+
+| Guide | Description |
+|-------|-------------|
+| [Actuators](actuators.md) | Servo, DC Motor, Stepper, Brushless, Linear, Gripper |
+| [Sensors](sensors.md) | IMU, Encoder, Distance, Force, Temperature, Current |
+| [Drivers](drivers.md) | PCA9685, Dynamixel, ODrive, VESC, TMC2209, L298N |
+| [Controllers](controllers.md) | JointGroup, DifferentialDrive, MecanumDrive, ArmController |
+
+### Motion & Vision
+
+| Guide | Description |
+|-------|-------------|
+| [Motion Planning](motion.md) | Trajectories, interpolation, trapezoidal/S-curve profiles |
+| [Kinematics](kinematics.md) | Forward/inverse kinematics, DH parameters, Jacobian |
+| [Vision](vision.md) | Camera, object detection, ArUco markers, coordinate transforms |
+
+### Safety & Protocols
+
+| Guide | Description |
+|-------|-------------|
+| [Safety](safety.md) | E-Stop, SafetyMonitor, Watchdog, JointLimiter, SafetyZone |
+| [Protocols](protocols.md) | CANopen, Modbus RTU/TCP, industrial communication |
+| [Power Management](power.md) | Battery monitoring, power distribution, INA219/INA226 |
+
+### Integrations
+
+| Guide | Description |
+|-------|-------------|
+| [ROS2 Integration](ros2-integration.md) | ROS2 nodes, publishers, subscribers, action servers |
+| [AI Integration](ai-integration.md) | LLM tools, function calling, natural language control |
+| [API Integration](api-integration.md) | FastAPI routers, REST endpoints, health checks |
+| [Observability](observability.md) | Prometheus metrics, structured logging, health checks |
+
+### Utilities & Reference
+
+| Guide | Description |
+|-------|-------------|
+| [Utilities](utils.md) | Resilience, graceful degradation, resource management, security |
+| [CLI](cli.md) | Command line interface, driver listing, simulation mode |
+| [Error Handling](error-handling.md) | Exception types, error recovery, debugging |
+| [API Reference](reference/api.md) | Full API documentation for all modules |
+
+### Hardware Guides
+
+| Guide | Description |
+|-------|-------------|
+| [Hardware Wiring](hardware-wiring.md) | Wiring diagrams, pin connections, safety considerations |
+| [Hardware Testing](hardware-testing.md) | Testing procedures, calibration, validation |
+| [Bill of Materials](hardware-bom.md) | Recommended components, suppliers, specifications |
+
 ## Architecture
 
 ```mermaid
