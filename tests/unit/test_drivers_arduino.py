@@ -314,9 +314,10 @@ class TestArduinoDriverConnection:
             # Remove ROBO_SIMULATION if set by other tests
             env = os.environ.copy()
             env.pop("ROBO_SIMULATION", None)
-            with patch.dict(os.environ, env, clear=True), patch(
-                "robo_infra.drivers.arduino.ArduinoDriver._get_serial_module"
-            ) as mock_serial:
+            with (
+                patch.dict(os.environ, env, clear=True),
+                patch("robo_infra.drivers.arduino.ArduinoDriver._get_serial_module") as mock_serial,
+            ):
                 mock_serial_class = Mock()
                 mock_serial_class.Serial.side_effect = FileNotFoundError(
                     "No such file or directory"
@@ -1093,13 +1094,16 @@ class TestFirmataRealConnection:
         mock_pyfirmata.Arduino = mock_arduino_class
 
         # pyfirmata2 not available, but pyfirmata is
-        with patch.dict(
-            sys.modules,
-            {"pyfirmata2": None, "pyfirmata": mock_pyfirmata},
-        ), patch.object(
-            ArduinoDriver,
-            "_detect_arduino_port",
-            return_value=None,
+        with (
+            patch.dict(
+                sys.modules,
+                {"pyfirmata2": None, "pyfirmata": mock_pyfirmata},
+            ),
+            patch.object(
+                ArduinoDriver,
+                "_detect_arduino_port",
+                return_value=None,
+            ),
         ):
             config = ArduinoConfig(
                 serial=SerialConfig(port="/dev/ttyUSB0"),

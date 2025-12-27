@@ -430,9 +430,7 @@ class TestMAVLinkTakeoff:
         assert enabled_controller.mav_state == MAVLinkState.IN_FLIGHT
 
     @pytest.mark.asyncio
-    async def test_takeoff_requires_armed(
-        self, enabled_controller: MAVLinkController
-    ) -> None:
+    async def test_takeoff_requires_armed(self, enabled_controller: MAVLinkController) -> None:
         """Test takeoff requires armed state."""
         with pytest.raises(SafetyError, match="not armed"):
             await enabled_controller.takeoff(altitude=10.0)
@@ -455,9 +453,7 @@ class TestMAVLinkRTL:
     """Tests for return to launch."""
 
     @pytest.mark.asyncio
-    async def test_return_to_launch(
-        self, enabled_controller: MAVLinkController
-    ) -> None:
+    async def test_return_to_launch(self, enabled_controller: MAVLinkController) -> None:
         """Test RTL command."""
         await enabled_controller.arm()
         await enabled_controller.takeoff(altitude=10.0)
@@ -475,9 +471,7 @@ class TestMAVLinkPositionControl:
     """Tests for position control commands."""
 
     @pytest.mark.asyncio
-    async def test_goto_global(
-        self, enabled_controller: MAVLinkController
-    ) -> None:
+    async def test_goto_global(self, enabled_controller: MAVLinkController) -> None:
         """Test global position command."""
         await enabled_controller.arm()
         await enabled_controller.takeoff(altitude=10.0)
@@ -506,9 +500,7 @@ class TestMAVLinkVelocityControl:
     """Tests for velocity control commands."""
 
     @pytest.mark.asyncio
-    async def test_set_velocity(
-        self, enabled_controller: MAVLinkController
-    ) -> None:
+    async def test_set_velocity(self, enabled_controller: MAVLinkController) -> None:
         """Test velocity setpoint command."""
         await enabled_controller.arm()
         await enabled_controller.set_velocity(
@@ -519,9 +511,7 @@ class TestMAVLinkVelocityControl:
         # Command executed successfully
 
     @pytest.mark.asyncio
-    async def test_set_velocity_with_yaw(
-        self, enabled_controller: MAVLinkController
-    ) -> None:
+    async def test_set_velocity_with_yaw(self, enabled_controller: MAVLinkController) -> None:
         """Test velocity with yaw rate."""
         await enabled_controller.arm()
         await enabled_controller.set_velocity(
@@ -542,9 +532,7 @@ class TestMAVLinkFlightModes:
     """Tests for flight mode control."""
 
     @pytest.mark.asyncio
-    async def test_set_mode_arducopter(
-        self, enabled_controller: MAVLinkController
-    ) -> None:
+    async def test_set_mode_arducopter(self, enabled_controller: MAVLinkController) -> None:
         """Test setting ArduCopter mode."""
         await enabled_controller.set_mode(FlightModeArduCopter.LOITER)
         # Mode was set
@@ -625,16 +613,12 @@ class TestMAVLinkEdgeCases:
         assert enabled_controller.is_armed
 
     @pytest.mark.asyncio
-    async def test_double_disarm(
-        self, enabled_controller: MAVLinkController
-    ) -> None:
+    async def test_double_disarm(self, enabled_controller: MAVLinkController) -> None:
         """Test double disarm is idempotent."""
         await enabled_controller.disarm()
         assert not enabled_controller.is_armed
 
-    def test_enable_disable_cycle(
-        self, mavlink_controller: MAVLinkController
-    ) -> None:
+    def test_enable_disable_cycle(self, mavlink_controller: MAVLinkController) -> None:
         """Test enable/disable cycle."""
         for _ in range(3):
             mavlink_controller.enable()

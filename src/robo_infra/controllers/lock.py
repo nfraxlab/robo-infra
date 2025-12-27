@@ -489,8 +489,7 @@ class Lock(Controller):
         """
         if not self.is_enabled:
             raise RuntimeError(
-                f"Cannot {operation}: Lock '{self.name}' is not enabled. "
-                f"Call lock.enable() first."
+                f"Cannot {operation}: Lock '{self.name}' is not enabled. Call lock.enable() first."
             )
 
     def _update_state_from_position(self) -> None:

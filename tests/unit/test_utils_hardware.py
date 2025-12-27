@@ -213,9 +213,7 @@ class TestHardwareProbe:
 
     @patch("robo_infra.utils.hardware.Path")
     @patch("robo_infra.utils.hardware.os.access")
-    def test_check_gpio_access_no_chips(
-        self, mock_access: MagicMock, mock_path: MagicMock
-    ) -> None:
+    def test_check_gpio_access_no_chips(self, mock_access: MagicMock, mock_path: MagicMock) -> None:
         """Test check_gpio_access when no GPIO chips exist."""
         mock_path.return_value.glob.return_value = []
 
@@ -518,9 +516,7 @@ class TestDriverReconnector:
     def test_on_reconnect_callback(self) -> None:
         """Test on_reconnect callback is called on reconnection."""
         mock_driver = MagicMock()
-        create_driver = MagicMock(
-            side_effect=[Exception("Fail"), mock_driver]
-        )
+        create_driver = MagicMock(side_effect=[Exception("Fail"), mock_driver])
         on_reconnect = MagicMock()
 
         config = ReconnectConfig(strategy=ReconnectStrategy.IMMEDIATE)
@@ -546,6 +542,7 @@ class TestDriverReconnector:
     @pytest.mark.asyncio
     async def test_connect_async_success(self) -> None:
         """Test async connection success."""
+
         # Use a simple class without connect_async to avoid await issues
         class SimpleDriver:
             pass
@@ -561,6 +558,7 @@ class TestDriverReconnector:
     @pytest.mark.asyncio
     async def test_connect_async_with_retries(self) -> None:
         """Test async connection with retries."""
+
         # Use a simple class without connect_async to avoid await issues
         class SimpleDriver:
             pass
@@ -653,9 +651,7 @@ class TestCheckHardwareAccess:
 
     @patch("robo_infra.utils.hardware.Path")
     @patch("robo_infra.utils.hardware.os.access")
-    def test_check_multiple_resources(
-        self, mock_access: MagicMock, mock_path: MagicMock
-    ) -> None:
+    def test_check_multiple_resources(self, mock_access: MagicMock, mock_path: MagicMock) -> None:
         """Test checking multiple hardware resources."""
         # Mock GPIO as available
         mock_gpio_chip = MagicMock()

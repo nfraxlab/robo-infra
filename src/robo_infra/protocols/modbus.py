@@ -687,9 +687,7 @@ class ModbusRTU(ModbusClient):
             self._is_open = True
             logger.info("Modbus RTU opened: %s @ %d", self._config.port, self._config.baudrate)
         except ImportError as e:
-            raise CommunicationError(
-                "pyserial not installed. Run: pip install pyserial"
-            ) from e
+            raise CommunicationError("pyserial not installed. Run: pip install pyserial") from e
         except Exception as e:
             raise CommunicationError(f"Failed to open serial port: {e}") from e
 
@@ -822,7 +820,10 @@ class ModbusRTU(ModbusClient):
             data = bytes(byte_count)  # All inputs OFF
             return bytes([slave_id, function_code, byte_count]) + data
 
-        elif function_code in (FunctionCode.READ_HOLDING_REGISTERS, FunctionCode.READ_INPUT_REGISTERS):
+        elif function_code in (
+            FunctionCode.READ_HOLDING_REGISTERS,
+            FunctionCode.READ_INPUT_REGISTERS,
+        ):
             count = struct.unpack(">H", request[4:6])[0]
             byte_count = count * 2
             data = bytes(byte_count)  # All registers 0
@@ -918,7 +919,9 @@ class ModbusRTU(ModbusClient):
         if not 1 <= count <= 125:
             raise ValueError("Count must be 1-125")
 
-        request = struct.pack(">BBHH", slave_id, FunctionCode.READ_HOLDING_REGISTERS, address, count)
+        request = struct.pack(
+            ">BBHH", slave_id, FunctionCode.READ_HOLDING_REGISTERS, address, count
+        )
         response = self._send_receive(request)
 
         if response[1] & 0x80:
@@ -973,7 +976,9 @@ class ModbusRTU(ModbusClient):
             raise ValueError("Slave ID must be 1-247")
 
         coil_value = COIL_ON if value else COIL_OFF
-        request = struct.pack(">BBHH", slave_id, FunctionCode.WRITE_SINGLE_COIL, address, coil_value)
+        request = struct.pack(
+            ">BBHH", slave_id, FunctionCode.WRITE_SINGLE_COIL, address, coil_value
+        )
         response = self._send_receive(request)
 
         if response[1] & 0x80:
@@ -1225,7 +1230,10 @@ class ModbusTCP(ModbusClient):
             data = bytes(byte_count)
             return bytes([function_code, byte_count]) + data
 
-        elif function_code in (FunctionCode.READ_HOLDING_REGISTERS, FunctionCode.READ_INPUT_REGISTERS):
+        elif function_code in (
+            FunctionCode.READ_HOLDING_REGISTERS,
+            FunctionCode.READ_INPUT_REGISTERS,
+        ):
             count = struct.unpack(">H", request_pdu[3:5])[0]
             byte_count = count * 2
             data = bytes(byte_count)
@@ -1400,9 +1408,9 @@ class ModbusTCP(ModbusClient):
             if value:
                 data[i // 8] |= 1 << (i % 8)
 
-        pdu = struct.pack(">BHHB", FunctionCode.WRITE_MULTIPLE_COILS, address, count, byte_count) + bytes(
-            data
-        )
+        pdu = struct.pack(
+            ">BHHB", FunctionCode.WRITE_MULTIPLE_COILS, address, count, byte_count
+        ) + bytes(data)
         response = self._send_receive(slave_id, pdu)
 
         if response[0] & 0x80:

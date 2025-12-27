@@ -851,9 +851,7 @@ class TestPressureCalculations:
         # Inverse of altitude formula to get P0
         # P = P0 * (1 - altitude/44330)^5.255
         # P0 = P / (1 - altitude/44330)^5.255
-        sea_level_pressure = measured_pressure / math.pow(
-            1.0 - altitude / 44330.0, 5.255
-        )
+        sea_level_pressure = measured_pressure / math.pow(1.0 - altitude / 44330.0, 5.255)
 
         # Sea level pressure should be higher than measured
         assert sea_level_pressure > measured_pressure

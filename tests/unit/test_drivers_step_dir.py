@@ -86,6 +86,7 @@ class TestA4988DriverLifecycle:
         driver = A4988Driver(step_pin=2, dir_pin=3)
         driver.connect()
         from robo_infra.core.driver import DriverState
+
         assert driver._state == DriverState.CONNECTED
 
     def test_disconnect(self) -> None:
@@ -94,6 +95,7 @@ class TestA4988DriverLifecycle:
         driver.connect()
         driver.disconnect()
         from robo_infra.core.driver import DriverState
+
         assert driver._state == DriverState.DISCONNECTED
 
 
@@ -268,6 +270,7 @@ class TestDRV8825DriverLifecycle:
         driver = DRV8825Driver(step_pin=2, dir_pin=3)
         driver.connect()
         from robo_infra.core.driver import DriverState
+
         assert driver._state == DriverState.CONNECTED
 
 
@@ -611,10 +614,10 @@ class TestA4988DriverAdvanced:
         """Test A4988 microstep table is correct."""
         expected = {
             1: (False, False, False),  # Full step
-            2: (True, False, False),   # Half step
-            4: (False, True, False),   # Quarter step
-            8: (True, True, False),    # Eighth step
-            16: (True, True, True),    # Sixteenth step
+            2: (True, False, False),  # Half step
+            4: (False, True, False),  # Quarter step
+            8: (True, True, False),  # Eighth step
+            16: (True, True, True),  # Sixteenth step
         }
         assert expected == A4988Driver.MICROSTEP_TABLE
 
@@ -649,11 +652,11 @@ class TestDRV8825DriverAdvanced:
         """Test DRV8825 microstep table includes 32."""
         expected = {
             1: (False, False, False),  # Full step
-            2: (True, False, False),   # Half step
-            4: (False, True, False),   # Quarter step
-            8: (True, True, False),    # Eighth step
+            2: (True, False, False),  # Half step
+            4: (False, True, False),  # Quarter step
+            8: (True, True, False),  # Eighth step
             16: (False, False, True),  # Sixteenth step
-            32: (True, False, True),   # 1/32 step
+            32: (True, False, True),  # 1/32 step
         }
         assert expected == DRV8825Driver.MICROSTEP_TABLE
 

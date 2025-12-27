@@ -518,9 +518,7 @@ class JetsonPlatform(BasePlatform):
         self._model: JetsonModel | None = None
         self._simulation = self._check_simulation()
 
-        logger.info(
-            "Jetson platform initialized (simulation=%s)", self._simulation
-        )
+        logger.info("Jetson platform initialized (simulation=%s)", self._simulation)
 
     def _check_simulation(self) -> bool:
         """Check if running in simulation mode."""
@@ -530,6 +528,7 @@ class JetsonPlatform(BasePlatform):
         # Check if Jetson.GPIO is available
         try:
             import Jetson.GPIO  # noqa: F401
+
             return False
         except ImportError:
             return True
@@ -599,6 +598,7 @@ class JetsonPlatform(BasePlatform):
         # Try using Jetson.GPIO model detection
         try:
             from Jetson import GPIO
+
             model_name = GPIO.model.lower()
             for pattern, jetson_model in JETSON_MODELS.items():
                 if pattern in model_name:
@@ -620,7 +620,8 @@ class JetsonPlatform(BasePlatform):
                 ["nvpmodel", "-q"],
                 capture_output=True,
                 text=True,
-                timeout=5, check=False,
+                timeout=5,
+                check=False,
             )
             if result.returncode == 0:
                 output = result.stdout.lower()
@@ -665,7 +666,8 @@ class JetsonPlatform(BasePlatform):
                 ["sudo", "nvpmodel", "-m", mode_id],
                 capture_output=True,
                 text=True,
-                timeout=10, check=False,
+                timeout=10,
+                check=False,
             )
             return result.returncode == 0
         except (subprocess.TimeoutExpired, FileNotFoundError, OSError) as e:
@@ -703,6 +705,7 @@ class JetsonPlatform(BasePlatform):
         # Try importing torch with CUDA
         try:
             import torch  # type: ignore[import-not-found]
+
             return bool(torch.cuda.is_available())
         except ImportError:
             pass
@@ -732,7 +735,8 @@ class JetsonPlatform(BasePlatform):
                 ["nvcc", "--version"],
                 capture_output=True,
                 text=True,
-                timeout=5, check=False,
+                timeout=5,
+                check=False,
             )
             if result.returncode == 0:
                 # Parse version from output
@@ -768,15 +772,18 @@ class JetsonPlatform(BasePlatform):
                         ["v4l2-ctl", "--device", str(device), "--info"],
                         capture_output=True,
                         text=True,
-                        timeout=5, check=False,
+                        timeout=5,
+                        check=False,
                     )
                     if result.returncode == 0 and "Argus" in result.stdout:
-                        cameras.append({
-                            "device": str(device),
-                            "index": i,
-                            "type": "csi",
-                            "info": result.stdout,
-                        })
+                        cameras.append(
+                            {
+                                "device": str(device),
+                                "index": i,
+                                "type": "csi",
+                                "info": result.stdout,
+                            }
+                        )
                 except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
                     pass
 

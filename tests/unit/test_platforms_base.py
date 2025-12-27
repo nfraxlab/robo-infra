@@ -355,9 +355,7 @@ class TestPlatformRegistry:
 
         assert len(available) > 0
         # Simulation should be available
-        sim_entry = next(
-            (pt, status) for pt, status in available if pt == PlatformType.SIMULATION
-        )
+        sim_entry = next((pt, status) for pt, status in available if pt == PlatformType.SIMULATION)
         assert sim_entry[1] == "available"
 
 
@@ -507,10 +505,13 @@ class TestArduinoDetection:
 
     def test_detect_arduino_not_present(self):
         """Test detection returns False when no Arduino."""
-        with patch(
-            "robo_infra.platforms.detection._list_usb_devices",
-            return_value=[],
-        ), patch.object(Path, "glob", return_value=[]):
+        with (
+            patch(
+                "robo_infra.platforms.detection._list_usb_devices",
+                return_value=[],
+            ),
+            patch.object(Path, "glob", return_value=[]),
+        ):
             is_arduino, _model = detect_arduino()
             assert is_arduino is False
 

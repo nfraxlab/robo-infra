@@ -88,7 +88,7 @@ class TestGPIOMapping:
         """Test P8 header GPIO mapping has entries."""
         assert len(P8_GPIO_MAP) > 0
         # Check some known mappings
-        assert P8_GPIO_MAP[7] == 66   # P8_7 -> GPIO2_2
+        assert P8_GPIO_MAP[7] == 66  # P8_7 -> GPIO2_2
         assert P8_GPIO_MAP[10] == 68  # P8_10 -> GPIO2_4
         assert P8_GPIO_MAP[13] == 23  # P8_13 -> GPIO0_23 (PWM)
 

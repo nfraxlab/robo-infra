@@ -76,6 +76,7 @@ class TestTMC2209DriverLifecycle:
         driver = TMC2209Driver()
         driver.connect()
         from robo_infra.core.driver import DriverState
+
         assert driver._state == DriverState.CONNECTED
 
     def test_disconnect(self) -> None:
@@ -84,6 +85,7 @@ class TestTMC2209DriverLifecycle:
         driver.connect()
         driver.disconnect()
         from robo_infra.core.driver import DriverState
+
         assert driver._state == DriverState.DISCONNECTED
 
 
@@ -347,7 +349,9 @@ class TestTMC2209UARTWrite:
 
     def test_uart_write_gconf_register(self, driver: TMC2209Driver) -> None:
         """Test writing to GCONF register."""
-        driver._write_register(TMC2209Register.GCONF, GCONFBits.PDN_DISABLE | GCONFBits.MSTEP_REG_SELECT)
+        driver._write_register(
+            TMC2209Register.GCONF, GCONFBits.PDN_DISABLE | GCONFBits.MSTEP_REG_SELECT
+        )
         cached = driver._register_cache[TMC2209Register.GCONF]
         assert cached & GCONFBits.PDN_DISABLE
         assert cached & GCONFBits.MSTEP_REG_SELECT

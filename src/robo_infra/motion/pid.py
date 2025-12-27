@@ -219,9 +219,7 @@ class PID:
 
         # Derivative term on measurement (not error) to prevent derivative kick
         # Using derivative on measurement: d/dt(-measurement) = -d(measurement)/dt
-        raw_derivative = (
-            -(measurement - self._last_measurement) / dt if dt > 0 else 0.0
-        )
+        raw_derivative = -(measurement - self._last_measurement) / dt if dt > 0 else 0.0
 
         # Apply low-pass filter to derivative
         alpha = self._config.derivative_filter

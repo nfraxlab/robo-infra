@@ -104,9 +104,7 @@ class TestCreateArmWithServos:
         assert arm_joints["elbow"].limits.max == 150
         assert arm_joints["wrist"].limits.max == 180
 
-    def test_create_joint_group_controller(
-        self, arm_joints: dict[str, SimulatedActuator]
-    ) -> None:
+    def test_create_joint_group_controller(self, arm_joints: dict[str, SimulatedActuator]) -> None:
         """Test creating a JointGroup controller."""
         arm = JointGroup(name="test_arm", joints=arm_joints)
 
@@ -392,9 +390,7 @@ class TestArmWithAPI:
         assert data["base"] == pytest.approx(100, abs=0.1)
         assert data["shoulder"] == pytest.approx(50, abs=0.1)
 
-    def test_values_match_between_api_and_controller(
-        self, client, robot_arm: JointGroup
-    ) -> None:
+    def test_values_match_between_api_and_controller(self, client, robot_arm: JointGroup) -> None:
         """Test that API values match controller state."""
         # Move via controller
         robot_arm.move_joints({"base": 123, "elbow": 77})
@@ -408,9 +404,7 @@ class TestArmWithAPI:
 
         # Verify match
         for joint in ["base", "elbow"]:
-            assert api_values[joint] == pytest.approx(
-                controller_values[joint], abs=0.1
-            )
+            assert api_values[joint] == pytest.approx(controller_values[joint], abs=0.1)
 
     def test_full_api_workflow(self, client, robot_arm: JointGroup) -> None:
         """Test complete API workflow: enable -> move -> read -> disable."""
@@ -468,9 +462,7 @@ class TestArmWithAPI:
 class TestFullE2EFlow:
     """Test complete end-to-end integration of all components."""
 
-    def test_arm_created_tools_generated_api_mounted(
-        self, robot_arm: JointGroup
-    ) -> None:
+    def test_arm_created_tools_generated_api_mounted(self, robot_arm: JointGroup) -> None:
         """Test full flow: create arm -> generate tools -> create API."""
         # 1. Arm already created via fixture
         assert len(robot_arm.joints) == 4

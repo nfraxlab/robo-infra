@@ -142,9 +142,7 @@ class USBCamera(Camera):
             backend = self._get_default_backend(cv2)
 
         # Open camera
-        logger.debug(
-            f"Opening camera {self._device_id} with backend {backend}"
-        )
+        logger.debug(f"Opening camera {self._device_id} with backend {backend}")
 
         if backend is not None:
             self._cap = cv2.VideoCapture(self._device_id, backend)

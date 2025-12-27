@@ -111,9 +111,7 @@ class TestEStopIntegration:
         assert estop.state == EStopState.ARMED
         assert estop.is_armed
 
-    def test_register_actuator(
-        self, estop: EStop, servo_actuator: SimulatedActuator
-    ) -> None:
+    def test_register_actuator(self, estop: EStop, servo_actuator: SimulatedActuator) -> None:
         """Test registering an actuator with E-stop."""
         estop.register_actuator(servo_actuator)
         assert len(estop._actuators) == 1
@@ -152,9 +150,7 @@ class TestEStopIntegration:
         assert not servo_actuator.is_enabled
         assert not motor_actuator.is_enabled
 
-    def test_estop_reset_flow(
-        self, estop: EStop, servo_actuator: SimulatedActuator
-    ) -> None:
+    def test_estop_reset_flow(self, estop: EStop, servo_actuator: SimulatedActuator) -> None:
         """Test complete E-stop trigger and reset flow."""
         estop.register_actuator(servo_actuator)
         servo_actuator.enable()
@@ -175,9 +171,7 @@ class TestEStopIntegration:
         servo_actuator.enable()
         assert servo_actuator.is_enabled
 
-    def test_estop_with_controller(
-        self, estop: EStop, robot_arm: JointGroup
-    ) -> None:
+    def test_estop_with_controller(self, estop: EStop, robot_arm: JointGroup) -> None:
         """Test E-stop with a controller."""
         # Register all joints with E-stop
         for joint in robot_arm.joints.values():
@@ -249,9 +243,7 @@ class TestLimitCheckingIntegration:
         assert limits.min == 10
         assert limits.max == 90
 
-    def test_actuator_limits_enforced(
-        self, servo_actuator: SimulatedActuator
-    ) -> None:
+    def test_actuator_limits_enforced(self, servo_actuator: SimulatedActuator) -> None:
         """Test that actuator enforces its limits."""
         servo_actuator.enable()
 
@@ -308,9 +300,7 @@ class TestWatchdogIntegration:
         assert estop.is_triggered
         wd.stop()
 
-    def test_watchdog_with_controller(
-        self, robot_arm: JointGroup
-    ) -> None:
+    def test_watchdog_with_controller(self, robot_arm: JointGroup) -> None:
         """Test watchdog integration with controller loop."""
         wd = Watchdog(timeout=0.1)
 
@@ -335,15 +325,11 @@ class TestWatchdogIntegration:
 class TestSafetyMonitorIntegration:
     """Test safety monitor with complete robot system."""
 
-    def test_safety_monitor_creation(
-        self, safety_monitor: SafetyMonitor
-    ) -> None:
+    def test_safety_monitor_creation(self, safety_monitor: SafetyMonitor) -> None:
         """Test creating a safety monitor."""
         assert safety_monitor is not None
 
-    def test_safety_monitor_add_limit(
-        self, safety_monitor: SafetyMonitor
-    ) -> None:
+    def test_safety_monitor_add_limit(self, safety_monitor: SafetyMonitor) -> None:
         """Test adding a limit to safety monitor."""
         safety_monitor.add_current_limit("motor", max_current=5.0)
         # Should not raise

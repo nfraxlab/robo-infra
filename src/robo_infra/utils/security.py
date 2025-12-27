@@ -200,8 +200,7 @@ class JointLimits:
     def __post_init__(self) -> None:
         if self.min_angle >= self.max_angle:
             raise ValueError(
-                f"min_angle ({self.min_angle}) must be less than "
-                f"max_angle ({self.max_angle})"
+                f"min_angle ({self.min_angle}) must be less than max_angle ({self.max_angle})"
             )
 
 
@@ -224,8 +223,7 @@ class SpeedLimits:
             raise ValueError(f"min_speed must be >= 0, got {self.min_speed}")
         if self.min_speed >= self.max_speed:
             raise ValueError(
-                f"min_speed ({self.min_speed}) must be less than "
-                f"max_speed ({self.max_speed})"
+                f"min_speed ({self.min_speed}) must be less than max_speed ({self.max_speed})"
             )
 
 
@@ -557,8 +555,7 @@ def validate_can_id(
 
     if can_id > max_id:
         raise ValidationError(
-            f"CAN ID 0x{can_id:X} exceeds maximum for {id_type} "
-            f"(0x{max_id:X})",
+            f"CAN ID 0x{can_id:X} exceeds maximum for {id_type} (0x{max_id:X})",
             field="can_id",
             value=can_id,
             constraint=f"<= 0x{max_id:X}",
@@ -895,8 +892,7 @@ def check_i2c_access(bus: int = 1) -> None:
     device = f"/dev/i2c-{bus}"
     if os.path.exists(device) and not os.access(device, os.R_OK | os.W_OK):
         raise PrivilegeError(
-            f"Cannot access I2C bus {bus}. "
-            f"Add user to 'i2c' group: sudo usermod -a -G i2c $USER",
+            f"Cannot access I2C bus {bus}. Add user to 'i2c' group: sudo usermod -a -G i2c $USER",
             resource=f"i2c-{bus}",
             required_group="i2c",
             fix_command="sudo usermod -a -G i2c $USER",

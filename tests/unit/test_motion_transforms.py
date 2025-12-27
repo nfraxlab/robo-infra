@@ -87,7 +87,7 @@ class TestRotationFromEuler:
 
     def test_euler_radians(self) -> None:
         """Test Euler angles in radians."""
-        rot = Rotation.from_euler((0, 0, math.pi/2), EulerOrder.XYZ, degrees=False)
+        rot = Rotation.from_euler((0, 0, math.pi / 2), EulerOrder.XYZ, degrees=False)
         v = rot.apply(np.array([1, 0, 0]))
         np.testing.assert_array_almost_equal(v, [0, 1, 0], decimal=5)
 
@@ -194,7 +194,7 @@ class TestRotationFromRotvec:
 
     def test_rotvec_z(self) -> None:
         """Test rotation vector around Z."""
-        rotvec = (0, 0, math.pi/2)  # 90° around Z
+        rotvec = (0, 0, math.pi / 2)  # 90° around Z
         rot = Rotation.from_rotvec(rotvec)
 
         v = rot.apply(np.array([1, 0, 0]))
@@ -335,12 +335,15 @@ class TestTransformConstruction:
 
     def test_from_matrix(self) -> None:
         """Test construction from 4x4 matrix."""
-        matrix = np.array([
-            [0, -1, 0, 1],
-            [1, 0, 0, 2],
-            [0, 0, 1, 3],
-            [0, 0, 0, 1],
-        ], dtype=np.float64)
+        matrix = np.array(
+            [
+                [0, -1, 0, 1],
+                [1, 0, 0, 2],
+                [0, 0, 1, 3],
+                [0, 0, 0, 1],
+            ],
+            dtype=np.float64,
+        )
 
         t = Transform.from_matrix(matrix)
         np.testing.assert_array_almost_equal(t.position, [1, 2, 3])

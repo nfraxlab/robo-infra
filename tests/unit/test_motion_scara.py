@@ -131,13 +131,13 @@ class TestSCARAForwardKinematics:
 
     def test_elbow_90(self, scara: SCARAArm) -> None:
         """Test FK with elbow at 90 degrees."""
-        pose = scara.forward(0, math.pi/2, 0.1, 0)
+        pose = scara.forward(0, math.pi / 2, 0.1, 0)
         # With theta2 = 90°: x = l1 + l2*cos(90) = 0.3, y = l2*sin(90) = 0.2
         np.testing.assert_array_almost_equal(pose.position, [0.3, 0.2, 0.1], decimal=5)
 
     def test_shoulder_90(self, scara: SCARAArm) -> None:
         """Test FK with shoulder at 90 degrees."""
-        pose = scara.forward(math.pi/2, 0, 0.05, 0)
+        pose = scara.forward(math.pi / 2, 0, 0.05, 0)
         # Rotates entire arm: x = 0, y = 0.5
         np.testing.assert_array_almost_equal(pose.position, [0.0, 0.5, 0.05], decimal=5)
 
@@ -150,7 +150,7 @@ class TestSCARAForwardKinematics:
     def test_wrist_rotation(self, scara: SCARAArm) -> None:
         """Test that wrist rotation affects orientation."""
         pose1 = scara.forward(0, 0, 0, 0)
-        pose2 = scara.forward(0, 0, 0, math.pi/2)
+        pose2 = scara.forward(0, 0, 0, math.pi / 2)
 
         # Positions should be same
         np.testing.assert_array_almost_equal(pose1.position, pose2.position)
@@ -257,9 +257,7 @@ class TestSCARAInverseKinematics:
         # All solutions should yield similar end-effector position
         for sol in solutions:
             recovered = scara.forward_joints(sol)
-            np.testing.assert_array_almost_equal(
-                pose.position, recovered.position, decimal=3
-            )
+            np.testing.assert_array_almost_equal(pose.position, recovered.position, decimal=3)
 
 
 class TestSCARAWorkspace:

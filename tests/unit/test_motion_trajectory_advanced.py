@@ -61,9 +61,7 @@ class TestTrajectoryConstraints:
     def test_invalid_jerk(self) -> None:
         """Test error on invalid jerk."""
         with pytest.raises(ValueError, match="max_jerk must be > 0"):
-            TrajectoryConstraints(
-                max_velocity=10.0, max_acceleration=5.0, max_jerk=0.0
-            )
+            TrajectoryConstraints(max_velocity=10.0, max_acceleration=5.0, max_jerk=0.0)
 
 
 class TestTrajectoryGenerator:
@@ -72,9 +70,7 @@ class TestTrajectoryGenerator:
     def test_creation_with_constraints(self) -> None:
         """Test creation with TrajectoryConstraints."""
         constraints = TrajectoryConstraints(max_velocity=10.0, max_acceleration=5.0)
-        gen = TrajectoryGenerator(
-            profile=TrajectoryProfile.TRAPEZOIDAL, constraints=constraints
-        )
+        gen = TrajectoryGenerator(profile=TrajectoryProfile.TRAPEZOIDAL, constraints=constraints)
         assert gen.profile == TrajectoryProfile.TRAPEZOIDAL
         assert gen.constraints == constraints
 
@@ -454,9 +450,7 @@ class TestSplineTrajectory:
 
     def test_creation_with_times(self) -> None:
         """Test creation with explicit times."""
-        traj = SplineTrajectory(
-            waypoints=[0.0, 50.0, 100.0], times=[0.0, 1.0, 2.0]
-        )
+        traj = SplineTrajectory(waypoints=[0.0, 50.0, 100.0], times=[0.0, 1.0, 2.0])
         assert traj.times == [0.0, 1.0, 2.0]
         assert traj.total_time == 2.0
 
@@ -472,18 +466,14 @@ class TestSplineTrajectory:
 
     def test_position_at_waypoints(self) -> None:
         """Test position at waypoint times."""
-        traj = SplineTrajectory(
-            waypoints=[0.0, 50.0, 100.0], times=[0.0, 1.0, 2.0]
-        )
+        traj = SplineTrajectory(waypoints=[0.0, 50.0, 100.0], times=[0.0, 1.0, 2.0])
         assert traj.position_at(0.0) == pytest.approx(0.0)
         assert traj.position_at(1.0) == pytest.approx(50.0)
         assert traj.position_at(2.0) == pytest.approx(100.0)
 
     def test_continuous_velocity(self) -> None:
         """Test velocity is continuous (smooth)."""
-        traj = SplineTrajectory(
-            waypoints=[0.0, 50.0, 100.0], times=[0.0, 1.0, 2.0]
-        )
+        traj = SplineTrajectory(waypoints=[0.0, 50.0, 100.0], times=[0.0, 1.0, 2.0])
         # Velocity just before and after waypoint should be similar
         v_before = traj.velocity_at(0.99)
         v_after = traj.velocity_at(1.01)
@@ -552,10 +542,7 @@ class TestBlendedTrajectory:
 
     def test_position_at(self) -> None:
         """Test position sampling."""
-        traj = (
-            BlendedTrajectory(start=0.0)
-            .add_segment(100.0, 2.0)
-        )
+        traj = BlendedTrajectory(start=0.0).add_segment(100.0, 2.0)
         assert traj.position_at(0.0) == pytest.approx(0.0)
         assert traj.position_at(2.0) == pytest.approx(100.0)
 
@@ -574,10 +561,7 @@ class TestBlendedTrajectory:
 
     def test_sample_n(self) -> None:
         """Test sampling."""
-        traj = (
-            BlendedTrajectory(start=0.0)
-            .add_segment(100.0, 2.0)
-        )
+        traj = BlendedTrajectory(start=0.0).add_segment(100.0, 2.0)
         points = traj.sample_n(11)
 
         assert len(points) == 11
@@ -586,21 +570,13 @@ class TestBlendedTrajectory:
 
     def test_clear(self) -> None:
         """Test clearing segments."""
-        traj = (
-            BlendedTrajectory(start=0.0)
-            .add_segment(50.0, 1.0)
-            .add_segment(100.0, 1.0)
-            .clear()
-        )
+        traj = BlendedTrajectory(start=0.0).add_segment(50.0, 1.0).add_segment(100.0, 1.0).clear()
         assert traj.num_segments == 0
         assert traj.total_time == 0.0
 
     def test_progress(self) -> None:
         """Test progress calculation."""
-        traj = (
-            BlendedTrajectory(start=0.0)
-            .add_segment(100.0, 2.0)
-        )
+        traj = BlendedTrajectory(start=0.0).add_segment(100.0, 2.0)
         assert traj.progress(0.0) == pytest.approx(0.0)
         assert traj.progress(1.0) == pytest.approx(0.5)
         assert traj.progress(2.0) == pytest.approx(1.0)

@@ -361,9 +361,7 @@ class BatteryMonitor:
         self._last_reading: BatteryReading | None = None
 
         # Simulated values (used when no driver)
-        self._simulated_voltage = (
-            self._config.chemistry.get_nominal_voltage() * self._config.cells
-        )
+        self._simulated_voltage = self._config.chemistry.get_nominal_voltage() * self._config.cells
         self._simulated_current = 0.5  # 0.5A discharge
 
         logger.debug(

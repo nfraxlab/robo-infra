@@ -196,7 +196,9 @@ class MultiAxisTrajectoryPoint:
         if pos_keys != vel_keys:
             raise ValueError(f"Axis mismatch: positions has {pos_keys}, velocities has {vel_keys}")
         if pos_keys != acc_keys:
-            raise ValueError(f"Axis mismatch: positions has {pos_keys}, accelerations has {acc_keys}")
+            raise ValueError(
+                f"Axis mismatch: positions has {pos_keys}, accelerations has {acc_keys}"
+            )
 
     @property
     def axes(self) -> list[str]:
@@ -987,15 +989,14 @@ class Trajectory:
         if times is not None:
             if len(times) != len(waypoints):
                 raise ValueError(
-                    f"times length ({len(times)}) must match "
-                    f"waypoints length ({len(waypoints)})"
+                    f"times length ({len(times)}) must match waypoints length ({len(waypoints)})"
                 )
             # Validate monotonically increasing
             for i in range(1, len(times)):
                 if times[i] <= times[i - 1]:
                     raise ValueError(
                         f"times must be monotonically increasing, "
-                        f"but times[{i}]={times[i]} <= times[{i-1}]={times[i-1]}"
+                        f"but times[{i}]={times[i]} <= times[{i - 1}]={times[i - 1]}"
                     )
             self._times = list(times)
         else:
@@ -1077,9 +1078,7 @@ class Trajectory:
         """
         if time is not None:
             if time <= self._times[-1]:
-                raise ValueError(
-                    f"time ({time}) must be > last waypoint time ({self._times[-1]})"
-                )
+                raise ValueError(f"time ({time}) must be > last waypoint time ({self._times[-1]})")
             new_time = time
         elif duration is not None:
             if duration <= 0:
@@ -1118,7 +1117,10 @@ class Trajectory:
         if t <= 0:
             return (0, 0.0)
         if t >= self._total_time:
-            return (max(0, len(self._segments) - 1), self._segments[-1].duration if self._segments else 0.0)
+            return (
+                max(0, len(self._segments) - 1),
+                self._segments[-1].duration if self._segments else 0.0,
+            )
 
         # Find the segment containing t
         for i, _segment in enumerate(self._segments):
@@ -1323,10 +1325,7 @@ class Trajectory:
 
     def __repr__(self) -> str:
         """Return a string representation."""
-        return (
-            f"Trajectory({self.num_waypoints} waypoints, "
-            f"total_time={self._total_time:.3f}s)"
-        )
+        return f"Trajectory({self.num_waypoints} waypoints, total_time={self._total_time:.3f}s)"
 
 
 class TrajectoryProfile(Enum):
@@ -1517,9 +1516,7 @@ class TrajectoryGenerator:
             ValueError: If starts and ends have different lengths.
         """
         if len(starts) != len(ends):
-            raise ValueError(
-                f"starts length {len(starts)} must match ends length {len(ends)}"
-            )
+            raise ValueError(f"starts length {len(starts)} must match ends length {len(ends)}")
 
         if not starts:
             return []
@@ -1529,10 +1526,15 @@ class TrajectoryGenerator:
             max_duration = 0.0
             for start, end in zip(starts, ends, strict=True):
                 traj = self.generate(start, end)
-                max_duration = max(max_duration, getattr(traj, "total_time", getattr(traj, "duration", 0.1)))
+                max_duration = max(
+                    max_duration, getattr(traj, "total_time", getattr(traj, "duration", 0.1))
+                )
 
             # Generate all trajectories with the same duration
-            return [self.generate(s, e, duration=max_duration) for s, e in zip(starts, ends, strict=True)]
+            return [
+                self.generate(s, e, duration=max_duration)
+                for s, e in zip(starts, ends, strict=True)
+            ]
         else:
             # Independent timing
             return [self.generate(s, e) for s, e in zip(starts, ends, strict=True)]
@@ -1785,10 +1787,7 @@ class QuinticTrajectory:
     _a4: float
     _a5: float
 
-    __slots__ = (
-        "_a0", "_a1", "_a2", "_a3", "_a4", "_a5",
-        "_duration", "_end", "_start"
-    )
+    __slots__ = ("_a0", "_a1", "_a2", "_a3", "_a4", "_a5", "_duration", "_end", "_start")
 
     def __init__(
         self,
@@ -1874,8 +1873,7 @@ class QuinticTrajectory:
         t4 = t3 * t
         t5 = t4 * t
         return (
-            self._a0 + self._a1 * t + self._a2 * t2 +
-            self._a3 * t3 + self._a4 * t4 + self._a5 * t5
+            self._a0 + self._a1 * t + self._a2 * t2 + self._a3 * t3 + self._a4 * t4 + self._a5 * t5
         )
 
     def velocity_at(self, t: float) -> float:
@@ -1887,8 +1885,7 @@ class QuinticTrajectory:
         t3 = t2 * t
         t4 = t3 * t
         return (
-            self._a1 + 2 * self._a2 * t + 3 * self._a3 * t2 +
-            4 * self._a4 * t3 + 5 * self._a5 * t4
+            self._a1 + 2 * self._a2 * t + 3 * self._a3 * t2 + 4 * self._a4 * t3 + 5 * self._a5 * t4
         )
 
     def acceleration_at(self, t: float) -> float:
@@ -1898,10 +1895,7 @@ class QuinticTrajectory:
 
         t2 = t * t
         t3 = t2 * t
-        return (
-            2 * self._a2 + 6 * self._a3 * t +
-            12 * self._a4 * t2 + 20 * self._a5 * t3
-        )
+        return 2 * self._a2 + 6 * self._a3 * t + 12 * self._a4 * t2 + 20 * self._a5 * t3
 
     def jerk_at(self, t: float) -> float:
         """Get the jerk (rate of change of acceleration) at time t."""
@@ -1995,8 +1989,15 @@ class SCurveTrajectory:
     _phases: list[tuple[float, float, float, float]]  # (duration, jerk, accel_start, vel_start)
 
     __slots__ = (
-        "_direction", "_distance", "_end", "_max_acceleration",
-        "_max_jerk", "_max_velocity", "_phases", "_start", "_total_time"
+        "_direction",
+        "_distance",
+        "_end",
+        "_max_acceleration",
+        "_max_jerk",
+        "_max_velocity",
+        "_phases",
+        "_start",
+        "_total_time",
     )
 
     def __init__(
@@ -2299,9 +2300,7 @@ class SplineTrajectory:
 
         if times is not None:
             if len(times) != len(waypoints):
-                raise ValueError(
-                    f"times length {len(times)} must match waypoints {len(waypoints)}"
-                )
+                raise ValueError(f"times length {len(times)} must match waypoints {len(waypoints)}")
             self._times = list(times)
         else:
             # Calculate times from distances
@@ -2354,8 +2353,11 @@ class SplineTrajectory:
         rhs = [0.0]  # Natural spline: M[0] = 0
         for i in range(1, n - 1):
             rhs.append(
-                6 * ((self._waypoints[i + 1] - self._waypoints[i]) / h[i] -
-                     (self._waypoints[i] - self._waypoints[i - 1]) / h[i - 1])
+                6
+                * (
+                    (self._waypoints[i + 1] - self._waypoints[i]) / h[i]
+                    - (self._waypoints[i] - self._waypoints[i - 1]) / h[i - 1]
+                )
             )
         rhs.append(0.0)  # Natural spline: M[n-1] = 0
 
@@ -2381,7 +2383,9 @@ class SplineTrajectory:
             a = self._waypoints[i]
             c = M[i] / 2
             d = (M[i + 1] - M[i]) / (6 * h[i])
-            b = (self._waypoints[i + 1] - self._waypoints[i]) / h[i] - h[i] * (2 * M[i] + M[i + 1]) / 6
+            b = (self._waypoints[i + 1] - self._waypoints[i]) / h[i] - h[i] * (
+                2 * M[i] + M[i + 1]
+            ) / 6
             coefficients.append((a, b, c, d))
 
         return coefficients
@@ -2495,8 +2499,7 @@ class SplineTrajectory:
 
     def __repr__(self) -> str:
         return (
-            f"SplineTrajectory({len(self._waypoints)} waypoints, "
-            f"duration={self._total_time:.3f}s)"
+            f"SplineTrajectory({len(self._waypoints)} waypoints, duration={self._total_time:.3f}s)"
         )
 
 
@@ -2509,6 +2512,7 @@ class BlendSegment:
         duration: Duration to reach target.
         blend_radius: Blend radius at end of segment.
     """
+
     target: float
     duration: float
     blend_radius: float = 0.0
@@ -2534,8 +2538,11 @@ class BlendedTrajectory:
     _compiled_trajectory: SplineTrajectory | None
 
     __slots__ = (
-        "_compiled_trajectory", "_default_blend_radius",
-        "_segments", "_start", "_total_time"
+        "_compiled_trajectory",
+        "_default_blend_radius",
+        "_segments",
+        "_start",
+        "_total_time",
     )
 
     def __init__(
@@ -2693,6 +2700,5 @@ class BlendedTrajectory:
 
     def __repr__(self) -> str:
         return (
-            f"BlendedTrajectory({len(self._segments)} segments, "
-            f"duration={self._total_time:.3f}s)"
+            f"BlendedTrajectory({len(self._segments)} segments, duration={self._total_time:.3f}s)"
         )

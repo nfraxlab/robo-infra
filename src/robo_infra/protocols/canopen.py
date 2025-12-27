@@ -378,13 +378,18 @@ class CANOpenNode:
         """
         # Build SDO upload initiate request
         # CCS=2 (upload initiate), index, subindex
-        request = bytes([
-            0x40,  # Command: upload initiate request
-            index & 0xFF,
-            (index >> 8) & 0xFF,
-            subindex,
-            0, 0, 0, 0,  # Reserved
-        ])
+        request = bytes(
+            [
+                0x40,  # Command: upload initiate request
+                index & 0xFF,
+                (index >> 8) & 0xFF,
+                subindex,
+                0,
+                0,
+                0,
+                0,  # Reserved
+            ]
+        )
 
         self._bus.send(self._sdo_rx_cobid, request)
 
@@ -515,12 +520,17 @@ class CANOpenNode:
         # Pad data to 4 bytes
         padded_data = data + bytes(4 - data_len)
 
-        request = bytes([
-            command,
-            index & 0xFF,
-            (index >> 8) & 0xFF,
-            subindex,
-        ]) + padded_data
+        request = (
+            bytes(
+                [
+                    command,
+                    index & 0xFF,
+                    (index >> 8) & 0xFF,
+                    subindex,
+                ]
+            )
+            + padded_data
+        )
 
         self._bus.send(self._sdo_rx_cobid, request)
 
@@ -540,12 +550,14 @@ class CANOpenNode:
         data_len = len(data)
 
         # Download initiate request with size
-        request = bytes([
-            0x21,  # Download initiate, size indicated, not expedited
-            index & 0xFF,
-            (index >> 8) & 0xFF,
-            subindex,
-        ]) + struct.pack("<I", data_len)
+        request = bytes(
+            [
+                0x21,  # Download initiate, size indicated, not expedited
+                index & 0xFF,
+                (index >> 8) & 0xFF,
+                subindex,
+            ]
+        ) + struct.pack("<I", data_len)
 
         self._bus.send(self._sdo_rx_cobid, request)
 

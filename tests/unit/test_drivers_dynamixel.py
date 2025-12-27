@@ -79,6 +79,7 @@ class TestDynamixelDriverLifecycle:
         driver = DynamixelDriver()
         driver.connect()
         from robo_infra.core.driver import DriverState
+
         assert driver._state == DriverState.CONNECTED
         # Check simulated servos were initialized
         assert len(driver._sim_servos) == 4
@@ -89,6 +90,7 @@ class TestDynamixelDriverLifecycle:
         driver.connect()
         driver.disconnect()
         from robo_infra.core.driver import DriverState
+
         assert driver._state == DriverState.DISCONNECTED
 
 
@@ -555,6 +557,7 @@ class TestDynamixelPingAdvanced:
     def test_ping_broadcast_id_excluded(self, driver: DynamixelDriver) -> None:
         """Test broadcast ID (254) returns None."""
         from robo_infra.drivers.dynamixel import BROADCAST_ID
+
         assert BROADCAST_ID == 0xFE
         result = driver.ping(BROADCAST_ID)
         assert result is None
@@ -882,23 +885,27 @@ class TestDynamixelCRC:
     def test_crc_function_exists(self) -> None:
         """Test CRC calculation function exists."""
         from robo_infra.drivers.dynamixel import _calculate_crc
+
         assert callable(_calculate_crc)
 
     def test_crc_table_exists(self) -> None:
         """Test CRC table exists."""
         from robo_infra.drivers.dynamixel import CRC_TABLE
+
         assert len(CRC_TABLE) == 256
 
     def test_crc_empty_data(self) -> None:
         """Test CRC calculation with empty data."""
         from robo_infra.drivers.dynamixel import _calculate_crc
+
         crc = _calculate_crc(b"")
         assert isinstance(crc, int)
 
     def test_crc_sample_data(self) -> None:
         """Test CRC calculation with sample data."""
         from robo_infra.drivers.dynamixel import _calculate_crc
-        crc = _calculate_crc(b"\xFF\xFF\xFD\x00\x01")
+
+        crc = _calculate_crc(b"\xff\xff\xfd\x00\x01")
         assert isinstance(crc, int)
         assert 0 <= crc <= 0xFFFF
 
@@ -909,9 +916,11 @@ class TestDynamixelProtocolConstants:
     def test_header_constant(self) -> None:
         """Test header constant."""
         from robo_infra.drivers.dynamixel import HEADER
+
         assert bytes([0xFF, 0xFF, 0xFD, 0x00]) == HEADER
 
     def test_broadcast_id_constant(self) -> None:
         """Test broadcast ID constant."""
         from robo_infra.drivers.dynamixel import BROADCAST_ID
+
         assert BROADCAST_ID == 0xFE

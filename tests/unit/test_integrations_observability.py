@@ -229,9 +229,7 @@ class TestSafetyTriggerHelpers:
         """Test E-stop trigger recording."""
         from robo_infra.integrations.observability import record_estop_triggered
 
-        with patch(
-            "robo_infra.integrations.observability.record_safety_trigger"
-        ) as mock_record:
+        with patch("robo_infra.integrations.observability.record_safety_trigger") as mock_record:
             record_estop_triggered("arm")
 
             mock_record.assert_called_once_with("arm", "estop")
@@ -240,9 +238,7 @@ class TestSafetyTriggerHelpers:
         """Test limit exceeded recording."""
         from robo_infra.integrations.observability import record_limit_exceeded
 
-        with patch(
-            "robo_infra.integrations.observability.record_safety_trigger"
-        ) as mock_record:
+        with patch("robo_infra.integrations.observability.record_safety_trigger") as mock_record:
             record_limit_exceeded("arm", actuator="joint1", limit_type="max")
 
             mock_record.assert_called_once_with("arm", "limit_exceeded")
@@ -251,9 +247,7 @@ class TestSafetyTriggerHelpers:
         """Test watchdog timeout recording."""
         from robo_infra.integrations.observability import record_watchdog_timeout
 
-        with patch(
-            "robo_infra.integrations.observability.record_safety_trigger"
-        ) as mock_record:
+        with patch("robo_infra.integrations.observability.record_safety_trigger") as mock_record:
             record_watchdog_timeout("arm")
 
             mock_record.assert_called_once_with("arm", "watchdog_timeout")
@@ -262,9 +256,7 @@ class TestSafetyTriggerHelpers:
         """Test monitor alert recording."""
         from robo_infra.integrations.observability import record_monitor_alert
 
-        with patch(
-            "robo_infra.integrations.observability.record_safety_trigger"
-        ) as mock_record:
+        with patch("robo_infra.integrations.observability.record_safety_trigger") as mock_record:
             record_monitor_alert("arm", condition="velocity exceeded")
 
             mock_record.assert_called_once_with("arm", "monitor_alert")
@@ -316,9 +308,7 @@ class TestTrackCommandDecorator:
             async def move(self, target: float) -> dict:
                 return {"position": target}
 
-        with patch(
-            "robo_infra.integrations.observability.record_command"
-        ) as mock_record:
+        with patch("robo_infra.integrations.observability.record_command") as mock_record:
             controller = MockController()
             result = await controller.move(45.0)
 
@@ -343,9 +333,7 @@ class TestTrackCommandDecorator:
             async def move(self, target: float) -> dict:
                 raise ValueError("Target out of range")
 
-        with patch(
-            "robo_infra.integrations.observability.record_command"
-        ) as mock_record:
+        with patch("robo_infra.integrations.observability.record_command") as mock_record:
             controller = MockController()
 
             with pytest.raises(ValueError, match="Target out of range"):
@@ -367,9 +355,7 @@ class TestTrackCommandDecorator:
             async def stop(self) -> dict:
                 return {"stopped": True}
 
-        with patch(
-            "robo_infra.integrations.observability.record_command"
-        ) as mock_record:
+        with patch("robo_infra.integrations.observability.record_command") as mock_record:
             controller = MockController()
             await controller.stop()
 
@@ -388,9 +374,7 @@ class TestTrackCommandDecorator:
             async def home(self) -> dict:
                 return {"homed": True}
 
-        with patch(
-            "robo_infra.integrations.observability.record_command"
-        ) as mock_record:
+        with patch("robo_infra.integrations.observability.record_command") as mock_record:
             controller = MockController()
             await controller.home()
 
@@ -405,9 +389,7 @@ class TestCreateControllerHealthCheck:
     """Tests for create_controller_health_check function."""
 
     @pytest.mark.asyncio
-    async def test_healthy_controller(
-        self, mock_controller: SimulatedController
-    ) -> None:
+    async def test_healthy_controller(self, mock_controller: SimulatedController) -> None:
         """Test health check for a healthy controller."""
         from robo_infra.integrations.observability import create_controller_health_check
 
@@ -419,9 +401,7 @@ class TestCreateControllerHealthCheck:
         assert result.latency_ms >= 0
 
     @pytest.mark.asyncio
-    async def test_disabled_controller(
-        self, mock_controller: SimulatedController
-    ) -> None:
+    async def test_disabled_controller(self, mock_controller: SimulatedController) -> None:
         """Test health check for a disabled controller."""
         from robo_infra.integrations.observability import create_controller_health_check
 
@@ -438,9 +418,7 @@ class TestCreateControllerHealthCheck:
         assert "disabled" in result.message.lower()
 
     @pytest.mark.asyncio
-    async def test_controller_in_error_state(
-        self, mock_controller: SimulatedController
-    ) -> None:
+    async def test_controller_in_error_state(self, mock_controller: SimulatedController) -> None:
         """Test health check for a controller in error state."""
         from robo_infra.integrations.observability import create_controller_health_check
 
@@ -456,9 +434,7 @@ class TestCreateControllerHealthCheck:
         assert "error state" in result.message.lower()
 
     @pytest.mark.asyncio
-    async def test_controller_estop_active(
-        self, mock_controller: SimulatedController
-    ) -> None:
+    async def test_controller_estop_active(self, mock_controller: SimulatedController) -> None:
         """Test health check with emergency stop active."""
         from robo_infra.integrations.observability import create_controller_health_check
 
@@ -507,9 +483,7 @@ class TestCreateActuatorHealthCheck:
         assert result.name == "test_servo"
 
     @pytest.mark.asyncio
-    async def test_actuator_in_fault_state(
-        self, mock_actuator: SimulatedActuator
-    ) -> None:
+    async def test_actuator_in_fault_state(self, mock_actuator: SimulatedActuator) -> None:
         """Test health check for an actuator in fault state."""
         from robo_infra.integrations.observability import create_actuator_health_check
 
@@ -523,9 +497,7 @@ class TestCreateActuatorHealthCheck:
         assert "fault" in result.message.lower()
 
     @pytest.mark.asyncio
-    async def test_actuator_health_check_exception(
-        self, mock_actuator: SimulatedActuator
-    ) -> None:
+    async def test_actuator_health_check_exception(self, mock_actuator: SimulatedActuator) -> None:
         """Test health check handles exceptions gracefully."""
         from robo_infra.integrations.observability import create_actuator_health_check
 
@@ -581,9 +553,7 @@ class TestMetricsInitialization:
         # Reset state
         observability._metrics._initialized = False
 
-        with patch(
-            "svc_infra.obs.metrics.base.counter", side_effect=ImportError
-        ):
+        with patch("svc_infra.obs.metrics.base.counter", side_effect=ImportError):
             result = observability._init_metrics()
             assert result is False
 
@@ -601,9 +571,7 @@ class TestMetricsInitialization:
         with (
             patch("svc_infra.obs.metrics.base.counter", return_value=mock_counter),
             patch("svc_infra.obs.metrics.base.gauge", return_value=mock_gauge),
-            patch(
-                "svc_infra.obs.metrics.base.histogram", return_value=mock_histogram
-            ),
+            patch("svc_infra.obs.metrics.base.histogram", return_value=mock_histogram),
         ):
             result = observability._init_metrics()
             assert result is True
@@ -684,9 +652,7 @@ class TestModuleExports:
 class TestRegisterControllerHealthChecks:
     """Tests for register_controller_health_checks function."""
 
-    def test_register_single_controller(
-        self, mock_controller: SimulatedController
-    ) -> None:
+    def test_register_single_controller(self, mock_controller: SimulatedController) -> None:
         """Test registering a single controller's health check."""
         from robo_infra.integrations.observability import register_controller_health_checks
 
@@ -715,32 +681,24 @@ class TestRegisterControllerHealthChecks:
         assert "controller:arm" in call_names
         assert "controller:conveyor" in call_names
 
-    def test_register_with_custom_prefix(
-        self, mock_controller: SimulatedController
-    ) -> None:
+    def test_register_with_custom_prefix(self, mock_controller: SimulatedController) -> None:
         """Test registering with a custom prefix."""
         from robo_infra.integrations.observability import register_controller_health_checks
 
         mock_registry = MagicMock()
 
-        register_controller_health_checks(
-            mock_registry, [mock_controller], prefix="robot:"
-        )
+        register_controller_health_checks(mock_registry, [mock_controller], prefix="robot:")
 
         call_args = mock_registry.add.call_args
         assert call_args[0][0] == "robot:test_arm"
 
-    def test_register_with_custom_timeout(
-        self, mock_controller: SimulatedController
-    ) -> None:
+    def test_register_with_custom_timeout(self, mock_controller: SimulatedController) -> None:
         """Test registering with a custom timeout."""
         from robo_infra.integrations.observability import register_controller_health_checks
 
         mock_registry = MagicMock()
 
-        register_controller_health_checks(
-            mock_registry, [mock_controller], timeout=10.0
-        )
+        register_controller_health_checks(mock_registry, [mock_controller], timeout=10.0)
 
         call_args = mock_registry.add.call_args
         assert call_args[1]["timeout"] == 10.0
@@ -749,35 +707,33 @@ class TestRegisterControllerHealthChecks:
 class TestAddRoboticsHealthRoutes:
     """Tests for add_robotics_health_routes function."""
 
-    def test_adds_health_routes_to_app(
-        self, mock_controller: SimulatedController
-    ) -> None:
+    def test_adds_health_routes_to_app(self, mock_controller: SimulatedController) -> None:
         """Test that health routes are added to FastAPI app."""
         from robo_infra.integrations.observability import add_robotics_health_routes
 
         mock_app = MagicMock()
         mock_registry = MagicMock()
 
-        with patch(
-            "svc_infra.health.HealthRegistry", return_value=mock_registry
-        ), patch("svc_infra.health.add_health_routes"):
+        with (
+            patch("svc_infra.health.HealthRegistry", return_value=mock_registry),
+            patch("svc_infra.health.add_health_routes"),
+        ):
             result = add_robotics_health_routes(mock_app, [mock_controller])
 
             # Should return a registry
             assert result is mock_registry
 
-    def test_registers_controller_health_checks(
-        self, mock_controller: SimulatedController
-    ) -> None:
+    def test_registers_controller_health_checks(self, mock_controller: SimulatedController) -> None:
         """Test that controller health checks are registered."""
         from robo_infra.integrations.observability import add_robotics_health_routes
 
         mock_app = MagicMock()
         mock_registry = MagicMock()
 
-        with patch(
-            "svc_infra.health.HealthRegistry", return_value=mock_registry
-        ), patch("svc_infra.health.add_health_routes"):
+        with (
+            patch("svc_infra.health.HealthRegistry", return_value=mock_registry),
+            patch("svc_infra.health.add_health_routes"),
+        ):
             add_robotics_health_routes(mock_app, [mock_controller])
 
             # Should have registered the controller
@@ -790,12 +746,11 @@ class TestAddRoboticsHealthRoutes:
         mock_app = MagicMock()
         mock_registry = MagicMock()
 
-        with patch(
-            "svc_infra.health.HealthRegistry", return_value=mock_registry
-        ), patch("svc_infra.health.add_health_routes") as mock_add_routes:
-            add_robotics_health_routes(
-                mock_app, [mock_controller], prefix="/_robotics_health"
-            )
+        with (
+            patch("svc_infra.health.HealthRegistry", return_value=mock_registry),
+            patch("svc_infra.health.add_health_routes") as mock_add_routes,
+        ):
+            add_robotics_health_routes(mock_app, [mock_controller], prefix="/_robotics_health")
 
             mock_add_routes.assert_called_once()
             call_kwargs = mock_add_routes.call_args[1]
@@ -938,9 +893,7 @@ class TestLogWithContext:
         set_robotics_request_id("corr-456")
 
         try:
-            with patch(
-                "robo_infra.integrations.observability.logger"
-            ) as mock_logger:
+            with patch("robo_infra.integrations.observability.logger") as mock_logger:
                 log_with_context("info", "Test with correlation")
 
                 call_args = mock_logger.info.call_args

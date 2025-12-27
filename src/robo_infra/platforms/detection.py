@@ -355,9 +355,7 @@ def detect_arduino() -> tuple[bool, str]:
 
     # Also check for /dev/ttyACM* or /dev/ttyUSB* on Linux
     if sys.platform.startswith("linux"):
-        tty_paths = list(Path("/dev").glob("ttyACM*")) + list(
-            Path("/dev").glob("ttyUSB*")
-        )
+        tty_paths = list(Path("/dev").glob("ttyACM*")) + list(Path("/dev").glob("ttyUSB*"))
         if tty_paths:
             # Could be Arduino, but we can't be certain
             logger.debug("Found serial devices that could be Arduino: %s", tty_paths)

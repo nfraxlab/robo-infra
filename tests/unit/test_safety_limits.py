@@ -422,7 +422,8 @@ class TestPositionLimits:
         assert enforcer.violation_count >= 1
         # Find the position max violation
         position_violations = [
-            v for v in enforcer.recent_violations
+            v
+            for v in enforcer.recent_violations
             if v.violation_type == LimitViolationType.POSITION_MAX
         ]
         assert len(position_violations) == 1
@@ -478,8 +479,9 @@ class TestVelocityLimits:
         enforcer.enforce(0.0, current_position=0.0, dt=0.1)
         enforcer.enforce(50.0, current_position=0.0, dt=0.1)
 
-        violations = [v for v in enforcer.recent_violations
-                      if v.violation_type == LimitViolationType.VELOCITY]
+        violations = [
+            v for v in enforcer.recent_violations if v.violation_type == LimitViolationType.VELOCITY
+        ]
         assert len(violations) == 1
 
 
@@ -566,9 +568,7 @@ class TestJerkLimits:
 class TestSoftLimits:
     """Tests for soft limit warnings."""
 
-    def test_soft_limit_warning_near_max(
-        self, caplog: pytest.LogCaptureFixture
-    ) -> None:
+    def test_soft_limit_warning_near_max(self, caplog: pytest.LogCaptureFixture) -> None:
         """Soft limit warning when approaching max."""
         config = EnforcerConfig(
             position_min=0.0,
@@ -584,9 +584,7 @@ class TestSoftLimits:
 
         assert "soft limit" in caplog.text.lower()
 
-    def test_soft_limit_warning_near_min(
-        self, caplog: pytest.LogCaptureFixture
-    ) -> None:
+    def test_soft_limit_warning_near_min(self, caplog: pytest.LogCaptureFixture) -> None:
         """Soft limit warning when approaching min."""
         config = EnforcerConfig(
             position_min=0.0,
@@ -602,9 +600,7 @@ class TestSoftLimits:
 
         assert "soft limit" in caplog.text.lower()
 
-    def test_soft_limit_no_warning_in_safe_zone(
-        self, caplog: pytest.LogCaptureFixture
-    ) -> None:
+    def test_soft_limit_no_warning_in_safe_zone(self, caplog: pytest.LogCaptureFixture) -> None:
         """No soft limit warning in safe zone."""
         config = EnforcerConfig(
             position_min=0.0,
@@ -688,8 +684,12 @@ class TestViolationCallbacks:
         enforcer.enforce(150.0)  # Above max
 
         # Filter by type to check both directions
-        min_violations = [v for v in received if v.violation_type == LimitViolationType.POSITION_MIN]
-        max_violations = [v for v in received if v.violation_type == LimitViolationType.POSITION_MAX]
+        min_violations = [
+            v for v in received if v.violation_type == LimitViolationType.POSITION_MIN
+        ]
+        max_violations = [
+            v for v in received if v.violation_type == LimitViolationType.POSITION_MAX
+        ]
 
         assert len(min_violations) == 1
         assert len(max_violations) == 1
@@ -708,9 +708,7 @@ class TestViolationCallbacks:
         for cb in callbacks:
             assert cb.call_count >= 1
 
-    def test_callback_exception_handled(
-        self, caplog: pytest.LogCaptureFixture
-    ) -> None:
+    def test_callback_exception_handled(self, caplog: pytest.LogCaptureFixture) -> None:
         """Callback exception is handled gracefully."""
         enforcer = LimitEnforcer(position_limits=(0.0, 100.0))
         bad_callback = MagicMock(side_effect=Exception("callback error"))

@@ -52,8 +52,7 @@ class TestSensorReadLatency:
     def test_multiple_sensor_reads(self, benchmarker: Benchmarker) -> None:
         """Benchmark reading from multiple sensors."""
         sensors = [
-            SimulatedSensor(name=f"sensor_{i}", limits=Limits(min=0, max=100))
-            for i in range(5)
+            SimulatedSensor(name=f"sensor_{i}", limits=Limits(min=0, max=100)) for i in range(5)
         ]
         for s in sensors:
             s.enable()
@@ -202,11 +201,15 @@ class TestFilterComparison:
             lambda: madgwick.update(gyro, accel),
             iterations=2000,
         )
-        print(f"Madgwick: {format_time(result_madgwick.mean_time)} ({result_madgwick.ops_per_sec:.0f} Hz)")
+        print(
+            f"Madgwick: {format_time(result_madgwick.mean_time)} ({result_madgwick.ops_per_sec:.0f} Hz)"
+        )
 
         result_mahony = benchmarker.run(
             "Mahony",
             lambda: mahony.update(gyro, accel),
             iterations=2000,
         )
-        print(f"Mahony: {format_time(result_mahony.mean_time)} ({result_mahony.ops_per_sec:.0f} Hz)")
+        print(
+            f"Mahony: {format_time(result_mahony.mean_time)} ({result_mahony.ops_per_sec:.0f} Hz)"
+        )

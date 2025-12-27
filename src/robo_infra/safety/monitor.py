@@ -60,9 +60,7 @@ class SafetyViolation(SafetyError):
         self.value = value
         self.limit = limit
         self.unit = unit
-        message = (
-            f"Safety violation: {component} {metric} = {value}{unit} " f"(limit: {limit}{unit})"
-        )
+        message = f"Safety violation: {component} {metric} = {value}{unit} (limit: {limit}{unit})"
         super().__init__(message, action_taken="E-stop triggered")
 
 
@@ -461,8 +459,7 @@ class SafetyMonitor:
             try:
                 self._estop.trigger(
                     reason=(
-                        f"{config.component} {config.metric} = {value}{config.unit} "
-                        f"exceeded limit"
+                        f"{config.component} {config.metric} = {value}{config.unit} exceeded limit"
                     ),
                     triggered_by="safety_monitor",
                 )

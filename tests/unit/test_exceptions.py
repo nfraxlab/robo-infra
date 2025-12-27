@@ -135,7 +135,9 @@ class TestExceptionHierarchy:
         ]
 
         for exc in exceptions:
-            assert isinstance(exc, RoboInfraError), f"{type(exc).__name__} should inherit from RoboInfraError"
+            assert isinstance(exc, RoboInfraError), (
+                f"{type(exc).__name__} should inherit from RoboInfraError"
+            )
 
     def test_safety_subclasses(self) -> None:
         """Test SafetyError subclasses."""

@@ -105,9 +105,7 @@ def rover_client(rover_controller: DifferentialDrive):
 
 
 @pytest.fixture
-def multi_controller_client(
-    arm_controller: JointGroup, rover_controller: DifferentialDrive
-):
+def multi_controller_client(arm_controller: JointGroup, rover_controller: DifferentialDrive):
     """Create a test client with multiple controllers."""
     from fastapi import FastAPI
     from fastapi.testclient import TestClient
@@ -237,9 +235,7 @@ class TestAPISynchronization:
             # Pydantic validation issue - skip this test
             pytest.skip("API move endpoint has validation issue")
 
-    def test_enable_disable_sync(
-        self, arm_client, arm_controller: JointGroup
-    ) -> None:
+    def test_enable_disable_sync(self, arm_client, arm_controller: JointGroup) -> None:
         """Test enable/disable state syncs between API and controller."""
         # Disable via API
         arm_client.post("/arm/disable")
@@ -292,9 +288,7 @@ class TestRoverAPI:
         response = rover_client.get("/rover/status")
         assert response.status_code == 200
 
-    def test_rover_enable_disable(
-        self, rover_client, rover_controller: DifferentialDrive
-    ) -> None:
+    def test_rover_enable_disable(self, rover_client, rover_controller: DifferentialDrive) -> None:
         """Test rover enable/disable."""
         rover_client.post("/rover/disable")
         assert not rover_controller.is_enabled
@@ -330,9 +324,7 @@ class TestAPIErrorHandling:
 class TestAPIWorkflow:
     """Test complete API workflows."""
 
-    def test_full_arm_workflow(
-        self, arm_client, arm_controller: JointGroup
-    ) -> None:
+    def test_full_arm_workflow(self, arm_client, arm_controller: JointGroup) -> None:
         """Test complete arm control workflow via API."""
         # 1. Disable first
         arm_controller.disable()

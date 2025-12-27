@@ -47,7 +47,7 @@ class TestCANMessage:
         """Test message with extended ID."""
         msg = CANMessage(
             arbitration_id=0x12345678,
-            data=b"\xFF",
+            data=b"\xff",
             is_extended_id=True,
         )
         assert msg.is_extended_id is True
@@ -230,12 +230,12 @@ class TestSimulatedCANBus:
         bus.open()
 
         # Send a message - it should loop back
-        bus.send(0x200, b"\xAA\xBB")
+        bus.send(0x200, b"\xaa\xbb")
 
         received = bus.recv(timeout=0.1)
         assert received is not None
         assert received.arbitration_id == 0x200
-        assert received.data == b"\xAA\xBB"
+        assert received.data == b"\xaa\xbb"
 
         bus.close()
 
@@ -362,6 +362,7 @@ class TestSimulatedCANBus:
         config = CANConfig(channel="vcan0")
         bus = SimulatedCANBus(config)
         from robo_infra.core.bus import BusType
+
         assert bus.bus_type == BusType.CAN
 
 
@@ -376,7 +377,7 @@ class TestSimulatedCANBusAsync:
         bus.open()
 
         # Inject a message
-        bus.inject_message(CANMessage(arbitration_id=0x500, data=b"\xDD\xEE"))
+        bus.inject_message(CANMessage(arbitration_id=0x500, data=b"\xdd\xee"))
 
         # Receive async
         msg = await bus.recv_async(timeout=0.1)
@@ -449,7 +450,7 @@ class TestUtilityFunctions:
 
     def test_unpack_can_data(self) -> None:
         """Test unpacking CAN data."""
-        data = b"\x34\x12\xEF\xBE\xAD\xDE"
+        data = b"\x34\x12\xef\xbe\xad\xde"
         values = unpack_can_data(data, "HI")
         assert values == (0x1234, 0xDEADBEEF)
 
@@ -509,6 +510,7 @@ class TestPythonCANBus:
         config = CANConfig()
         bus = PythonCANBus(config)
         from robo_infra.core.bus import BusType
+
         assert bus.bus_type == BusType.CAN
 
 

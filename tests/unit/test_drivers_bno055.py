@@ -58,9 +58,7 @@ class TestBNO055CalibrationStatus:
 
     def test_create_calibration_status(self) -> None:
         """Test creating calibration status."""
-        status = BNO055CalibrationStatus(
-            system=3, gyroscope=3, accelerometer=3, magnetometer=3
-        )
+        status = BNO055CalibrationStatus(system=3, gyroscope=3, accelerometer=3, magnetometer=3)
 
         assert status.system == 3
         assert status.gyroscope == 3
@@ -69,16 +67,12 @@ class TestBNO055CalibrationStatus:
 
     def test_calibration_status_fully_calibrated(self) -> None:
         """Test fully calibrated status."""
-        status = BNO055CalibrationStatus(
-            system=3, gyroscope=3, accelerometer=3, magnetometer=3
-        )
+        status = BNO055CalibrationStatus(system=3, gyroscope=3, accelerometer=3, magnetometer=3)
         assert status.is_calibrated
 
     def test_calibration_status_not_calibrated(self) -> None:
         """Test not calibrated status."""
-        status = BNO055CalibrationStatus(
-            system=0, gyroscope=0, accelerometer=0, magnetometer=0
-        )
+        status = BNO055CalibrationStatus(system=0, gyroscope=0, accelerometer=0, magnetometer=0)
         assert not status.is_calibrated
 
 
@@ -450,9 +444,7 @@ class TestBNO055ReadMagnetometer:
             timestamp=0.0,
         )
         magnitude = (
-            reading.magnetometer.x**2
-            + reading.magnetometer.y**2
-            + reading.magnetometer.z**2
+            reading.magnetometer.x**2 + reading.magnetometer.y**2 + reading.magnetometer.z**2
         ) ** 0.5
         assert 20.0 < magnitude < 70.0
 
@@ -462,17 +454,13 @@ class TestBNO055CalibrationStatusAdvanced:
 
     def test_partially_calibrated(self) -> None:
         """Test partially calibrated status."""
-        status = BNO055CalibrationStatus(
-            system=2, gyroscope=3, accelerometer=1, magnetometer=2
-        )
+        status = BNO055CalibrationStatus(system=2, gyroscope=3, accelerometer=1, magnetometer=2)
         assert status.is_partially_calibrated is True
         assert status.is_calibrated is False
 
     def test_uncalibrated(self) -> None:
         """Test completely uncalibrated status."""
-        status = BNO055CalibrationStatus(
-            system=0, gyroscope=1, accelerometer=0, magnetometer=0
-        )
+        status = BNO055CalibrationStatus(system=0, gyroscope=1, accelerometer=0, magnetometer=0)
         # At least one sensor has value >= 2
         assert status.is_partially_calibrated is False
 
@@ -509,9 +497,19 @@ class TestBNO055ModeSwitching:
     def test_mode_enum_completeness(self) -> None:
         """Test all expected modes exist."""
         modes = [
-            "CONFIG", "ACCONLY", "MAGONLY", "GYROONLY", "ACCMAG",
-            "ACCGYRO", "MAGGYRO", "AMG", "IMU", "COMPASS", "M4G",
-            "NDOF_FMC_OFF", "NDOF"
+            "CONFIG",
+            "ACCONLY",
+            "MAGONLY",
+            "GYROONLY",
+            "ACCMAG",
+            "ACCGYRO",
+            "MAGGYRO",
+            "AMG",
+            "IMU",
+            "COMPASS",
+            "M4G",
+            "NDOF_FMC_OFF",
+            "NDOF",
         ]
         for mode in modes:
             assert hasattr(BNO055OperationMode, mode)

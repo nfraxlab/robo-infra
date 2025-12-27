@@ -935,6 +935,7 @@ class TestSimulatedGPSMovement:
         reading1 = gps.read_position()
         # Wait a bit for movement
         import time
+
         time.sleep(0.1)
         reading2 = gps.read_position()
 
@@ -1110,8 +1111,6 @@ class TestGPSConfigAdvanced:
 
     def test_config_metadata(self) -> None:
         """Test GPS config with metadata."""
-        config = GPSConfig(
-            metadata={"location": "roof", "antenna_type": "active"}
-        )
+        config = GPSConfig(metadata={"location": "roof", "antenna_type": "active"})
 
         assert config.metadata["location"] == "roof"

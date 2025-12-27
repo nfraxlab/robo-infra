@@ -118,13 +118,9 @@ class Frame:
     def __post_init__(self) -> None:
         """Validate frame data."""
         if self.data.shape[0] != self.height:
-            raise ValueError(
-                f"Data height {self.data.shape[0]} doesn't match height {self.height}"
-            )
+            raise ValueError(f"Data height {self.data.shape[0]} doesn't match height {self.height}")
         if self.data.shape[1] != self.width:
-            raise ValueError(
-                f"Data width {self.data.shape[1]} doesn't match width {self.width}"
-            )
+            raise ValueError(f"Data width {self.data.shape[1]} doesn't match width {self.width}")
 
     @property
     def channels(self) -> int:
@@ -376,9 +372,7 @@ class DepthFrame:
         """
         # Normalize depth to 0-255
         depth_m = self.to_meters()
-        normalized = np.clip(
-            (depth_m - self.min_depth) / (self.max_depth - self.min_depth), 0, 1
-        )
+        normalized = np.clip((depth_m - self.min_depth) / (self.max_depth - self.min_depth), 0, 1)
         # Work with float to avoid uint8 overflow
         norm_float = normalized * 255.0
 
@@ -491,9 +485,7 @@ class CameraIntrinsics:
         v = self.fy * y / z + self.cy
         return (u, v)
 
-    def unproject(
-        self, pixel: tuple[float, float], depth: float
-    ) -> tuple[float, float, float]:
+    def unproject(self, pixel: tuple[float, float], depth: float) -> tuple[float, float, float]:
         """Unproject a 2D pixel to 3D point.
 
         Args:
@@ -593,17 +585,13 @@ class CameraConfig(BaseModel):
         default=None, ge=0.0001, le=10.0, description="Manual exposure time (seconds)"
     )
     auto_gain: bool = Field(default=True, description="Enable auto gain")
-    gain: float | None = Field(
-        default=None, ge=0, le=100, description="Manual gain value"
-    )
+    gain: float | None = Field(default=None, ge=0, le=100, description="Manual gain value")
 
     # White balance
     auto_white_balance: bool = Field(default=True, description="Enable auto WB")
 
     # Buffer settings
-    buffer_size: int = Field(
-        default=2, ge=1, le=10, description="Frame buffer size"
-    )
+    buffer_size: int = Field(default=2, ge=1, le=10, description="Frame buffer size")
 
     # Flip/rotate
     flip_horizontal: bool = Field(default=False, description="Mirror horizontally")
@@ -969,9 +957,7 @@ class SimulatedCamera(Camera):
             block_w = width // 8
             y, x = np.mgrid[0:height, 0:width]
             checker = ((x // block_w) + (y // block_h)) % 2
-            data = np.where(
-                checker[:, :, np.newaxis], 255, 0
-            ).astype(np.uint8).repeat(3, axis=2)
+            data = np.where(checker[:, :, np.newaxis], 255, 0).astype(np.uint8).repeat(3, axis=2)
         elif self._pattern == "noise":
             data = np.random.randint(0, 256, (height, width, 3), dtype=np.uint8)
         else:

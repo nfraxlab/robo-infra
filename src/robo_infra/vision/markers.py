@@ -190,9 +190,7 @@ class MarkerPose:
         x, y, z = self.translation
         return float(np.sqrt(x**2 + y**2 + z**2))
 
-    def transform_point(
-        self, point: tuple[float, float, float]
-    ) -> tuple[float, float, float]:
+    def transform_point(self, point: tuple[float, float, float]) -> tuple[float, float, float]:
         """Transform a point from marker frame to camera frame.
 
         Args:
@@ -232,9 +230,7 @@ class ArUcoMarker:
             # Shoelace formula for polygon area
             x = self.corners[:, 0]
             y = self.corners[:, 1]
-            self.area = 0.5 * abs(
-                np.dot(x, np.roll(y, 1)) - np.dot(y, np.roll(x, 1))
-            )
+            self.area = 0.5 * abs(np.dot(x, np.roll(y, 1)) - np.dot(y, np.roll(x, 1)))
 
     @property
     def size(self) -> float:
@@ -389,10 +385,7 @@ def _get_aruco_dictionary(name: str | ArUcoDictionary):
     }
 
     if name not in dict_map:
-        raise ValueError(
-            f"Unknown dictionary '{name}'. "
-            f"Available: {list(dict_map.keys())}"
-        )
+        raise ValueError(f"Unknown dictionary '{name}'. Available: {list(dict_map.keys())}")
 
     return aruco.getPredefinedDictionary(dict_map[name])
 
@@ -461,9 +454,7 @@ class ArUcoDetector:
             simulation: Override simulation mode (default: from environment).
         """
         self._simulation = simulation if simulation is not None else SIMULATION
-        self._dictionary_name = (
-            dictionary if isinstance(dictionary, str) else dictionary.value
-        )
+        self._dictionary_name = dictionary if isinstance(dictionary, str) else dictionary.value
 
         # Store parameters for lazy initialization
         self._params = {
@@ -519,9 +510,7 @@ class ArUcoDetector:
 
         params.cornerRefinementMethod = refinement_map[method]
         params.cornerRefinementWinSize = self._params["corner_refinement_win_size"]
-        params.cornerRefinementMaxIterations = self._params[
-            "corner_refinement_max_iterations"
-        ]
+        params.cornerRefinementMaxIterations = self._params["corner_refinement_max_iterations"]
 
         # Create detector (OpenCV 4.7+ API)
         self._detector = aruco.ArucoDetector(self._dictionary, params)
@@ -642,11 +631,7 @@ class ArUcoDetector:
 
         # Camera matrix and distortion
         camera_matrix = intrinsics.camera_matrix
-        dist_coeffs = (
-            intrinsics.distortion
-            if intrinsics.distortion is not None
-            else np.zeros(5)
-        )
+        dist_coeffs = intrinsics.distortion if intrinsics.distortion is not None else np.zeros(5)
 
         # Solve PnP
         success, rvec, tvec = cv2.solvePnP(
@@ -661,9 +646,7 @@ class ArUcoDetector:
             raise RuntimeError(f"Failed to estimate pose for marker {marker.id}")
 
         # Calculate reprojection error
-        projected, _ = cv2.projectPoints(
-            obj_points, rvec, tvec, camera_matrix, dist_coeffs
-        )
+        projected, _ = cv2.projectPoints(obj_points, rvec, tvec, camera_matrix, dist_coeffs)
         error = np.mean(np.linalg.norm(projected.reshape(-1, 2) - img_points, axis=1))
 
         return MarkerPose(
@@ -844,8 +827,7 @@ class AprilTagDetector:
 
         if self._family not in self._dict_map:
             raise ValueError(
-                f"Unknown AprilTag family '{family}'. "
-                f"Supported: {list(self._dict_map.keys())}"
+                f"Unknown AprilTag family '{family}'. Supported: {list(self._dict_map.keys())}"
             )
 
         # Use ArUcoDetector internally
@@ -918,9 +900,7 @@ class AprilTagDetector:
             timestamp=tag.timestamp,
         )
 
-        return self._aruco_detector.estimate_pose(
-            aruco_marker, intrinsics, tag_size
-        )
+        return self._aruco_detector.estimate_pose(aruco_marker, intrinsics, tag_size)
 
     def draw_tags(
         self,
@@ -1026,9 +1006,7 @@ def create_marker_board(
     for row in range(rows):
         for col in range(cols):
             # Generate marker
-            marker_frame = ArUcoDetector.generate_marker(
-                dictionary, marker_id, marker_size
-            )
+            marker_frame = ArUcoDetector.generate_marker(dictionary, marker_id, marker_size)
 
             # Calculate position
             x = col * (marker_size + marker_separation)

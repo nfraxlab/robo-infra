@@ -177,7 +177,11 @@ class CANMessage:
 
     def __repr__(self) -> str:
         """String representation."""
-        id_str = f"0x{self.arbitration_id:08X}" if self.is_extended_id else f"0x{self.arbitration_id:03X}"
+        id_str = (
+            f"0x{self.arbitration_id:08X}"
+            if self.is_extended_id
+            else f"0x{self.arbitration_id:03X}"
+        )
         data_str = self.data.hex() if self.data else "(empty)"
         return f"CANMessage(id={id_str}, data={data_str}, ts={self.timestamp:.6f})"
 
@@ -614,8 +618,7 @@ class PythonCANBus(CANBus):
             import can
         except ImportError as e:
             raise HardwareNotFoundError(
-                "python-can library not installed. "
-                "Install with: pip install robo-infra[can]"
+                "python-can library not installed. Install with: pip install robo-infra[can]"
             ) from e
 
         try:

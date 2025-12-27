@@ -101,8 +101,7 @@ class ColorRange:
             if not (0 <= lower_val <= max_val) or not (0 <= upper_val <= max_val):
                 channel = ["H", "S", "V"][i]
                 raise ValueError(
-                    f"Invalid {channel} range: ({lower_val}, {upper_val}). "
-                    f"Must be 0-{max_val}"
+                    f"Invalid {channel} range: ({lower_val}, {upper_val}). Must be 0-{max_val}"
                 )
 
     def contains(self, hsv: tuple[int, int, int]) -> bool:
@@ -319,9 +318,7 @@ class ColorDetector:
         elif lower_hsv is not None and upper_hsv is not None:
             self._color_ranges = [ColorRange(lower_hsv, upper_hsv, name)]
         else:
-            raise ValueError(
-                "Either provide lower_hsv/upper_hsv or color_ranges"
-            )
+            raise ValueError("Either provide lower_hsv/upper_hsv or color_ranges")
 
     @property
     def name(self) -> str:
@@ -356,8 +353,7 @@ class ColorDetector:
         color = color.lower()
         if color not in PREDEFINED_COLORS:
             raise ValueError(
-                f"Unknown color '{color}'. "
-                f"Available: {list(PREDEFINED_COLORS.keys())}"
+                f"Unknown color '{color}'. Available: {list(PREDEFINED_COLORS.keys())}"
             )
 
         color_def = PREDEFINED_COLORS[color]
@@ -489,9 +485,7 @@ class ColorDetector:
             combined_mask = cv2.morphologyEx(combined_mask, cv2.MORPH_CLOSE, kernel)
 
         # Find contours
-        contours, _ = cv2.findContours(
-            combined_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
-        )
+        contours, _ = cv2.findContours(combined_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         # Process contours into blobs
         blobs = []
@@ -504,9 +498,7 @@ class ColorDetector:
 
             # Calculate properties
             perimeter = cv2.arcLength(contour, True)
-            circularity = (
-                4 * np.pi * area / (perimeter * perimeter) if perimeter > 0 else 0.0
-            )
+            circularity = 4 * np.pi * area / (perimeter * perimeter) if perimeter > 0 else 0.0
 
             # Filter by circularity
             if circularity < self._min_circularity:
@@ -815,9 +807,7 @@ def get_dominant_color(
 
     # K-means clustering
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.2)
-    _, labels, centers = cv2.kmeans(
-        pixels, k, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS
-    )
+    _, labels, centers = cv2.kmeans(pixels, k, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
 
     # Find most common cluster
     unique, counts = np.unique(labels, return_counts=True)

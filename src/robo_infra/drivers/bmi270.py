@@ -327,14 +327,14 @@ class BMI270Driver(Driver):
 
     # Scale factors
     ACCEL_SENSITIVITY = {
-        AccelRange.RANGE_2G: 16384.0,    # LSB/g
+        AccelRange.RANGE_2G: 16384.0,  # LSB/g
         AccelRange.RANGE_4G: 8192.0,
         AccelRange.RANGE_8G: 4096.0,
         AccelRange.RANGE_16G: 2048.0,
     }
 
     GYRO_SENSITIVITY = {
-        GyroRange.RANGE_2000DPS: 16.4,   # LSB/(°/s)
+        GyroRange.RANGE_2000DPS: 16.4,  # LSB/(°/s)
         GyroRange.RANGE_1000DPS: 32.8,
         GyroRange.RANGE_500DPS: 65.5,
         GyroRange.RANGE_250DPS: 131.0,
@@ -502,7 +502,9 @@ class BMI270Driver(Driver):
         # Check init status
         internal_status = self._read_byte(BMI270Register.INTERNAL_STATUS)
         if not (internal_status & 0x01):
-            logger.warning("BMI270 config loading may have failed (status: 0x%02X)", internal_status)
+            logger.warning(
+                "BMI270 config loading may have failed (status: 0x%02X)", internal_status
+            )
 
     def reset(self) -> None:
         """Perform a software reset."""

@@ -193,8 +193,7 @@ class LIDARScan:
         """Validate scan data."""
         if len(self.ranges) != len(self.angles):
             raise ValueError(
-                f"ranges and angles must have same length: "
-                f"{len(self.ranges)} != {len(self.angles)}"
+                f"ranges and angles must have same length: {len(self.ranges)} != {len(self.angles)}"
             )
         if self.intensities is not None and len(self.intensities) != len(self.ranges):
             raise ValueError(
@@ -261,9 +260,7 @@ class LIDARScan:
             return float(self.ranges[idx])
         return float("nan")
 
-    def filter_range(
-        self, min_range: float = 0.0, max_range: float = float("inf")
-    ) -> LIDARScan:
+    def filter_range(self, min_range: float = 0.0, max_range: float = float("inf")) -> LIDARScan:
         """Return a new scan with ranges outside bounds set to NaN.
 
         Args:
@@ -297,9 +294,7 @@ class LIDARScan:
         return LIDARScan(
             ranges=self.ranges[::factor].copy(),
             angles=self.angles[::factor].copy(),
-            intensities=self.intensities[::factor].copy()
-            if self.intensities is not None
-            else None,
+            intensities=self.intensities[::factor].copy() if self.intensities is not None else None,
             timestamp=self.timestamp,
             scan_number=self.scan_number,
             scan_frequency=self.scan_frequency,
@@ -342,39 +337,25 @@ class LIDARConfig(BaseModel):
     scan_frequency: float = Field(
         default=10.0, ge=1.0, le=100.0, description="Scan frequency in Hz"
     )
-    angle_min: float = Field(
-        default=0.0, description="Minimum angle in radians"
-    )
-    angle_max: float = Field(
-        default=2 * math.pi, description="Maximum angle in radians"
-    )
-    range_min: float = Field(
-        default=0.1, ge=0.0, description="Minimum range in meters"
-    )
-    range_max: float = Field(
-        default=12.0, gt=0.0, description="Maximum range in meters"
-    )
+    angle_min: float = Field(default=0.0, description="Minimum angle in radians")
+    angle_max: float = Field(default=2 * math.pi, description="Maximum angle in radians")
+    range_min: float = Field(default=0.1, ge=0.0, description="Minimum range in meters")
+    range_max: float = Field(default=12.0, gt=0.0, description="Maximum range in meters")
 
     # Processing
     angular_resolution: float = Field(
         default=math.radians(1.0), gt=0, description="Angular resolution in radians"
     )
-    filter_outliers: bool = Field(
-        default=False, description="Filter statistical outliers"
-    )
+    filter_outliers: bool = Field(default=False, description="Filter statistical outliers")
     outlier_threshold: float = Field(
         default=3.0, ge=1.0, description="Outlier threshold (std devs)"
     )
 
     # Motor control
-    motor_speed: int = Field(
-        default=0, ge=0, le=100, description="Motor speed (0=auto)"
-    )
+    motor_speed: int = Field(default=0, ge=0, le=100, description="Motor speed (0=auto)")
 
     # Timeout
-    timeout: float = Field(
-        default=1.0, gt=0.0, description="Read timeout in seconds"
-    )
+    timeout: float = Field(default=1.0, gt=0.0, description="Read timeout in seconds")
 
     metadata: dict[str, Any] = Field(default_factory=dict)
 
@@ -660,9 +641,7 @@ class LIDAR(Sensor):
         if self._last_scan is None:
             return False
 
-        mask = (self._last_scan.angles >= angle_start) & (
-            self._last_scan.angles <= angle_end
-        )
+        mask = (self._last_scan.angles >= angle_start) & (self._last_scan.angles <= angle_end)
         sector_ranges = self._last_scan.ranges[mask]
         valid = sector_ranges[~np.isnan(sector_ranges)]
 
@@ -797,9 +776,7 @@ class SimulatedLIDAR(LIDAR):
 
         # Add noise
         if self._noise_stddev > 0:
-            noise = self._rng.normal(0, self._noise_stddev, num_points).astype(
-                np.float32
-            )
+            noise = self._rng.normal(0, self._noise_stddev, num_points).astype(np.float32)
             ranges = ranges + noise
 
         # Clamp to valid range
@@ -920,9 +897,7 @@ class SerialLIDAR(LIDAR):
     def connect(self) -> None:
         """Connect to LIDAR via serial port."""
         if os.environ.get("ROBO_SIMULATION", "").lower() in ("true", "1", "yes"):
-            logger.warning(
-                "⚠️ SIMULATION MODE - %s not connected to real hardware", self.name
-            )
+            logger.warning("⚠️ SIMULATION MODE - %s not connected to real hardware", self.name)
             return
 
         try:
@@ -1043,8 +1018,7 @@ class RPLIDAR(SerialLIDAR):
         if self._config.motor_speed > 0:
             pwm = int(self._config.motor_speed * 10.23)  # 0-1023
             self._send_command(
-                bytes([self.CMD_SYNC, self.CMD_SET_MOTOR_PWM])
-                + struct.pack("<H", pwm)
+                bytes([self.CMD_SYNC, self.CMD_SET_MOTOR_PWM]) + struct.pack("<H", pwm)
             )
 
         self._motor_running = True
@@ -1161,9 +1135,7 @@ class RPLIDAR(SerialLIDAR):
             dtype=np.float32,
         )
         rng = np.random.default_rng()
-        ranges = rng.uniform(1.0, self._config.range_max * 0.8, num_points).astype(
-            np.float32
-        )
+        ranges = rng.uniform(1.0, self._config.range_max * 0.8, num_points).astype(np.float32)
         intensities = rng.integers(50, 200, size=num_points, dtype=np.uint8)
 
         self._scan_count += 1

@@ -176,6 +176,7 @@ class TestLSM6DS3ReadAccel:
     def test_accel_reading_structure(self) -> None:
         """Test acceleration reading structure."""
         from robo_infra.core.types import Vector3
+
         reading = LSM6DS3Reading(
             acceleration=Vector3(x=0.0, y=0.0, z=9.81),
             gyroscope=Vector3(x=0.0, y=0.0, z=0.0),
@@ -219,6 +220,7 @@ class TestLSM6DS3ReadGyro:
     def test_gyro_reading_structure(self) -> None:
         """Test gyroscope reading structure."""
         from robo_infra.core.types import Vector3
+
         reading = LSM6DS3Reading(
             acceleration=Vector3(x=0.0, y=0.0, z=9.81),
             gyroscope=Vector3(x=10.0, y=-5.0, z=15.0),
@@ -290,18 +292,19 @@ class TestLSM6DS3RegisterAddresses:
     def test_who_am_i_expected_value(self) -> None:
         """Test expected WHO_AM_I value."""
         from robo_infra.drivers.lsm6ds3 import LSM6DS3_WHO_AM_I
+
         assert LSM6DS3_WHO_AM_I == 0x69
 
     def test_control_registers(self) -> None:
         """Test control register addresses."""
         assert LSM6DS3Register.CTRL1_XL == 0x10  # Accelerometer
-        assert LSM6DS3Register.CTRL2_G == 0x11   # Gyroscope
-        assert LSM6DS3Register.CTRL3_C == 0x12   # Common
+        assert LSM6DS3Register.CTRL2_G == 0x11  # Gyroscope
+        assert LSM6DS3Register.CTRL3_C == 0x12  # Common
 
     def test_data_output_registers(self) -> None:
         """Test data output register addresses."""
         assert LSM6DS3Register.OUT_TEMP_L == 0x20
-        assert LSM6DS3Register.OUTX_L_G == 0x22   # Gyro X
+        assert LSM6DS3Register.OUTX_L_G == 0x22  # Gyro X
         assert LSM6DS3Register.OUTX_L_XL == 0x28  # Accel X
 
     def test_status_register(self) -> None:
@@ -315,6 +318,7 @@ class TestLSM6DS3TemperatureSensor:
     def test_temperature_reading(self) -> None:
         """Test temperature reading structure."""
         from robo_infra.core.types import Vector3
+
         reading = LSM6DS3Reading(
             acceleration=Vector3(x=0.0, y=0.0, z=9.81),
             gyroscope=Vector3(x=0.0, y=0.0, z=0.0),
@@ -404,6 +408,7 @@ class TestLSM6DS3ReadingTimestamp:
     def test_reading_has_timestamp(self) -> None:
         """Test reading includes timestamp."""
         from robo_infra.core.types import Vector3
+
         reading = LSM6DS3Reading(
             acceleration=Vector3(x=0.0, y=0.0, z=9.81),
             gyroscope=Vector3(x=0.0, y=0.0, z=0.0),

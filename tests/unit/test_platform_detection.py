@@ -689,7 +689,9 @@ class TestDetectPlatform:
         monkeypatch.setenv("ROBO_PLATFORM", "rpi")
         assert detect_platform() == PlatformType.RASPBERRY_PI
 
-    def test_env_override_raspberry_pi(self, clean_env: None, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_env_override_raspberry_pi(
+        self, clean_env: None, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """ROBO_PLATFORM=raspberry_pi returns RASPBERRY_PI."""
         monkeypatch.setenv("ROBO_PLATFORM", "raspberry_pi")
         assert detect_platform() == PlatformType.RASPBERRY_PI
@@ -699,7 +701,9 @@ class TestDetectPlatform:
         monkeypatch.setenv("ROBO_PLATFORM", "jetson")
         assert detect_platform() == PlatformType.JETSON
 
-    def test_env_override_simulation(self, clean_env: None, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_env_override_simulation(
+        self, clean_env: None, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """ROBO_PLATFORM=sim returns SIMULATION."""
         monkeypatch.setenv("ROBO_PLATFORM", "sim")
         assert detect_platform() == PlatformType.SIMULATION
@@ -714,7 +718,9 @@ class TestDetectPlatform:
         monkeypatch.setenv("ROBO_PLATFORM", "esp32")
         assert detect_platform() == PlatformType.ESP32
 
-    def test_env_override_beaglebone(self, clean_env: None, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_env_override_beaglebone(
+        self, clean_env: None, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """ROBO_PLATFORM=beaglebone returns BEAGLEBONE."""
         monkeypatch.setenv("ROBO_PLATFORM", "beaglebone")
         assert detect_platform() == PlatformType.BEAGLEBONE
@@ -731,16 +737,12 @@ class TestDetectPlatform:
         monkeypatch.setenv("ROBO_SIMULATION", "true")
         assert detect_platform() == PlatformType.SIMULATION
 
-    def test_simulation_env_yes(
-        self, clean_env: None, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_simulation_env_yes(self, clean_env: None, monkeypatch: pytest.MonkeyPatch) -> None:
         """ROBO_SIMULATION=yes forces SIMULATION mode."""
         monkeypatch.setenv("ROBO_SIMULATION", "yes")
         assert detect_platform() == PlatformType.SIMULATION
 
-    def test_simulation_env_one(
-        self, clean_env: None, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_simulation_env_one(self, clean_env: None, monkeypatch: pytest.MonkeyPatch) -> None:
         """ROBO_SIMULATION=1 forces SIMULATION mode."""
         monkeypatch.setenv("ROBO_SIMULATION", "1")
         assert detect_platform() == PlatformType.SIMULATION
@@ -791,9 +793,7 @@ class TestDetectPlatform:
         ):
             assert detect_platform() == PlatformType.RASPBERRY_PI
 
-    def test_detect_jetson_priority(
-        self, clean_env: None, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_detect_jetson_priority(self, clean_env: None, monkeypatch: pytest.MonkeyPatch) -> None:
         """Jetson detection has priority after Raspberry Pi."""
         with (
             patch(
@@ -816,25 +816,19 @@ class TestDetectPlatform:
 class TestGetPlatformInfo:
     """Tests for get_platform_info function."""
 
-    def test_info_has_platform_type(
-        self, clean_env: None, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_info_has_platform_type(self, clean_env: None, monkeypatch: pytest.MonkeyPatch) -> None:
         """Platform info includes platform_type."""
         monkeypatch.setenv("ROBO_SIMULATION", "true")
         info = get_platform_info()
         assert info.platform_type == PlatformType.SIMULATION
 
-    def test_info_has_model(
-        self, clean_env: None, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_info_has_model(self, clean_env: None, monkeypatch: pytest.MonkeyPatch) -> None:
         """Platform info includes model string."""
         monkeypatch.setenv("ROBO_SIMULATION", "true")
         info = get_platform_info()
         assert "Simulation" in info.model
 
-    def test_info_has_capabilities(
-        self, clean_env: None, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_info_has_capabilities(self, clean_env: None, monkeypatch: pytest.MonkeyPatch) -> None:
         """Platform info includes capabilities set."""
         monkeypatch.setenv("ROBO_SIMULATION", "true")
         info = get_platform_info()
@@ -998,9 +992,7 @@ class TestEdgeCases:
             # Falls back to simulation on macOS
             assert result == PlatformType.SIMULATION
 
-    def test_case_insensitive_env(
-        self, clean_env: None, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_case_insensitive_env(self, clean_env: None, monkeypatch: pytest.MonkeyPatch) -> None:
         """ROBO_PLATFORM is case-insensitive."""
         monkeypatch.setenv("ROBO_PLATFORM", "RPI")
         assert detect_platform() == PlatformType.RASPBERRY_PI
@@ -1068,9 +1060,7 @@ class TestEdgeCases:
 class TestLogging:
     """Tests for logging behavior."""
 
-    def test_detection_logs_at_debug_level(
-        self, caplog: pytest.LogCaptureFixture
-    ) -> None:
+    def test_detection_logs_at_debug_level(self, caplog: pytest.LogCaptureFixture) -> None:
         """Platform detection logs at debug level."""
         mock_path = MagicMock(spec=Path)
         mock_path.exists.return_value = True
@@ -1089,7 +1079,8 @@ class TestLogging:
         assert any("Raspberry Pi" in r.message for r in caplog.records) or len(caplog.records) == 0
 
     def test_simulation_fallback_logs_info(
-        self, clean_env: None,
+        self,
+        clean_env: None,
         monkeypatch: pytest.MonkeyPatch,
         caplog: pytest.LogCaptureFixture,
     ) -> None:
@@ -1110,4 +1101,7 @@ class TestLogging:
             detect_platform()
 
         # Should log simulation mode
-        assert any("simulation" in r.message.lower() for r in caplog.records) or len(caplog.records) == 0
+        assert (
+            any("simulation" in r.message.lower() for r in caplog.records)
+            or len(caplog.records) == 0
+        )

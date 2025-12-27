@@ -68,9 +68,7 @@ class TestPointCloud:
     def test_filter_by_distance(self, sample_pointcloud):
         """Test filtering point cloud by distance."""
         # Some points will be within range, some won't
-        filtered = sample_pointcloud.filter_by_distance(
-            min_distance=0.0, max_distance=2.0
-        )
+        filtered = sample_pointcloud.filter_by_distance(min_distance=0.0, max_distance=2.0)
 
         assert filtered.num_points <= sample_pointcloud.num_points
 
@@ -305,13 +303,9 @@ class TestRealSenseCameraMocked:
         # Mock frames
         mock_frameset = MagicMock()
         mock_color_frame = MagicMock()
-        mock_color_frame.get_data.return_value = np.zeros(
-            (480, 640, 3), dtype=np.uint8
-        )
+        mock_color_frame.get_data.return_value = np.zeros((480, 640, 3), dtype=np.uint8)
         mock_depth_frame = MagicMock()
-        mock_depth_frame.get_data.return_value = np.zeros(
-            (480, 640), dtype=np.uint16
-        )
+        mock_depth_frame.get_data.return_value = np.zeros((480, 640), dtype=np.uint16)
         mock_frameset.get_color_frame.return_value = mock_color_frame
         mock_frameset.get_depth_frame.return_value = mock_depth_frame
         mock_pipeline.wait_for_frames.return_value = mock_frameset
@@ -324,9 +318,7 @@ class TestRealSenseCameraMocked:
         # Mock pointcloud
         mock_pc = MagicMock()
         mock_points = MagicMock()
-        mock_points.get_vertices.return_value = np.zeros(
-            (1000, 3), dtype=np.float32
-        ).tobytes()
+        mock_points.get_vertices.return_value = np.zeros((1000, 3), dtype=np.float32).tobytes()
         mock_points.get_texture_coordinates.return_value = np.zeros(
             (1000, 2), dtype=np.float32
         ).tobytes()

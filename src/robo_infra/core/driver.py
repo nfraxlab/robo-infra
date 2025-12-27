@@ -560,7 +560,7 @@ class Driver(ABC):
         """
         if not 0 <= channel < self._channels:
             raise ValueError(
-                f"Channel {channel} out of range for {self._name} " f"(0-{self._channels - 1})"
+                f"Channel {channel} out of range for {self._name} (0-{self._channels - 1})"
             )
 
 

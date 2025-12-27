@@ -152,12 +152,18 @@ class TestPowerRailReading:
     def test_is_enabled_property(self) -> None:
         """Test is_enabled property."""
         enabled = PowerRailReading(
-            name="test", state=PowerRailState.ENABLED,
-            voltage=None, current=None, power=None,
+            name="test",
+            state=PowerRailState.ENABLED,
+            voltage=None,
+            current=None,
+            power=None,
         )
         disabled = PowerRailReading(
-            name="test", state=PowerRailState.DISABLED,
-            voltage=None, current=None, power=None,
+            name="test",
+            state=PowerRailState.DISABLED,
+            voltage=None,
+            current=None,
+            power=None,
         )
 
         assert enabled.is_enabled is True
@@ -167,8 +173,11 @@ class TestPowerRailReading:
         """Test that timestamp defaults to current time."""
         before = time.time()
         reading = PowerRailReading(
-            name="test", state=PowerRailState.DISABLED,
-            voltage=None, current=None, power=None,
+            name="test",
+            state=PowerRailState.DISABLED,
+            voltage=None,
+            current=None,
+            power=None,
         )
         after = time.time()
 
@@ -444,15 +453,21 @@ class TestPowerDistributionBoard:
         # Create rails with different priorities
         critical = PowerRail(
             "critical",
-            config=PowerRailConfig(name="critical", enable_pin=17, shutdown_priority=ShutdownPriority.CRITICAL),
+            config=PowerRailConfig(
+                name="critical", enable_pin=17, shutdown_priority=ShutdownPriority.CRITICAL
+            ),
         )
         normal = PowerRail(
             "normal",
-            config=PowerRailConfig(name="normal", enable_pin=27, shutdown_priority=ShutdownPriority.NORMAL),
+            config=PowerRailConfig(
+                name="normal", enable_pin=27, shutdown_priority=ShutdownPriority.NORMAL
+            ),
         )
         low = PowerRail(
             "low",
-            config=PowerRailConfig(name="low", enable_pin=22, shutdown_priority=ShutdownPriority.LOW),
+            config=PowerRailConfig(
+                name="low", enable_pin=22, shutdown_priority=ShutdownPriority.LOW
+            ),
         )
 
         pdb = PowerDistributionBoard(
@@ -601,11 +616,13 @@ class TestCreateDistributionBoard:
 
     def test_basic_creation(self) -> None:
         """Test basic board creation."""
-        pdb = create_distribution_board([
-            ("logic", 17),
-            ("sensors", 27),
-            ("motors", 22),
-        ])
+        pdb = create_distribution_board(
+            [
+                ("logic", 17),
+                ("sensors", 27),
+                ("motors", 22),
+            ]
+        )
 
         assert len(pdb.rails) == 3
         assert "logic" in pdb.rails

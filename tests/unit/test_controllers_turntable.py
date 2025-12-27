@@ -103,9 +103,7 @@ def enabled_turntable(turntable: Turntable) -> Turntable:
 
 
 @pytest.fixture
-def limited_turntable(
-    turntable_motor: Stepper, limited_config: TurntableConfig
-) -> Turntable:
+def limited_turntable(turntable_motor: Stepper, limited_config: TurntableConfig) -> Turntable:
     """Create a Turntable with angle limits."""
     tt = Turntable(
         name="limited",
@@ -117,9 +115,7 @@ def limited_turntable(
 
 
 @pytest.fixture
-def indexed_turntable(
-    turntable_motor: Stepper, indexed_config: TurntableConfig
-) -> Turntable:
+def indexed_turntable(turntable_motor: Stepper, indexed_config: TurntableConfig) -> Turntable:
     """Create a Turntable with index positions."""
     tt = Turntable(
         name="indexed",
@@ -245,9 +241,7 @@ class TestTurntableLifecycle:
         assert enabled_turntable.current_angle == 0.0
         assert enabled_turntable._is_homed is True
 
-    def test_home_with_sensor(
-        self, turntable_motor: Stepper, home_sensor: MagicMock
-    ) -> None:
+    def test_home_with_sensor(self, turntable_motor: Stepper, home_sensor: MagicMock) -> None:
         """Test homing with home sensor."""
         config = TurntableConfig(name="test", home_offset=10.0)
         tt = Turntable(
@@ -362,9 +356,7 @@ class TestTurntableContinuous:
         with pytest.raises(ValueError, match="exceeds maximum"):
             enabled_turntable.continuous(rpm=100.0)
 
-    def test_continuous_not_allowed_with_limits(
-        self, limited_turntable: Turntable
-    ) -> None:
+    def test_continuous_not_allowed_with_limits(self, limited_turntable: Turntable) -> None:
         """Test that continuous rotation not allowed with limits."""
         with pytest.raises(ValueError, match="not allowed with angle limits"):
             limited_turntable.continuous(rpm=30.0)

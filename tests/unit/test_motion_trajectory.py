@@ -36,9 +36,7 @@ class TestTrajectoryPoint:
 
     def test_trajectory_point_with_jerk(self) -> None:
         """Test TrajectoryPoint with jerk value."""
-        point = TrajectoryPoint(
-            position=10.0, velocity=5.0, acceleration=1.0, time=0.5, jerk=0.1
-        )
+        point = TrajectoryPoint(position=10.0, velocity=5.0, acceleration=1.0, time=0.5, jerk=0.1)
         assert point.jerk == 0.1
 
     def test_trajectory_point_negative_time_raises(self) -> None:
@@ -306,17 +304,13 @@ class TestTrapezoidalProfile:
 
     def test_trapezoidal_start_end(self) -> None:
         """Test position at start and end."""
-        profile = TrapezoidalProfile(
-            start=0.0, end=100.0, max_velocity=10.0, max_acceleration=5.0
-        )
+        profile = TrapezoidalProfile(start=0.0, end=100.0, max_velocity=10.0, max_acceleration=5.0)
         assert profile.position_at(0.0) == 0.0
         assert profile.position_at(profile.total_time) == pytest.approx(100.0, abs=0.01)
 
     def test_trapezoidal_peak_velocity(self) -> None:
         """Test peak velocity equals max_velocity for full profile."""
-        profile = TrapezoidalProfile(
-            start=0.0, end=100.0, max_velocity=10.0, max_acceleration=5.0
-        )
+        profile = TrapezoidalProfile(start=0.0, end=100.0, max_velocity=10.0, max_acceleration=5.0)
         # Find the peak velocity during cruise
         mid_time = profile.accel_time + profile.cruise_time / 2
         assert profile.velocity_at(mid_time) == pytest.approx(10.0, abs=0.01)
@@ -324,9 +318,7 @@ class TestTrapezoidalProfile:
 
     def test_trapezoidal_respects_max_accel(self) -> None:
         """Test acceleration respects max_acceleration limit."""
-        profile = TrapezoidalProfile(
-            start=0.0, end=100.0, max_velocity=10.0, max_acceleration=5.0
-        )
+        profile = TrapezoidalProfile(start=0.0, end=100.0, max_velocity=10.0, max_acceleration=5.0)
         # During acceleration phase
         assert profile.acceleration_at(profile.accel_time / 2) == pytest.approx(5.0, abs=0.01)
         # During cruise phase
@@ -339,18 +331,14 @@ class TestTrapezoidalProfile:
     def test_trapezoidal_short_move_triangular(self) -> None:
         """Test short move produces triangular profile."""
         # Short distance that can't reach max velocity
-        profile = TrapezoidalProfile(
-            start=0.0, end=10.0, max_velocity=100.0, max_acceleration=5.0
-        )
+        profile = TrapezoidalProfile(start=0.0, end=10.0, max_velocity=100.0, max_acceleration=5.0)
         assert profile.is_triangular is True
         assert profile.cruise_time == 0.0
         assert profile.peak_velocity < 100.0
 
     def test_trapezoidal_total_time(self) -> None:
         """Test total_time calculation."""
-        profile = TrapezoidalProfile(
-            start=0.0, end=100.0, max_velocity=10.0, max_acceleration=5.0
-        )
+        profile = TrapezoidalProfile(start=0.0, end=100.0, max_velocity=10.0, max_acceleration=5.0)
         # Time to accel: v/a = 10/5 = 2s
         # Distance in accel: 0.5 * 5 * 4 = 10
         # Cruise distance: 100 - 20 = 80
@@ -363,27 +351,21 @@ class TestTrapezoidalProfile:
 
     def test_trapezoidal_is_complete(self) -> None:
         """Test is_complete method."""
-        profile = TrapezoidalProfile(
-            start=0.0, end=100.0, max_velocity=10.0, max_acceleration=5.0
-        )
+        profile = TrapezoidalProfile(start=0.0, end=100.0, max_velocity=10.0, max_acceleration=5.0)
         assert profile.is_complete(profile.total_time - 1) is False
         assert profile.is_complete(profile.total_time) is True
         assert profile.is_complete(profile.total_time + 1) is True
 
     def test_trapezoidal_sample(self) -> None:
         """Test sample method returns TrajectoryPoint."""
-        profile = TrapezoidalProfile(
-            start=0.0, end=100.0, max_velocity=10.0, max_acceleration=5.0
-        )
+        profile = TrapezoidalProfile(start=0.0, end=100.0, max_velocity=10.0, max_acceleration=5.0)
         point = profile.sample(profile.accel_time)
         assert isinstance(point, TrajectoryPoint)
         assert point.velocity == pytest.approx(10.0, abs=0.01)
 
     def test_trapezoidal_sample_n(self) -> None:
         """Test sample_n method."""
-        profile = TrapezoidalProfile(
-            start=0.0, end=100.0, max_velocity=10.0, max_acceleration=5.0
-        )
+        profile = TrapezoidalProfile(start=0.0, end=100.0, max_velocity=10.0, max_acceleration=5.0)
         points = profile.sample_n(5)
         assert len(points) == 5
         assert points[0].position == 0.0
@@ -391,9 +373,7 @@ class TestTrapezoidalProfile:
 
     def test_trapezoidal_reversed(self) -> None:
         """Test reversed method."""
-        profile = TrapezoidalProfile(
-            start=0.0, end=100.0, max_velocity=10.0, max_acceleration=5.0
-        )
+        profile = TrapezoidalProfile(start=0.0, end=100.0, max_velocity=10.0, max_acceleration=5.0)
         rev = profile.reversed()
         assert rev.start == 100.0
         assert rev.end == 0.0
@@ -401,9 +381,7 @@ class TestTrapezoidalProfile:
 
     def test_trapezoidal_negative_direction(self) -> None:
         """Test profile in negative direction."""
-        profile = TrapezoidalProfile(
-            start=100.0, end=0.0, max_velocity=10.0, max_acceleration=5.0
-        )
+        profile = TrapezoidalProfile(start=100.0, end=0.0, max_velocity=10.0, max_acceleration=5.0)
         assert profile.position_at(0.0) == 100.0
         assert profile.position_at(profile.total_time) == pytest.approx(0.0, abs=0.01)
         # Velocity should be negative
@@ -421,9 +399,7 @@ class TestTrapezoidalProfile:
 
     def test_trapezoidal_velocity_at_boundaries(self) -> None:
         """Test velocity is zero at start and end."""
-        profile = TrapezoidalProfile(
-            start=0.0, end=100.0, max_velocity=10.0, max_acceleration=5.0
-        )
+        profile = TrapezoidalProfile(start=0.0, end=100.0, max_velocity=10.0, max_acceleration=5.0)
         assert profile.velocity_at(0.0) == 0.0
         assert profile.velocity_at(profile.total_time) == 0.0
         assert profile.velocity_at(-1.0) == 0.0

@@ -45,7 +45,19 @@ class TestArduinoBoard:
 
     def test_all_boards_defined(self) -> None:
         """Test all expected boards are defined."""
-        expected_boards = ["UNO", "NANO", "MINI", "MEGA", "MEGA_ADK", "LEONARDO", "MICRO", "DUE", "ZERO", "MKR1000", "UNKNOWN"]
+        expected_boards = [
+            "UNO",
+            "NANO",
+            "MINI",
+            "MEGA",
+            "MEGA_ADK",
+            "LEONARDO",
+            "MICRO",
+            "DUE",
+            "ZERO",
+            "MKR1000",
+            "UNKNOWN",
+        ]
         for board_name in expected_boards:
             assert hasattr(ArduinoBoard, board_name)
 
@@ -181,9 +193,7 @@ class TestArduinoDigitalPin:
 
     def test_initial_state_high(self) -> None:
         """Test pin with initial state HIGH."""
-        pin = ArduinoDigitalPin(
-            13, mode=PinMode.OUTPUT, initial=PinState.HIGH, simulation=True
-        )
+        pin = ArduinoDigitalPin(13, mode=PinMode.OUTPUT, initial=PinState.HIGH, simulation=True)
         pin.setup()
         assert pin.read() is True
 

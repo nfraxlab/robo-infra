@@ -102,9 +102,7 @@ class TestIMUDataToOrientation:
         assert madgwick_filter is not None
         assert madgwick_filter.beta == 0.1
 
-    def test_initial_orientation_identity(
-        self, madgwick_filter: MadgwickFilter
-    ) -> None:
+    def test_initial_orientation_identity(self, madgwick_filter: MadgwickFilter) -> None:
         """Test that initial orientation is identity quaternion."""
         q = madgwick_filter.quaternion
         # Identity quaternion: (1, 0, 0, 0)
@@ -113,9 +111,7 @@ class TestIMUDataToOrientation:
         assert q.y == pytest.approx(0.0, abs=0.01)
         assert q.z == pytest.approx(0.0, abs=0.01)
 
-    def test_update_with_static_imu_data(
-        self, madgwick_filter: MadgwickFilter
-    ) -> None:
+    def test_update_with_static_imu_data(self, madgwick_filter: MadgwickFilter) -> None:
         """Test updating filter with static (gravity-only) IMU data."""
         # Static sensor: accelerometer measures gravity, gyro is zero
         accel = Vector3(x=0.0, y=0.0, z=9.81)  # Gravity pointing down
@@ -144,9 +140,7 @@ class TestIMUDataToOrientation:
         q = madgwick_filter.quaternion
         assert abs(q.z) > 0.01  # Z rotation should be present
 
-    def test_9dof_update_with_magnetometer(
-        self, madgwick_filter: MadgwickFilter
-    ) -> None:
+    def test_9dof_update_with_magnetometer(self, madgwick_filter: MadgwickFilter) -> None:
         """Test 9-DOF update with magnetometer data."""
         accel = Vector3(x=0.0, y=0.0, z=9.81)
         gyro = Vector3(x=0.0, y=0.0, z=0.0)
@@ -161,9 +155,7 @@ class TestIMUDataToOrientation:
         norm = math.sqrt(q.w**2 + q.x**2 + q.y**2 + q.z**2)
         assert norm == pytest.approx(1.0, abs=0.01)
 
-    def test_orientation_output_format(
-        self, madgwick_filter: MadgwickFilter
-    ) -> None:
+    def test_orientation_output_format(self, madgwick_filter: MadgwickFilter) -> None:
         """Test orientation output is properly formatted."""
         accel = Vector3(x=0.0, y=0.0, z=9.81)
         gyro = Vector3(x=0.0, y=0.0, z=0.0)
@@ -171,9 +163,7 @@ class TestIMUDataToOrientation:
         madgwick_filter.update(gyro, accel, dt=0.01)
 
         # Get orientation as Orientation object
-        orientation = Orientation.from_quaternion(
-            madgwick_filter.quaternion, dt=0.01
-        )
+        orientation = Orientation.from_quaternion(madgwick_filter.quaternion, dt=0.01)
 
         assert isinstance(orientation.quaternion, Quaternion)
         assert isinstance(orientation.euler, Vector3)
@@ -239,9 +229,7 @@ class TestFusionPerformance:
         # Should achieve at least 10kHz on modern hardware
         assert updates_per_sec > 5000
 
-    def test_quaternion_normalization(
-        self, madgwick_filter: MadgwickFilter
-    ) -> None:
+    def test_quaternion_normalization(self, madgwick_filter: MadgwickFilter) -> None:
         """Test that quaternion stays normalized after many updates."""
         accel = Vector3(x=0.0, y=0.0, z=9.81)
         gyro = Vector3(x=0.1, y=0.2, z=0.3)  # Constant rotation

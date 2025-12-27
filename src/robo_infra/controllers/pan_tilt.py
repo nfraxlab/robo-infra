@@ -771,26 +771,18 @@ class PanTilt(Controller):
         """Validate and return pan angle."""
         config = self._pt_config
         if angle < config.pan_min:
-            raise ValueError(
-                f"Pan {angle} below minimum {config.pan_min}"
-            )
+            raise ValueError(f"Pan {angle} below minimum {config.pan_min}")
         if angle > config.pan_max:
-            raise ValueError(
-                f"Pan {angle} above maximum {config.pan_max}"
-            )
+            raise ValueError(f"Pan {angle} above maximum {config.pan_max}")
         return angle
 
     def _validate_tilt(self, angle: float) -> float:
         """Validate and return tilt angle."""
         config = self._pt_config
         if angle < config.tilt_min:
-            raise ValueError(
-                f"Tilt {angle} below minimum {config.tilt_min}"
-            )
+            raise ValueError(f"Tilt {angle} below minimum {config.tilt_min}")
         if angle > config.tilt_max:
-            raise ValueError(
-                f"Tilt {angle} above maximum {config.tilt_max}"
-            )
+            raise ValueError(f"Tilt {angle} above maximum {config.tilt_max}")
         return angle
 
     def _clamp_pan(self, angle: float) -> float:

@@ -421,10 +421,12 @@ class TestAlertCallbacks:
         received_data = []
 
         def callback(key: str, status: LimitStatus) -> None:
-            received_data.append({
-                "value": status.current_value,
-                "max": status.config.max_value,
-            })
+            received_data.append(
+                {
+                    "value": status.current_value,
+                    "max": status.config.max_value,
+                }
+            )
 
         monitor = SafetyMonitor()
         monitor.add_current_limit("motor1", max_current=5.0)

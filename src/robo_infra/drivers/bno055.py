@@ -981,11 +981,7 @@ class BNO055Driver(Driver):
             | (self._config.axis_map_y << 2)
             | self._config.axis_map_x
         )
-        sign = (
-            (self._config.sign_x << 2)
-            | (self._config.sign_y << 1)
-            | self._config.sign_z
-        )
+        sign = (self._config.sign_x << 2) | (self._config.sign_y << 1) | self._config.sign_z
         self._write_byte(BNO055Register.AXIS_MAP_CONFIG, config)
         self._write_byte(BNO055Register.AXIS_MAP_SIGN, sign)
 

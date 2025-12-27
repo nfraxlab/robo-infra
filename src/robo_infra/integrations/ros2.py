@@ -133,7 +133,9 @@ class MessageType(Enum):
 class MockJointState:
     """Mock JointState message for testing without ROS2."""
 
-    header: dict[str, Any] = field(default_factory=lambda: {"stamp": {"sec": 0, "nanosec": 0}, "frame_id": ""})
+    header: dict[str, Any] = field(
+        default_factory=lambda: {"stamp": {"sec": 0, "nanosec": 0}, "frame_id": ""}
+    )
     name: list[str] = field(default_factory=list)
     position: list[float] = field(default_factory=list)
     velocity: list[float] = field(default_factory=list)
@@ -153,7 +155,9 @@ class MockPose:
     """Mock Pose message for testing without ROS2."""
 
     position: dict[str, float] = field(default_factory=lambda: {"x": 0.0, "y": 0.0, "z": 0.0})
-    orientation: dict[str, float] = field(default_factory=lambda: {"x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0})
+    orientation: dict[str, float] = field(
+        default_factory=lambda: {"x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0}
+    )
 
 
 @dataclass
@@ -533,7 +537,9 @@ class ControllerROS2Node(ControllerROS2NodeBase):
         """Get QoS profile for publishers/subscribers."""
         if is_ros2_available() and QoSProfile is not None:
             return QoSProfile(
-                reliability=ReliabilityPolicy.RELIABLE if self._config.qos_reliable else ReliabilityPolicy.BEST_EFFORT,
+                reliability=ReliabilityPolicy.RELIABLE
+                if self._config.qos_reliable
+                else ReliabilityPolicy.BEST_EFFORT,
                 history=HistoryPolicy.KEEP_LAST,
                 depth=self._config.qos_depth,
             )
@@ -660,7 +666,10 @@ class ControllerROS2Node(ControllerROS2NodeBase):
             return msg
         else:
             return MockJointState(
-                header={"stamp": {"sec": int(time.time()), "nanosec": 0}, "frame_id": self._config.frame_id},
+                header={
+                    "stamp": {"sec": int(time.time()), "nanosec": 0},
+                    "frame_id": self._config.frame_id,
+                },
                 name=names,
                 position=positions,
                 velocity=velocities,
@@ -952,8 +961,8 @@ def generate_parameters_file(
     for actuator in controller.actuators.values():
         actuator_params.append(f"""    {actuator.name}:
       enabled: true
-      min_limit: {getattr(actuator, 'min_limit', -180.0)}
-      max_limit: {getattr(actuator, 'max_limit', 180.0)}""")
+      min_limit: {getattr(actuator, "min_limit", -180.0)}
+      max_limit: {getattr(actuator, "max_limit", 180.0)}""")
 
     actuators_yaml = "\n".join(actuator_params) if actuator_params else "    # No actuators"
 

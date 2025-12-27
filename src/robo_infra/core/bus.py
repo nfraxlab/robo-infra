@@ -716,7 +716,9 @@ class SMBus2I2CBus(I2CBus):
         self._ensure_open()
         data_bytes = bytes(data)
         self._bus.write_i2c_block_data(address, register, list(data_bytes))  # type: ignore[union-attr]
-        logger.debug("I2C write register %s[%s] = %s", hex(address), hex(register), data_bytes.hex())
+        logger.debug(
+            "I2C write register %s[%s] = %s", hex(address), hex(register), data_bytes.hex()
+        )
         return len(data_bytes)
 
     def read_register(self, address: int, register: int, length: int) -> bytes:
@@ -732,7 +734,13 @@ class SMBus2I2CBus(I2CBus):
         """
         self._ensure_open()
         result = bytes(self._bus.read_i2c_block_data(address, register, length))  # type: ignore[union-attr]
-        logger.debug("I2C read register %s[%s] (%d bytes): %s", hex(address), hex(register), length, result.hex())
+        logger.debug(
+            "I2C read register %s[%s] (%d bytes): %s",
+            hex(address),
+            hex(register),
+            length,
+            result.hex(),
+        )
         return result
 
     def write_byte(self, address: int, value: int) -> None:

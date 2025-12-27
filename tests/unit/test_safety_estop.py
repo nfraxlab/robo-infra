@@ -327,9 +327,7 @@ class TestTrigger:
         assert received_event.reason == "safety issue"
         assert received_event.triggered_by == "sensor"
 
-    def test_trigger_callback_exception_handled(
-        self, caplog: pytest.LogCaptureFixture
-    ) -> None:
+    def test_trigger_callback_exception_handled(self, caplog: pytest.LogCaptureFixture) -> None:
         """Callback exception is logged but doesn't prevent E-stop."""
         estop = EStop()
         bad_callback = MagicMock(side_effect=Exception("callback error"))
@@ -972,9 +970,7 @@ class TestLogging:
 
         assert "e-stop" in caplog.text.lower() or "estop" in caplog.text.lower()
 
-    def test_successful_disable_logs_info(
-        self, caplog: pytest.LogCaptureFixture
-    ) -> None:
+    def test_successful_disable_logs_info(self, caplog: pytest.LogCaptureFixture) -> None:
         """Successful actuator disable logs at INFO level."""
         estop = EStop()
         motor = MockActuator(name="motor1")
@@ -985,9 +981,7 @@ class TestLogging:
 
         assert "motor1" in caplog.text
 
-    def test_failed_disable_logs_error(
-        self, caplog: pytest.LogCaptureFixture
-    ) -> None:
+    def test_failed_disable_logs_error(self, caplog: pytest.LogCaptureFixture) -> None:
         """Failed actuator disable logs at ERROR level."""
         config = EStopConfig(propagate_errors=False)
         estop = EStop(config=config)
@@ -1000,9 +994,7 @@ class TestLogging:
         assert "motor1" in caplog.text
         assert "failed" in caplog.text.lower()
 
-    def test_reset_logs_warning_when_pending(
-        self, caplog: pytest.LogCaptureFixture
-    ) -> None:
+    def test_reset_logs_warning_when_pending(self, caplog: pytest.LogCaptureFixture) -> None:
         """Reset pending logs warning."""
         config = EStopConfig(require_reset_confirmation=True)
         estop = EStop(config=config)
@@ -1023,9 +1015,7 @@ class TestLogging:
 
         assert "force" in caplog.text.lower()
 
-    def test_disable_system_logs_critical(
-        self, caplog: pytest.LogCaptureFixture
-    ) -> None:
+    def test_disable_system_logs_critical(self, caplog: pytest.LogCaptureFixture) -> None:
         """Disabling system logs at CRITICAL level."""
         estop = EStop()
 

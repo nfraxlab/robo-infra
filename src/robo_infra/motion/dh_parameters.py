@@ -161,20 +161,26 @@ class DHParameter:
 
         if convention == DHConvention.STANDARD:
             # Standard DH: T = Rz(theta) @ Tz(d) @ Tx(a) @ Rx(alpha)
-            matrix = np.array([
-                [ct, -st*ca,  st*sa, a*ct],
-                [st,  ct*ca, -ct*sa, a*st],
-                [0,   sa,     ca,    d],
-                [0,   0,      0,     1],
-            ], dtype=np.float64)
+            matrix = np.array(
+                [
+                    [ct, -st * ca, st * sa, a * ct],
+                    [st, ct * ca, -ct * sa, a * st],
+                    [0, sa, ca, d],
+                    [0, 0, 0, 1],
+                ],
+                dtype=np.float64,
+            )
         else:
             # Modified DH: T = Rx(alpha_{i-1}) @ Tx(a_{i-1}) @ Rz(theta) @ Tz(d)
-            matrix = np.array([
-                [ct,        -st,       0,     a],
-                [st*ca,      ct*ca,   -sa,   -sa*d],
-                [st*sa,      ct*sa,    ca,    ca*d],
-                [0,          0,        0,     1],
-            ], dtype=np.float64)
+            matrix = np.array(
+                [
+                    [ct, -st, 0, a],
+                    [st * ca, ct * ca, -sa, -sa * d],
+                    [st * sa, ct * sa, ca, ca * d],
+                    [0, 0, 0, 1],
+                ],
+                dtype=np.float64,
+            )
 
         return Transform.from_matrix(matrix)
 
@@ -245,9 +251,7 @@ class DHChain:
             ValueError: If wrong number of joint values provided.
         """
         if len(joint_values) != self.num_joints:
-            raise ValueError(
-                f"Expected {self.num_joints} joint values, got {len(joint_values)}"
-            )
+            raise ValueError(f"Expected {self.num_joints} joint values, got {len(joint_values)}")
 
         # Start with base transform
         T = self.base_transform
@@ -271,9 +275,7 @@ class DHChain:
             List of transforms from base to each frame (including end effector).
         """
         if len(joint_values) != self.num_joints:
-            raise ValueError(
-                f"Expected {self.num_joints} joint values, got {len(joint_values)}"
-            )
+            raise ValueError(f"Expected {self.num_joints} joint values, got {len(joint_values)}")
 
         transforms: list[Transform] = []
         T = self.base_transform
@@ -434,8 +436,7 @@ class DHChain:
             List of booleans indicating if each joint is within limits.
         """
         return [
-            limit.is_within(q)
-            for limit, q in zip(self.joint_limits, joint_values, strict=False)
+            limit.is_within(q) for limit, q in zip(self.joint_limits, joint_values, strict=False)
         ]
 
     def clamp_to_limits(self, joint_values: Sequence[float]) -> list[float]:
@@ -447,10 +448,7 @@ class DHChain:
         Returns:
             Clamped joint values.
         """
-        return [
-            limit.clamp(q)
-            for limit, q in zip(self.joint_limits, joint_values, strict=False)
-        ]
+        return [limit.clamp(q) for limit, q in zip(self.joint_limits, joint_values, strict=False)]
 
 
 # =============================================================================
@@ -471,37 +469,55 @@ def create_puma_560() -> DHChain:
     # Reference: Craig, Introduction to Robotics
     params = [
         DHParameter(
-            d=0.0, theta=0.0, a=0.0, alpha=-math.pi/2,
+            d=0.0,
+            theta=0.0,
+            a=0.0,
+            alpha=-math.pi / 2,
             joint_type=JointType.REVOLUTE,
             limit=JointLimit(-2.79, 2.79),
             name="waist",
         ),
         DHParameter(
-            d=0.0, theta=0.0, a=0.4318, alpha=0.0,
+            d=0.0,
+            theta=0.0,
+            a=0.4318,
+            alpha=0.0,
             joint_type=JointType.REVOLUTE,
             limit=JointLimit(-3.93, 0.79),
             name="shoulder",
         ),
         DHParameter(
-            d=0.15005, theta=0.0, a=0.0203, alpha=-math.pi/2,
+            d=0.15005,
+            theta=0.0,
+            a=0.0203,
+            alpha=-math.pi / 2,
             joint_type=JointType.REVOLUTE,
             limit=JointLimit(-0.79, 3.93),
             name="elbow",
         ),
         DHParameter(
-            d=0.4318, theta=0.0, a=0.0, alpha=math.pi/2,
+            d=0.4318,
+            theta=0.0,
+            a=0.0,
+            alpha=math.pi / 2,
             joint_type=JointType.REVOLUTE,
             limit=JointLimit(-5.24, 5.24),
             name="wrist_1",
         ),
         DHParameter(
-            d=0.0, theta=0.0, a=0.0, alpha=-math.pi/2,
+            d=0.0,
+            theta=0.0,
+            a=0.0,
+            alpha=-math.pi / 2,
             joint_type=JointType.REVOLUTE,
             limit=JointLimit(-2.01, 2.01),
             name="wrist_2",
         ),
         DHParameter(
-            d=0.0, theta=0.0, a=0.0, alpha=0.0,
+            d=0.0,
+            theta=0.0,
+            a=0.0,
+            alpha=0.0,
             joint_type=JointType.REVOLUTE,
             limit=JointLimit(-5.24, 5.24),
             name="wrist_3",
@@ -523,39 +539,57 @@ def create_ur5() -> DHChain:
     # Reference: UR5 Technical Specifications
     params = [
         DHParameter(
-            d=0.089159, theta=0.0, a=0.0, alpha=math.pi/2,
+            d=0.089159,
+            theta=0.0,
+            a=0.0,
+            alpha=math.pi / 2,
             joint_type=JointType.REVOLUTE,
-            limit=JointLimit(-2*math.pi, 2*math.pi),
+            limit=JointLimit(-2 * math.pi, 2 * math.pi),
             name="shoulder_pan",
         ),
         DHParameter(
-            d=0.0, theta=0.0, a=-0.42500, alpha=0.0,
+            d=0.0,
+            theta=0.0,
+            a=-0.42500,
+            alpha=0.0,
             joint_type=JointType.REVOLUTE,
-            limit=JointLimit(-2*math.pi, 2*math.pi),
+            limit=JointLimit(-2 * math.pi, 2 * math.pi),
             name="shoulder_lift",
         ),
         DHParameter(
-            d=0.0, theta=0.0, a=-0.39225, alpha=0.0,
+            d=0.0,
+            theta=0.0,
+            a=-0.39225,
+            alpha=0.0,
             joint_type=JointType.REVOLUTE,
-            limit=JointLimit(-2*math.pi, 2*math.pi),
+            limit=JointLimit(-2 * math.pi, 2 * math.pi),
             name="elbow",
         ),
         DHParameter(
-            d=0.10915, theta=0.0, a=0.0, alpha=math.pi/2,
+            d=0.10915,
+            theta=0.0,
+            a=0.0,
+            alpha=math.pi / 2,
             joint_type=JointType.REVOLUTE,
-            limit=JointLimit(-2*math.pi, 2*math.pi),
+            limit=JointLimit(-2 * math.pi, 2 * math.pi),
             name="wrist_1",
         ),
         DHParameter(
-            d=0.09465, theta=0.0, a=0.0, alpha=-math.pi/2,
+            d=0.09465,
+            theta=0.0,
+            a=0.0,
+            alpha=-math.pi / 2,
             joint_type=JointType.REVOLUTE,
-            limit=JointLimit(-2*math.pi, 2*math.pi),
+            limit=JointLimit(-2 * math.pi, 2 * math.pi),
             name="wrist_2",
         ),
         DHParameter(
-            d=0.0823, theta=0.0, a=0.0, alpha=0.0,
+            d=0.0823,
+            theta=0.0,
+            a=0.0,
+            alpha=0.0,
             joint_type=JointType.REVOLUTE,
-            limit=JointLimit(-2*math.pi, 2*math.pi),
+            limit=JointLimit(-2 * math.pi, 2 * math.pi),
             name="wrist_3",
         ),
     ]
@@ -577,19 +611,28 @@ def create_planar_3dof(l1: float, l2: float, l3: float) -> DHChain:
     """
     params = [
         DHParameter(
-            d=0.0, theta=0.0, a=l1, alpha=0.0,
+            d=0.0,
+            theta=0.0,
+            a=l1,
+            alpha=0.0,
             joint_type=JointType.REVOLUTE,
             limit=JointLimit(-math.pi, math.pi),
             name="joint_1",
         ),
         DHParameter(
-            d=0.0, theta=0.0, a=l2, alpha=0.0,
+            d=0.0,
+            theta=0.0,
+            a=l2,
+            alpha=0.0,
             joint_type=JointType.REVOLUTE,
             limit=JointLimit(-math.pi, math.pi),
             name="joint_2",
         ),
         DHParameter(
-            d=0.0, theta=0.0, a=l3, alpha=0.0,
+            d=0.0,
+            theta=0.0,
+            a=l3,
+            alpha=0.0,
             joint_type=JointType.REVOLUTE,
             limit=JointLimit(-math.pi, math.pi),
             name="joint_3",
@@ -609,37 +652,55 @@ def create_stanford_arm() -> DHChain:
     """
     params = [
         DHParameter(
-            d=0.4120, theta=0.0, a=0.0, alpha=-math.pi/2,
+            d=0.4120,
+            theta=0.0,
+            a=0.0,
+            alpha=-math.pi / 2,
             joint_type=JointType.REVOLUTE,
             limit=JointLimit(-2.79, 2.79),
             name="waist",
         ),
         DHParameter(
-            d=0.1540, theta=0.0, a=0.0, alpha=math.pi/2,
+            d=0.1540,
+            theta=0.0,
+            a=0.0,
+            alpha=math.pi / 2,
             joint_type=JointType.REVOLUTE,
             limit=JointLimit(-2.79, 2.79),
             name="shoulder",
         ),
         DHParameter(
-            d=0.0, theta=0.0, a=0.0, alpha=0.0,
+            d=0.0,
+            theta=0.0,
+            a=0.0,
+            alpha=0.0,
             joint_type=JointType.PRISMATIC,  # Prismatic joint!
             limit=JointLimit(0.0, 1.0),
             name="extension",
         ),
         DHParameter(
-            d=0.0, theta=0.0, a=0.0, alpha=-math.pi/2,
+            d=0.0,
+            theta=0.0,
+            a=0.0,
+            alpha=-math.pi / 2,
             joint_type=JointType.REVOLUTE,
             limit=JointLimit(-2.79, 2.79),
             name="wrist_1",
         ),
         DHParameter(
-            d=0.0, theta=0.0, a=0.0, alpha=math.pi/2,
+            d=0.0,
+            theta=0.0,
+            a=0.0,
+            alpha=math.pi / 2,
             joint_type=JointType.REVOLUTE,
             limit=JointLimit(-1.57, 1.57),
             name="wrist_2",
         ),
         DHParameter(
-            d=0.0, theta=0.0, a=0.0, alpha=0.0,
+            d=0.0,
+            theta=0.0,
+            a=0.0,
+            alpha=0.0,
             joint_type=JointType.REVOLUTE,
             limit=JointLimit(-2.79, 2.79),
             name="wrist_3",

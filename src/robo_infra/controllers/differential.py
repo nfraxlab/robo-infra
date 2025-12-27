@@ -646,7 +646,7 @@ class DifferentialDrive(Controller):
 
     def __repr__(self) -> str:
         """String representation."""
-        return f"DifferentialDrive(name='{self.name}', " f"state={self._dd_state.value})"
+        return f"DifferentialDrive(name='{self.name}', state={self._dd_state.value})"
 
 
 __all__ = [

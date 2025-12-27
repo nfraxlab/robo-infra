@@ -775,15 +775,11 @@ class TestWebSocketRouter:
         from robo_infra.integrations.svc_infra import create_websocket_router
 
         # Public
-        public_router = create_websocket_router(
-            mock_controller, auth_required=False
-        )
+        public_router = create_websocket_router(mock_controller, auth_required=False)
         assert public_router is not None
 
         # Protected
-        protected_router = create_websocket_router(
-            mock_controller, auth_required=True
-        )
+        protected_router = create_websocket_router(mock_controller, auth_required=True)
         assert protected_router is not None
 
     def test_websocket_router_with_update_rate(
@@ -793,9 +789,7 @@ class TestWebSocketRouter:
         """create_websocket_router should accept update_rate_hz parameter."""
         from robo_infra.integrations.svc_infra import create_websocket_router
 
-        router = create_websocket_router(
-            mock_controller, update_rate_hz=20.0
-        )
+        router = create_websocket_router(mock_controller, update_rate_hz=20.0)
         assert router is not None
 
     def test_deprecated_websocket_handler_warns(
@@ -960,9 +954,7 @@ class TestMapExceptionToHttp:
         """PermissionError should map to 403 status code."""
         from robo_infra.integrations.svc_infra import map_exception_to_http
 
-        status, title, _detail = map_exception_to_http(
-            PermissionError("access denied")
-        )
+        status, title, _detail = map_exception_to_http(PermissionError("access denied"))
         assert status == 403
         assert title == "Forbidden"
 
@@ -971,9 +963,7 @@ class TestMapExceptionToHttp:
         from robo_infra.integrations.svc_infra import map_exception_to_http
 
         custom = {ValueError: 422}  # Override default 400
-        status, _title, _detail = map_exception_to_http(
-            ValueError("validation"), custom
-        )
+        status, _title, _detail = map_exception_to_http(ValueError("validation"), custom)
         assert status == 422
 
 
@@ -1114,8 +1104,7 @@ class TestWebSocketHandlerCreation:
             warnings.simplefilter("always")
             _ = create_websocket_handler(mock_controller)
             deprecation_warnings = [
-                warning for warning in w
-                if issubclass(warning.category, DeprecationWarning)
+                warning for warning in w if issubclass(warning.category, DeprecationWarning)
             ]
             assert len(deprecation_warnings) >= 1
 
@@ -1161,9 +1150,7 @@ class TestWebSocketRouterCreation:
         """Test WebSocket router with custom tags."""
         from robo_infra.integrations.svc_infra import create_websocket_router
 
-        router = create_websocket_router(
-            mock_controller, tags=["WebSocket", "Robotics"]
-        )
+        router = create_websocket_router(mock_controller, tags=["WebSocket", "Robotics"])
         assert "WebSocket" in router.tags
 
     def test_websocket_router_auth_required_false(

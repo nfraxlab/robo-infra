@@ -546,7 +546,9 @@ class ESP32DACPin:
                     details="REPL connection not established",
                 )
 
-            self._repl.exec(f"from machine import DAC,Pin; dac{self._number}=DAC(Pin({self._number}))")
+            self._repl.exec(
+                f"from machine import DAC,Pin; dac{self._number}=DAC(Pin({self._number}))"
+            )
 
         self._initialized = True
 
@@ -896,7 +898,9 @@ class MicroPythonREPL:
             for port in serial.tools.list_ports.comports():
                 if port.vid in esp_vids:
                     return port.device
-                if port.description and ("esp" in port.description.lower() or "cp210" in port.description.lower()):
+                if port.description and (
+                    "esp" in port.description.lower() or "cp210" in port.description.lower()
+                ):
                     return port.device
 
         except ImportError:

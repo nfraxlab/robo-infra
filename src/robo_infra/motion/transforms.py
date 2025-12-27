@@ -166,17 +166,20 @@ class Rotation:
             x, y, z, w = quaternion
 
         # Normalize quaternion
-        norm = math.sqrt(x*x + y*y + z*z + w*w)
+        norm = math.sqrt(x * x + y * y + z * z + w * w)
         if norm < 1e-10:
             raise ValueError("Quaternion has zero norm")
-        x, y, z, w = x/norm, y/norm, z/norm, w/norm
+        x, y, z, w = x / norm, y / norm, z / norm, w / norm
 
         # Convert to rotation matrix
-        matrix = np.array([
-            [1 - 2*(y*y + z*z), 2*(x*y - z*w), 2*(x*z + y*w)],
-            [2*(x*y + z*w), 1 - 2*(x*x + z*z), 2*(y*z - x*w)],
-            [2*(x*z - y*w), 2*(y*z + x*w), 1 - 2*(x*x + y*y)],
-        ], dtype=np.float64)
+        matrix = np.array(
+            [
+                [1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w)],
+                [2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w)],
+                [2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y)],
+            ],
+            dtype=np.float64,
+        )
 
         return cls(matrix=matrix)
 
@@ -205,21 +208,24 @@ class Rotation:
 
         # Normalize axis
         ax, ay, az = axis
-        norm = math.sqrt(ax*ax + ay*ay + az*az)
+        norm = math.sqrt(ax * ax + ay * ay + az * az)
         if norm < 1e-10:
             raise ValueError("Axis has zero length")
-        ax, ay, az = ax/norm, ay/norm, az/norm
+        ax, ay, az = ax / norm, ay / norm, az / norm
 
         # Rodrigues' rotation formula
         c = math.cos(angle)
         s = math.sin(angle)
         t = 1 - c
 
-        matrix = np.array([
-            [t*ax*ax + c, t*ax*ay - s*az, t*ax*az + s*ay],
-            [t*ax*ay + s*az, t*ay*ay + c, t*ay*az - s*ax],
-            [t*ax*az - s*ay, t*ay*az + s*ax, t*az*az + c],
-        ], dtype=np.float64)
+        matrix = np.array(
+            [
+                [t * ax * ax + c, t * ax * ay - s * az, t * ax * az + s * ay],
+                [t * ax * ay + s * az, t * ay * ay + c, t * ay * az - s * ax],
+                [t * ax * az - s * ay, t * ay * az + s * ax, t * az * az + c],
+            ],
+            dtype=np.float64,
+        )
 
         return cls(matrix=matrix)
 
@@ -237,12 +243,12 @@ class Rotation:
             Rotation object.
         """
         rx, ry, rz = rotvec
-        angle = math.sqrt(rx*rx + ry*ry + rz*rz)
+        angle = math.sqrt(rx * rx + ry * ry + rz * rz)
 
         if angle < 1e-10:
             return cls.identity()
 
-        axis = (rx/angle, ry/angle, rz/angle)
+        axis = (rx / angle, ry / angle, rz / angle)
         return cls.from_axis_angle(axis, angle, degrees=False)
 
     def as_euler(
@@ -268,7 +274,7 @@ class Rotation:
         # Handle common cases
         if order_str == "xyz":
             # Roll (X), Pitch (Y), Yaw (Z)
-            sy = math.sqrt(r[0, 0]**2 + r[1, 0]**2)
+            sy = math.sqrt(r[0, 0] ** 2 + r[1, 0] ** 2)
             singular = sy < 1e-6
 
             if not singular:
@@ -284,7 +290,7 @@ class Rotation:
 
         elif order_str == "zyx":
             # Yaw (Z), Pitch (Y), Roll (X)
-            sy = math.sqrt(r[0, 0]**2 + r[0, 1]**2)
+            sy = math.sqrt(r[0, 0] ** 2 + r[0, 1] ** 2)
             singular = sy < 1e-6
 
             if not singular:
@@ -300,7 +306,7 @@ class Rotation:
 
         elif order_str == "zyz":
             # ZYZ Euler angles (common for robot arms)
-            beta = math.atan2(math.sqrt(r[2, 0]**2 + r[2, 1]**2), r[2, 2])
+            beta = math.atan2(math.sqrt(r[2, 0] ** 2 + r[2, 1] ** 2), r[2, 2])
             singular = abs(math.sin(beta)) < 1e-6
 
             if not singular:
@@ -308,7 +314,9 @@ class Rotation:
                 gamma = math.atan2(r[2, 1], -r[2, 0])
             else:
                 alpha = 0
-                gamma = math.atan2(-r[0, 1], r[1, 1]) if r[2, 2] > 0 else -math.atan2(-r[0, 1], r[1, 1])
+                gamma = (
+                    math.atan2(-r[0, 1], r[1, 1]) if r[2, 2] > 0 else -math.atan2(-r[0, 1], r[1, 1])
+                )
 
             angles = np.array([alpha, beta, gamma])
 
@@ -379,12 +387,12 @@ class Rotation:
 
         angle = 2.0 * math.acos(np.clip(w, -1.0, 1.0))
 
-        s = math.sqrt(1.0 - w*w)
+        s = math.sqrt(1.0 - w * w)
         if s < 1e-10:
             # No rotation, axis is arbitrary
             axis = np.array([1.0, 0.0, 0.0])
         else:
-            axis = np.array([x/s, y/s, z/s], dtype=np.float64)
+            axis = np.array([x / s, y / s, z / s], dtype=np.float64)
 
         if degrees:
             angle = math.degrees(angle)

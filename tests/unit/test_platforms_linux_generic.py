@@ -1241,18 +1241,21 @@ class TestLinuxPlatformCapabilities:
     def test_gpio_capability_present(self) -> None:
         """Test GPIO capability is always present."""
         from robo_infra.platforms.base import PlatformCapability
+
         platform = LinuxGenericPlatform(simulation=True)
         assert PlatformCapability.GPIO in platform.capabilities
 
     def test_platform_type_is_linux_generic(self) -> None:
         """Test platform type is LINUX_GENERIC."""
         from robo_infra.platforms.base import PlatformType
+
         platform = LinuxGenericPlatform(simulation=True)
         assert platform.platform_type == PlatformType.LINUX_GENERIC
 
     def test_get_info_returns_platform_info(self) -> None:
         """Test get_info returns PlatformInfo."""
         from robo_infra.platforms.base import PlatformInfo
+
         platform = LinuxGenericPlatform(simulation=True)
         info = platform.get_info()
         assert isinstance(info, PlatformInfo)

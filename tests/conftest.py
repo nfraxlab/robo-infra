@@ -142,31 +142,23 @@ def pytest_collection_modifyitems(config: Config, items: list) -> None:
         # Auto-skip ai-infra tests if package not available
         if "ai_infra" in item.nodeid and not AI_INFRA_AVAILABLE:
             item.add_marker(
-                pytest.mark.skip(
-                    reason="Requires ai-infra package (pip install robo-infra[ai])"
-                )
+                pytest.mark.skip(reason="Requires ai-infra package (pip install robo-infra[ai])")
             )
 
         # Auto-skip svc-infra tests if package not available
         if "svc_infra" in item.nodeid and not SVC_INFRA_AVAILABLE:
             item.add_marker(
-                pytest.mark.skip(
-                    reason="Requires svc-infra package (pip install robo-infra[api])"
-                )
+                pytest.mark.skip(reason="Requires svc-infra package (pip install robo-infra[api])")
             )
 
         # Auto-skip API integration tests if fastapi not available
         if "api_integration" in item.nodeid and not FASTAPI_AVAILABLE:
             item.add_marker(
-                pytest.mark.skip(
-                    reason="Requires fastapi package (pip install robo-infra[api])"
-                )
+                pytest.mark.skip(reason="Requires fastapi package (pip install robo-infra[api])")
             )
 
         # Auto-skip AI integration tests if ai-infra not available
         if "ai_integration" in item.nodeid and not AI_INFRA_AVAILABLE:
             item.add_marker(
-                pytest.mark.skip(
-                    reason="Requires ai-infra package (pip install robo-infra[ai])"
-                )
+                pytest.mark.skip(reason="Requires ai-infra package (pip install robo-infra[ai])")
             )

@@ -50,8 +50,7 @@ class WatchdogError(SafetyError):
         self.timeout = timeout
         self.last_feed_age = last_feed_age
         message = (
-            f"Watchdog '{name}' timed out: no feed for {last_feed_age:.3f}s "
-            f"(timeout: {timeout}s)"
+            f"Watchdog '{name}' timed out: no feed for {last_feed_age:.3f}s (timeout: {timeout}s)"
         )
         super().__init__(message, action_taken="E-stop triggered")
 

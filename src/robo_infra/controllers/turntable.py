@@ -462,13 +462,9 @@ class Turntable(Controller):
         # Validate angle against limits
         config = self._turntable_config
         if config.angle_min is not None and angle < config.angle_min:
-            raise ValueError(
-                f"Angle {angle} below minimum {config.angle_min}"
-            )
+            raise ValueError(f"Angle {angle} below minimum {config.angle_min}")
         if config.angle_max is not None and angle > config.angle_max:
-            raise ValueError(
-                f"Angle {angle} above maximum {config.angle_max}"
-            )
+            raise ValueError(f"Angle {angle} above maximum {config.angle_max}")
 
         # Use default speed if not specified
         if speed is None:
@@ -477,9 +473,7 @@ class Turntable(Controller):
         # Validate speed
         speed = abs(speed)
         if speed > config.speed_max:
-            raise ValueError(
-                f"Speed {speed} exceeds maximum {config.speed_max}"
-            )
+            raise ValueError(f"Speed {speed} exceeds maximum {config.speed_max}")
 
         # Calculate delta
         delta = angle - self._current_angle
@@ -554,15 +548,11 @@ class Turntable(Controller):
 
         # Cannot do continuous rotation with limits
         if config.is_limited:
-            raise ValueError(
-                "Continuous rotation not allowed with angle limits"
-            )
+            raise ValueError("Continuous rotation not allowed with angle limits")
 
         # Validate RPM
         if abs(rpm) > config.rpm_max:
-            raise ValueError(
-                f"RPM {abs(rpm)} exceeds maximum {config.rpm_max}"
-            )
+            raise ValueError(f"RPM {abs(rpm)} exceeds maximum {config.rpm_max}")
 
         # Calculate speed in deg/s
         speed = abs(rpm) * 360.0 / 60.0  # Convert RPM to deg/s
@@ -636,9 +626,7 @@ class Turntable(Controller):
             raise ValueError("No index positions defined")
 
         if index < 0 or index >= len(positions):
-            raise ValueError(
-                f"Index {index} out of range (0 to {len(positions) - 1})"
-            )
+            raise ValueError(f"Index {index} out of range (0 to {len(positions) - 1})")
 
         target = positions[index]
         self.rotate_to(target, speed=speed)

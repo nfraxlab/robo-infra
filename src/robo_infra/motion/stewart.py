@@ -444,9 +444,7 @@ class StewartPlatform:
             for i in range(3, 6):
                 pose[i] = math.atan2(math.sin(pose[i]), math.cos(pose[i]))
 
-        raise ValueError(
-            f"Forward kinematics did not converge after {max_iterations} iterations"
-        )
+        raise ValueError(f"Forward kinematics did not converge after {max_iterations} iterations")
 
     def _compute_jacobian(
         self,

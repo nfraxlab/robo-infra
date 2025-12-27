@@ -164,6 +164,7 @@ class TestJacobianIKSolver:
 
         # Target way beyond reach
         from robo_infra.motion.transforms import Transform
+
         T_target = Transform.from_translation(100.0, 0.0, 0.0)
 
         result = solver.solve_detailed(T_target)
@@ -298,6 +299,7 @@ class TestSolveMethod:
 
         # Very hard target with only 1 iteration
         from robo_infra.motion.transforms import Transform
+
         T_target = Transform.from_translation(100.0, 0.0, 0.0)
 
         result = solver.solve(T_target)
@@ -336,6 +338,7 @@ class TestErrorHandling:
         solver = JacobianIKSolver(chain)
 
         from robo_infra.motion.transforms import Transform
+
         T_target = Transform.identity()
 
         with pytest.raises(ValueError):

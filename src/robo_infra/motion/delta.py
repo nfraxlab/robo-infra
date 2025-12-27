@@ -268,8 +268,7 @@ class DeltaRobot:
         # This gives: a*z² + b*z + c = 0
         a = a1 * a1 + a2 * a2 + dnm * dnm
         b = 2.0 * (a1 * b1 + a2 * (b2 - y1 * dnm) - z1 * dnm * dnm)
-        c = (b1 * b1 + (b2 - y1 * dnm) * (b2 - y1 * dnm) +
-             z1 * z1 * dnm * dnm - re * re * dnm * dnm)
+        c = b1 * b1 + (b2 - y1 * dnm) * (b2 - y1 * dnm) + z1 * z1 * dnm * dnm - re * re * dnm * dnm
 
         # Discriminant
         d = b * b - 4.0 * a * c
@@ -401,7 +400,7 @@ class DeltaRobot:
 
         a = 2.0 * rf * y_eff
         b = 2.0 * rf * z
-        c = x*x + y_eff*y_eff + z*z + rf*rf - re*re
+        c = x * x + y_eff * y_eff + z * z + rf * rf - re * re
 
         # Solve A*cos(theta) + B*sin(theta) + C = 0
         # Using substitution: t = tan(theta/2)
@@ -409,7 +408,7 @@ class DeltaRobot:
         # A*(1-t²) + B*2t + C*(1+t²) = 0
         # (C-A)*t² + 2B*t + (C+A) = 0
 
-        d = b*b - c*c + a*a
+        d = b * b - c * c + a * a
 
         if d < 0:
             return None  # No solution for this arm
@@ -491,7 +490,7 @@ class DeltaRobot:
         # Check for workspace boundary
         try:
             x, y, _z = self.forward(theta1, theta2, theta3)
-            r = math.sqrt(x*x + y*y)
+            r = math.sqrt(x * x + y * y)
             max_reach = self.upper_arm_length + self.lower_arm_length
             if r > 0.95 * max_reach:
                 return DeltaSingularityType.WORKSPACE_BOUNDARY
@@ -522,11 +521,13 @@ class DeltaRobot:
 
         jacobian = np.zeros((3, 3))
 
-        for i, (t1, t2, t3) in enumerate([
-            (theta1 + eps, theta2, theta3),
-            (theta1, theta2 + eps, theta3),
-            (theta1, theta2, theta3 + eps),
-        ]):
+        for i, (t1, t2, t3) in enumerate(
+            [
+                (theta1 + eps, theta2, theta3),
+                (theta1, theta2 + eps, theta3),
+                (theta1, theta2, theta3 + eps),
+            ]
+        ):
             x, y, z = self.forward(t1, t2, t3)
             jacobian[0, i] = (x - x0) / eps
             jacobian[1, i] = (y - y0) / eps
@@ -548,13 +549,13 @@ class DeltaRobot:
         Returns:
             DeltaWorkspace with bounds and volume estimate.
         """
-        x_min = y_min = z_min = float('inf')
-        x_max = y_max = z_max = float('-inf')
+        x_min = y_min = z_min = float("inf")
+        x_max = y_max = z_max = float("-inf")
 
         theta_min, theta_max = self.limits.theta_range
 
         valid_points = 0
-        total_points = resolution ** 3
+        total_points = resolution**3
 
         for i in range(resolution):
             t1 = theta_min + (theta_max - theta_min) * i / (resolution - 1)

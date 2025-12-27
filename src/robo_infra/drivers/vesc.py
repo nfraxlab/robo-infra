@@ -454,7 +454,9 @@ class VESCDriver(Driver):
         Args:
             current: Motor current in Amps. Positive for forward, negative for reverse.
         """
-        current = max(-self._vesc_config.current_limit, min(self._vesc_config.current_limit, current))
+        current = max(
+            -self._vesc_config.current_limit, min(self._vesc_config.current_limit, current)
+        )
 
         if self._simulation:
             self._sim_control_mode = VESCControlMode.CURRENT
@@ -563,7 +565,9 @@ class VESCDriver(Driver):
                 watt_hours_charged=response.watt_hours_charged,
                 tachometer=response.tachometer,
                 tachometer_abs=response.tachometer_abs,
-                fault=VESCFaultCode(response.mc_fault_code) if hasattr(response, "mc_fault_code") else VESCFaultCode.NONE,
+                fault=VESCFaultCode(response.mc_fault_code)
+                if hasattr(response, "mc_fault_code")
+                else VESCFaultCode.NONE,
                 pid_pos=response.pid_pos_now if hasattr(response, "pid_pos_now") else 0.0,
             )
 

@@ -75,6 +75,7 @@ class TestODriveDriverLifecycle:
         driver = ODriveDriver()
         driver.connect()
         from robo_infra.core.driver import DriverState
+
         assert driver._state == DriverState.CONNECTED
 
     def test_disconnect(self) -> None:
@@ -83,6 +84,7 @@ class TestODriveDriverLifecycle:
         driver.connect()
         driver.disconnect()
         from robo_infra.core.driver import DriverState
+
         assert driver._state == DriverState.DISCONNECTED
 
 

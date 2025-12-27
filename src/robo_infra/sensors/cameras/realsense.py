@@ -57,7 +57,6 @@ from robo_infra.sensors.camera import (
 
 
 if TYPE_CHECKING:
-
     from numpy.typing import NDArray
 
 
@@ -145,8 +144,7 @@ class PointCloud:
             import open3d as o3d
         except ImportError as e:
             raise ImportError(
-                "Open3D required for point cloud conversion:\n"
-                "  pip install open3d"
+                "Open3D required for point cloud conversion:\n  pip install open3d"
             ) from e
 
         pcd = o3d.geometry.PointCloud()
@@ -302,8 +300,7 @@ class RealSenseCamera(Camera):
                 self._init_simulation()
                 return
             raise ImportError(
-                "pyrealsense2 required for RealSense cameras:\n"
-                "  pip install robo-infra[realsense]"
+                "pyrealsense2 required for RealSense cameras:\n  pip install robo-infra[realsense]"
             ) from e
 
         self._rs = rs
@@ -392,9 +389,7 @@ class RealSenseCamera(Camera):
         # Laser power
         if isinstance(self._config, RealSenseConfig):
             if depth_sensor.supports(rs.option.laser_power):
-                depth_sensor.set_option(
-                    rs.option.laser_power, self._config.laser_power
-                )
+                depth_sensor.set_option(rs.option.laser_power, self._config.laser_power)
             if depth_sensor.supports(rs.option.emitter_enabled):
                 depth_sensor.set_option(
                     rs.option.emitter_enabled,
@@ -408,9 +403,7 @@ class RealSenseCamera(Camera):
                     "high_density": rs.rs400_visual_preset.high_density,
                     "default": rs.rs400_visual_preset.default,
                 }
-                preset = presets.get(
-                    self._config.depth_preset, rs.rs400_visual_preset.default
-                )
+                preset = presets.get(self._config.depth_preset, rs.rs400_visual_preset.default)
                 depth_sensor.set_option(rs.option.visual_preset, preset.value)
 
     def _setup_filters(self) -> None:
@@ -425,9 +418,7 @@ class RealSenseCamera(Camera):
         # Decimation filter (reduces resolution for faster processing)
         if self._config.decimation_filter:
             decimation = rs.decimation_filter()
-            decimation.set_option(
-                rs.option.filter_magnitude, self._config.decimation_magnitude
-            )
+            decimation.set_option(rs.option.filter_magnitude, self._config.decimation_magnitude)
             self._filters.append(decimation)
 
         # Spatial filter (edge-preserving smoothing)
@@ -708,9 +699,7 @@ class RealSenseCamera(Camera):
             # Get colors if available
             colors = None
             if colored and color_frame:
-                tex_coords = np.asanyarray(points.get_texture_coordinates()).view(
-                    np.float32
-                )
+                tex_coords = np.asanyarray(points.get_texture_coordinates()).view(np.float32)
                 tex_coords = tex_coords.reshape(-1, 2)
 
                 # Sample colors from texture
@@ -852,9 +841,7 @@ class RealSenseCamera(Camera):
 
         # Return default intrinsics
         if isinstance(self._config, RealSenseConfig):
-            return CameraIntrinsics.default(
-                self._config.depth_width, self._config.depth_height
-            )
+            return CameraIntrinsics.default(self._config.depth_width, self._config.depth_height)
         return CameraIntrinsics.default(self._config.width, self._config.height)
 
     # -------------------------------------------------------------------------

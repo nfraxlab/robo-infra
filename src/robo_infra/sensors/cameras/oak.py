@@ -105,9 +105,7 @@ class Detection:
         """Bounding box area (normalized)."""
         return self.width * self.height
 
-    def to_pixels(
-        self, width: int, height: int
-    ) -> tuple[int, int, int, int]:
+    def to_pixels(self, width: int, height: int) -> tuple[int, int, int, int]:
         """Convert normalized bbox to pixel coordinates.
 
         Args:
@@ -218,19 +216,86 @@ class OAKCamera(Camera):
 
     # Common COCO class names for detection models
     COCO_CLASSES: ClassVar[list[str]] = [
-        "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train",
-        "truck", "boat", "traffic light", "fire hydrant", "stop sign",
-        "parking meter", "bench", "bird", "cat", "dog", "horse", "sheep",
-        "cow", "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella",
-        "handbag", "tie", "suitcase", "frisbee", "skis", "snowboard",
-        "sports ball", "kite", "baseball bat", "baseball glove", "skateboard",
-        "surfboard", "tennis racket", "bottle", "wine glass", "cup", "fork",
-        "knife", "spoon", "bowl", "banana", "apple", "sandwich", "orange",
-        "broccoli", "carrot", "hot dog", "pizza", "donut", "cake", "chair",
-        "couch", "potted plant", "bed", "dining table", "toilet", "tv",
-        "laptop", "mouse", "remote", "keyboard", "cell phone", "microwave",
-        "oven", "toaster", "sink", "refrigerator", "book", "clock", "vase",
-        "scissors", "teddy bear", "hair drier", "toothbrush",
+        "person",
+        "bicycle",
+        "car",
+        "motorcycle",
+        "airplane",
+        "bus",
+        "train",
+        "truck",
+        "boat",
+        "traffic light",
+        "fire hydrant",
+        "stop sign",
+        "parking meter",
+        "bench",
+        "bird",
+        "cat",
+        "dog",
+        "horse",
+        "sheep",
+        "cow",
+        "elephant",
+        "bear",
+        "zebra",
+        "giraffe",
+        "backpack",
+        "umbrella",
+        "handbag",
+        "tie",
+        "suitcase",
+        "frisbee",
+        "skis",
+        "snowboard",
+        "sports ball",
+        "kite",
+        "baseball bat",
+        "baseball glove",
+        "skateboard",
+        "surfboard",
+        "tennis racket",
+        "bottle",
+        "wine glass",
+        "cup",
+        "fork",
+        "knife",
+        "spoon",
+        "bowl",
+        "banana",
+        "apple",
+        "sandwich",
+        "orange",
+        "broccoli",
+        "carrot",
+        "hot dog",
+        "pizza",
+        "donut",
+        "cake",
+        "chair",
+        "couch",
+        "potted plant",
+        "bed",
+        "dining table",
+        "toilet",
+        "tv",
+        "laptop",
+        "mouse",
+        "remote",
+        "keyboard",
+        "cell phone",
+        "microwave",
+        "oven",
+        "toaster",
+        "sink",
+        "refrigerator",
+        "book",
+        "clock",
+        "vase",
+        "scissors",
+        "teddy bear",
+        "hair drier",
+        "toothbrush",
     ]
 
     def __init__(
@@ -306,8 +371,7 @@ class OAKCamera(Camera):
                 self._init_simulation()
                 return
             raise ImportError(
-                "depthai required for OAK cameras:\n"
-                "  pip install robo-infra[oak]"
+                "depthai required for OAK cameras:\n  pip install robo-infra[oak]"
             ) from e
 
         self._dai = dai
@@ -336,25 +400,14 @@ class OAKCamera(Camera):
         self._calibration = self._device.readCalibration()
 
         # Setup output queues
-        self._color_queue = self._device.getOutputQueue(
-            name="color", maxSize=4, blocking=False
-        )
+        self._color_queue = self._device.getOutputQueue(name="color", maxSize=4, blocking=False)
 
         if isinstance(self._config, OAKConfig) and self._config.enable_depth:
-            self._left_queue = self._device.getOutputQueue(
-                name="left", maxSize=4, blocking=False
-            )
-            self._right_queue = self._device.getOutputQueue(
-                name="right", maxSize=4, blocking=False
-            )
-            self._depth_queue = self._device.getOutputQueue(
-                name="depth", maxSize=4, blocking=False
-            )
+            self._left_queue = self._device.getOutputQueue(name="left", maxSize=4, blocking=False)
+            self._right_queue = self._device.getOutputQueue(name="right", maxSize=4, blocking=False)
+            self._depth_queue = self._device.getOutputQueue(name="depth", maxSize=4, blocking=False)
 
-        logger.info(
-            f"Connected to {self._device_info['name']} "
-            f"(MxID: {self._device_id})"
-        )
+        logger.info(f"Connected to {self._device_info['name']} (MxID: {self._device_id})")
 
     def _build_pipeline(self, dai: Any) -> Any:
         """Build DepthAI pipeline.
@@ -387,20 +440,14 @@ class OAKCamera(Camera):
             mono_right = pipeline.create(dai.node.MonoCamera)
             mono_left.setCamera("left")
             mono_right.setCamera("right")
-            mono_left.setResolution(
-                dai.MonoCameraProperties.SensorResolution.THE_400_P
-            )
-            mono_right.setResolution(
-                dai.MonoCameraProperties.SensorResolution.THE_400_P
-            )
+            mono_left.setResolution(dai.MonoCameraProperties.SensorResolution.THE_400_P)
+            mono_right.setResolution(dai.MonoCameraProperties.SensorResolution.THE_400_P)
             mono_left.setFps(self._config.fps)
             mono_right.setFps(self._config.fps)
 
             # Stereo depth
             stereo = pipeline.create(dai.node.StereoDepth)
-            stereo.setDefaultProfilePreset(
-                dai.node.StereoDepth.PresetMode.HIGH_ACCURACY
-            )
+            stereo.setDefaultProfilePreset(dai.node.StereoDepth.PresetMode.HIGH_ACCURACY)
             stereo.setLeftRightCheck(self._config.depth_lrc_check)
             stereo.setExtendedDisparity(self._config.depth_extended_disparity)
             stereo.setSubpixel(self._config.depth_subpixel)
@@ -656,17 +703,11 @@ class OAKCamera(Camera):
             mono_right = pipeline.create(dai.node.MonoCamera)
             mono_left.setCamera("left")
             mono_right.setCamera("right")
-            mono_left.setResolution(
-                dai.MonoCameraProperties.SensorResolution.THE_400_P
-            )
-            mono_right.setResolution(
-                dai.MonoCameraProperties.SensorResolution.THE_400_P
-            )
+            mono_left.setResolution(dai.MonoCameraProperties.SensorResolution.THE_400_P)
+            mono_right.setResolution(dai.MonoCameraProperties.SensorResolution.THE_400_P)
 
             stereo = pipeline.create(dai.node.StereoDepth)
-            stereo.setDefaultProfilePreset(
-                dai.node.StereoDepth.PresetMode.HIGH_ACCURACY
-            )
+            stereo.setDefaultProfilePreset(dai.node.StereoDepth.PresetMode.HIGH_ACCURACY)
 
             mono_left.out.link(stereo.left)
             mono_right.out.link(stereo.right)
@@ -681,9 +722,7 @@ class OAKCamera(Camera):
 
         detection_nn.setBlobPath(str(blob_path))
         detection_nn.setConfidenceThreshold(
-            self._config.nn_confidence_threshold
-            if isinstance(self._config, OAKConfig)
-            else 0.5
+            self._config.nn_confidence_threshold if isinstance(self._config, OAKConfig) else 0.5
         )
         detection_nn.setNumClasses(len(self._class_names))
         detection_nn.setCoordinateSize(4)
@@ -714,12 +753,8 @@ class OAKCamera(Camera):
             self._device = dai.Device(pipeline)
 
         # Setup queues
-        self._color_queue = self._device.getOutputQueue(
-            name="color", maxSize=4, blocking=False
-        )
-        self._nn_queue = self._device.getOutputQueue(
-            name="detections", maxSize=4, blocking=False
-        )
+        self._color_queue = self._device.getOutputQueue(name="color", maxSize=4, blocking=False)
+        self._nn_queue = self._device.getOutputQueue(name="detections", maxSize=4, blocking=False)
 
         self._nn_loaded = True
         logger.info(f"Loaded neural network: {blob_path.name}")
@@ -824,7 +859,9 @@ class OAKCamera(Camera):
             detections.append(
                 Detection(
                     label=label,
-                    label_name=self._class_names[label] if label < len(self._class_names) else f"class_{label}",
+                    label_name=self._class_names[label]
+                    if label < len(self._class_names)
+                    else f"class_{label}",
                     confidence=random.uniform(0.5, 0.99),
                     bbox=(x, y, x + w, y + h),
                     depth=random.uniform(0.5, 5.0),

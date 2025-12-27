@@ -5,7 +5,6 @@ main functions can be called without raising exceptions.
 """
 
 
-
 class TestArmExamples:
     """Test arm example scripts."""
 
@@ -124,7 +123,9 @@ class TestExampleIntegration:
         from pathlib import Path
 
         examples_dir = Path(__file__).parent.parent.parent / "examples"
-        example_dirs = [d for d in examples_dir.iterdir() if d.is_dir() and not d.name.startswith("_")]
+        example_dirs = [
+            d for d in examples_dir.iterdir() if d.is_dir() and not d.name.startswith("_")
+        ]
 
         for example_dir in example_dirs:
             readme = example_dir / "README.md"
@@ -135,7 +136,9 @@ class TestExampleIntegration:
         from pathlib import Path
 
         examples_dir = Path(__file__).parent.parent.parent / "examples"
-        example_dirs = [d for d in examples_dir.iterdir() if d.is_dir() and not d.name.startswith("_")]
+        example_dirs = [
+            d for d in examples_dir.iterdir() if d.is_dir() and not d.name.startswith("_")
+        ]
 
         for example_dir in example_dirs:
             init_file = example_dir / "__init__.py"

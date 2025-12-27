@@ -46,21 +46,25 @@ if TYPE_CHECKING:
 
 class IKError(Exception):
     """Base exception for IK solver errors."""
+
     pass
 
 
 class IKConvergenceError(IKError):
     """IK solver failed to converge."""
+
     pass
 
 
 class IKUnreachableError(IKError):
     """Target pose is unreachable."""
+
     pass
 
 
 class IKSingularityError(IKError):
     """Encountered singularity during solving."""
+
     pass
 
 
@@ -280,8 +284,8 @@ class BaseIKSolver(ABC):
     def _is_converged(self, pos_error: float, rot_error: float) -> bool:
         """Check if error is within tolerance."""
         return (
-            pos_error < self.config.position_tolerance and
-            rot_error < self.config.orientation_tolerance
+            pos_error < self.config.position_tolerance
+            and rot_error < self.config.orientation_tolerance
         )
 
     def _enforce_limits(self, joint_values: list[float]) -> list[float]:
@@ -614,8 +618,7 @@ class GradientDescentIK(BaseIKSolver):
         _, pos_err, rot_err = self._compute_error(current, target)
 
         return (
-            self.position_weight * pos_err * pos_err +
-            self.orientation_weight * rot_err * rot_err
+            self.position_weight * pos_err * pos_err + self.orientation_weight * rot_err * rot_err
         )
 
     def _compute_gradient(
@@ -666,10 +669,7 @@ class GradientDescentIK(BaseIKSolver):
             gradient = self._compute_gradient(q, target)
 
             # Update (gradient descent step)
-            q = [
-                q[j] - self.config.step_size * gradient[j]
-                for j in range(len(q))
-            ]
+            q = [q[j] - self.config.step_size * gradient[j] for j in range(len(q))]
 
             # Enforce limits
             if self.config.use_joint_limits:
@@ -724,9 +724,7 @@ def create_ik_solver(
 
     method_lower = method.lower()
     if method_lower not in solvers:
-        raise ValueError(
-            f"Unknown IK method: {method}. Available: {list(solvers.keys())}"
-        )
+        raise ValueError(f"Unknown IK method: {method}. Available: {list(solvers.keys())}")
 
     return solvers[method_lower](chain, config)
 

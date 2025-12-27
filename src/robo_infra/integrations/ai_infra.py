@@ -69,8 +69,7 @@ def _check_ai_infra() -> None:
     """Raise ImportError if ai-infra is not available."""
     if not _AI_INFRA_AVAILABLE:
         raise ImportError(
-            "ai-infra is required for AI integration. "
-            "Install with: pip install robo-infra[ai]"
+            "ai-infra is required for AI integration. Install with: pip install robo-infra[ai]"
         )
 
 
@@ -170,6 +169,7 @@ def controller_to_tools(controller: "Controller") -> list[Callable]:
         tool_method = base_tool.__name__.replace(f"{name}_", "")
 
         if tool_method == "enable":
+
             def enable() -> str:
                 """Enable controller and actuators."""
                 controller.enable()
@@ -187,6 +187,7 @@ Returns:
             tools.append(enable)
 
         elif tool_method == "disable":
+
             def disable() -> str:
                 """Disable controller and actuators."""
                 controller.disable()
@@ -204,6 +205,7 @@ Returns:
             tools.append(disable)
 
         elif tool_method == "home":
+
             def home() -> str:
                 """Home controller to default positions."""
                 controller.home()
@@ -357,6 +359,7 @@ def actuator_to_tools(actuator: "Actuator") -> list[Callable]:
         tool_method = base_tool.__name__.replace(f"{name}_", "")
 
         if tool_method == "enable":
+
             def enable_act() -> str:
                 """Enable actuator."""
                 actuator.enable()
@@ -371,6 +374,7 @@ Returns:
             tools.append(enable_act)
 
         elif tool_method == "disable":
+
             def disable_act() -> str:
                 """Disable actuator."""
                 actuator.disable()

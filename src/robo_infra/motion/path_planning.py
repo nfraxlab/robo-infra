@@ -152,8 +152,7 @@ class Path:
         if len(self.points) < 2:
             return 0.0
         return sum(
-            self.points[i].distance_to(self.points[i + 1])
-            for i in range(len(self.points) - 1)
+            self.points[i].distance_to(self.points[i + 1]) for i in range(len(self.points) - 1)
         )
 
     def append(self, point: PathPoint) -> None:
@@ -208,9 +207,7 @@ class Path:
         # Calculate cumulative distances
         cumulative = [0.0]
         for i in range(len(self.points) - 1):
-            cumulative.append(
-                cumulative[-1] + self.points[i].distance_to(self.points[i + 1])
-            )
+            cumulative.append(cumulative[-1] + self.points[i].distance_to(self.points[i + 1]))
 
         # Generate evenly-spaced points
         new_points: list[PathPoint] = []
@@ -365,9 +362,7 @@ class BoxObstacle(Obstacle):
             raise ValueError("min_corner and max_corner must have same dimensions")
         for i, (a, b) in enumerate(zip(self.min_corner, self.max_corner, strict=True)):
             if a > b:
-                raise ValueError(
-                    f"min_corner[{i}]={a} must be <= max_corner[{i}]={b}"
-                )
+                raise ValueError(f"min_corner[{i}]={a} must be <= max_corner[{i}]={b}")
 
     def contains_point(self, point: tuple[float, ...]) -> bool:
         """Check if a point is inside the box."""
@@ -375,10 +370,7 @@ class BoxObstacle(Obstacle):
             raise ValueError(
                 f"Point dimension {len(point)} doesn't match obstacle dimension {len(self.min_corner)}"
             )
-        return all(
-            self.min_corner[i] <= point[i] <= self.max_corner[i]
-            for i in range(len(point))
-        )
+        return all(self.min_corner[i] <= point[i] <= self.max_corner[i] for i in range(len(point)))
 
     def distance_to_point(self, point: tuple[float, ...]) -> float:
         """Calculate distance from point to box surface."""
@@ -389,8 +381,7 @@ class BoxObstacle(Obstacle):
 
         # Find the closest point on the box to the given point
         closest = tuple(
-            max(self.min_corner[i], min(point[i], self.max_corner[i]))
-            for i in range(len(point))
+            max(self.min_corner[i], min(point[i], self.max_corner[i])) for i in range(len(point))
         )
 
         # If point is inside, distance is negative (distance to nearest edge)
@@ -489,9 +480,7 @@ class LinearPathPlanner:
             ValueError: If start and goal have different dimensions.
         """
         if len(start) != len(goal):
-            raise ValueError(
-                f"start dimension {len(start)} must match goal dimension {len(goal)}"
-            )
+            raise ValueError(f"start dimension {len(start)} must match goal dimension {len(goal)}")
 
         start_tuple = tuple(start)
         goal_tuple = tuple(goal)
@@ -505,9 +494,7 @@ class LinearPathPlanner:
         points: list[PathPoint] = []
         for i in range(self._num_points):
             t = i / (self._num_points - 1)
-            position = tuple(
-                a + t * (b - a) for a, b in zip(start_tuple, goal_tuple, strict=True)
-            )
+            position = tuple(a + t * (b - a) for a, b in zip(start_tuple, goal_tuple, strict=True))
             cost = t * total_dist
             points.append(PathPoint(position=position, cost=cost))
 
@@ -577,9 +564,7 @@ class CartesianPathPlanner:
             ValueError: If start and goal have different dimensions.
         """
         if len(start) != len(goal):
-            raise ValueError(
-                f"start dimension {len(start)} must match goal dimension {len(goal)}"
-            )
+            raise ValueError(f"start dimension {len(start)} must match goal dimension {len(goal)}")
 
         start_tuple = tuple(start)
         goal_tuple = tuple(goal)
@@ -593,9 +578,7 @@ class CartesianPathPlanner:
         points: list[PathPoint] = []
         for i in range(self._num_points):
             t = i / (self._num_points - 1)
-            cartesian = tuple(
-                a + t * (b - a) for a, b in zip(start_tuple, goal_tuple, strict=True)
-            )
+            cartesian = tuple(a + t * (b - a) for a, b in zip(start_tuple, goal_tuple, strict=True))
 
             # Convert to joint space if IK function is provided
             if self._ik_function is not None:
@@ -702,10 +685,7 @@ class RRTPathPlanner:
             return goal
 
         if self._bounds is not None and len(self._bounds) == dim:
-            return tuple(
-                random.uniform(self._bounds[i][0], self._bounds[i][1])
-                for i in range(dim)
-            )
+            return tuple(random.uniform(self._bounds[i][0], self._bounds[i][1]) for i in range(dim))
         else:
             # Default to [-pi, pi] for joint space
             return tuple(random.uniform(-math.pi, math.pi) for _ in range(dim))
@@ -725,9 +705,7 @@ class RRTPathPlanner:
         min_dist = float("inf")
         nearest_idx = 0
         for i, (node_pos, _) in enumerate(tree):
-            dist = math.sqrt(
-                sum((a - b) ** 2 for a, b in zip(node_pos, point, strict=True))
-            )
+            dist = math.sqrt(sum((a - b) ** 2 for a, b in zip(node_pos, point, strict=True)))
             if dist < min_dist:
                 min_dist = dist
                 nearest_idx = i
@@ -745,17 +723,13 @@ class RRTPathPlanner:
         Returns:
             New point at most step_size away from from_point.
         """
-        dist = math.sqrt(
-            sum((a - b) ** 2 for a, b in zip(from_point, to_point, strict=True))
-        )
+        dist = math.sqrt(sum((a - b) ** 2 for a, b in zip(from_point, to_point, strict=True)))
         if dist <= self._step_size:
             return to_point
 
         # Scale to step_size
         ratio = self._step_size / dist
-        return tuple(
-            a + ratio * (b - a) for a, b in zip(from_point, to_point, strict=True)
-        )
+        return tuple(a + ratio * (b - a) for a, b in zip(from_point, to_point, strict=True))
 
     def _is_collision_free(
         self,
@@ -775,9 +749,7 @@ class RRTPathPlanner:
         """
         return all(not obstacle.intersects_segment(from_point, to_point) for obstacle in obstacles)
 
-    def _extract_path(
-        self, tree: list[tuple[tuple[float, ...], int]], goal_idx: int
-    ) -> Path:
+    def _extract_path(self, tree: list[tuple[tuple[float, ...], int]], goal_idx: int) -> Path:
         """Extract the path from the tree by backtracking from goal.
 
         Args:
@@ -806,9 +778,7 @@ class RRTPathPlanner:
             # Create new point with updated cost
             path_points[i] = PathPoint(position=point.position, cost=total_cost)
 
-        return Path(
-            points=path_points, status=PathStatus.SUCCESS, total_cost=total_cost
-        )
+        return Path(points=path_points, status=PathStatus.SUCCESS, total_cost=total_cost)
 
     def plan(
         self,
@@ -830,9 +800,7 @@ class RRTPathPlanner:
             ValueError: If start and goal have different dimensions.
         """
         if len(start) != len(goal):
-            raise ValueError(
-                f"start dimension {len(start)} must match goal dimension {len(goal)}"
-            )
+            raise ValueError(f"start dimension {len(start)} must match goal dimension {len(goal)}")
 
         start_tuple = tuple(start)
         goal_tuple = tuple(goal)
@@ -855,9 +823,7 @@ class RRTPathPlanner:
                 )
 
         # Check if direct path is collision-free
-        if not obstacles or self._is_collision_free(
-            start_tuple, goal_tuple, obstacles
-        ):
+        if not obstacles or self._is_collision_free(start_tuple, goal_tuple, obstacles):
             # Use linear interpolation
             linear_planner = LinearPathPlanner(num_points=50)
             return linear_planner.plan(start, goal)
@@ -884,9 +850,7 @@ class RRTPathPlanner:
 
                 # Check if we reached the goal
                 goal_dist = math.sqrt(
-                    sum(
-                        (a - b) ** 2 for a, b in zip(new_point, goal_tuple, strict=True)
-                    )
+                    sum((a - b) ** 2 for a, b in zip(new_point, goal_tuple, strict=True))
                 )
                 if goal_dist <= self._goal_tolerance:
                     # Add goal node and extract path
@@ -950,9 +914,7 @@ class PathSmoother:
         self._iterations = iterations
         self._num_output_points = num_output_points
 
-    def _bezier_point(
-        self, control_points: list[tuple[float, ...]], t: float
-    ) -> tuple[float, ...]:
+    def _bezier_point(self, control_points: list[tuple[float, ...]], t: float) -> tuple[float, ...]:
         """Calculate a point on a Bezier curve using De Casteljau's algorithm.
 
         Args:
@@ -967,8 +929,7 @@ class PathSmoother:
         for r in range(1, n):
             for i in range(n - r):
                 points[i] = tuple(
-                    (1 - t) * points[i][j] + t * points[i + 1][j]
-                    for j in range(len(points[i]))
+                    (1 - t) * points[i][j] + t * points[i + 1][j] for j in range(len(points[i]))
                 )
         return points[0]
 
@@ -1015,16 +976,11 @@ class PathSmoother:
                 right_knot = knots[span + 1 + j - r]
                 denom = right_knot - left_knot
                 alpha = (t - left_knot) / denom if denom != 0 else 0.0
-                d[j] = tuple(
-                    (1 - alpha) * d[j - 1][k] + alpha * d[j][k]
-                    for k in range(len(d[j]))
-                )
+                d[j] = tuple((1 - alpha) * d[j - 1][k] + alpha * d[j][k] for k in range(len(d[j])))
 
         return d[degree]
 
-    def _shortcut_smooth(
-        self, path: Path, obstacles: list[Obstacle] | None
-    ) -> Path:
+    def _shortcut_smooth(self, path: Path, obstacles: list[Obstacle] | None) -> Path:
         """Smooth path using random shortcutting.
 
         Tries to connect non-adjacent points with straight lines.
@@ -1060,10 +1016,7 @@ class PathSmoother:
         return Path(
             points=points,
             status=path.status,
-            total_cost=sum(
-                points[i].distance_to(points[i + 1])
-                for i in range(len(points) - 1)
-            ),
+            total_cost=sum(points[i].distance_to(points[i + 1]) for i in range(len(points) - 1)),
         )
 
     def _is_collision_free(
@@ -1075,9 +1028,7 @@ class PathSmoother:
         """Check if a path segment is collision-free."""
         return all(not obstacle.intersects_segment(from_point, to_point) for obstacle in obstacles)
 
-    def smooth(
-        self, path: Path, obstacles: list[Obstacle] | None = None
-    ) -> Path:
+    def smooth(self, path: Path, obstacles: list[Obstacle] | None = None) -> Path:
         """Smooth a path using the configured method.
 
         Args:

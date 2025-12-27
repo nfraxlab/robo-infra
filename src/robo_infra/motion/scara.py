@@ -54,7 +54,7 @@ class SCARAConfiguration(Enum):
     in the horizontal plane (similar to 2-link planar arms).
     """
 
-    LEFT_ARM = "left_arm"    # Elbow to the left (positive theta2)
+    LEFT_ARM = "left_arm"  # Elbow to the left (positive theta2)
     RIGHT_ARM = "right_arm"  # Elbow to the right (negative theta2)
 
 
@@ -154,7 +154,7 @@ class SCARAArm:
         if self.l2 <= 0:
             raise ValueError(f"l2 must be positive, got {self.l2}")
         # Update z_range in limits if not default
-        if hasattr(self, '_z_range_override'):
+        if hasattr(self, "_z_range_override"):
             self.limits = SCARALimits(z_range=self._z_range_override)
 
     @classmethod
@@ -241,11 +241,7 @@ class SCARAArm:
         # Create rotation matrix (rotation around Z)
         c = math.cos(total_rotation)
         s = math.sin(total_rotation)
-        rotation_matrix = np.array([
-            [c, -s, 0],
-            [s, c, 0],
-            [0, 0, 1]
-        ])
+        rotation_matrix = np.array([[c, -s, 0], [s, c, 0], [0, 0, 1]])
 
         rotation = Rotation(matrix=rotation_matrix)
         return Transform(position=np.array([x, y, z_pos]), rotation=rotation)
@@ -438,12 +434,14 @@ class SCARAArm:
         # Rotation Jacobian (1x4) - only omega_z matters for SCARA
         # domega_z/dtheta1, domega_z/dtheta2, domega_z/dz, domega_z/dtheta4
 
-        jacobian = np.array([
-            [-self.l1 * s1 - self.l2 * s12, -self.l2 * s12, 0, 0],  # dx
-            [self.l1 * c1 + self.l2 * c12, self.l2 * c12, 0, 0],    # dy
-            [0, 0, 1, 0],                                            # dz
-            [1, 1, 0, 1],                                            # domega_z
-        ])
+        jacobian = np.array(
+            [
+                [-self.l1 * s1 - self.l2 * s12, -self.l2 * s12, 0, 0],  # dx
+                [self.l1 * c1 + self.l2 * c12, self.l2 * c12, 0, 0],  # dy
+                [0, 0, 1, 0],  # dz
+                [1, 1, 0, 1],  # domega_z
+            ]
+        )
 
         return jacobian
 

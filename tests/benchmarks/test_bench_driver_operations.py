@@ -217,7 +217,10 @@ class TestDriverComparison:
         """Compare creation times for different driver types."""
         drivers = [
             ("SimulatedController", lambda: SimulatedController(name="c")),
-            ("SimulatedActuator", lambda: SimulatedActuator(name="a", limits=Limits(min=0, max=180))),
+            (
+                "SimulatedActuator",
+                lambda: SimulatedActuator(name="a", limits=Limits(min=0, max=180)),
+            ),
             ("SimulatedSensor", lambda: SimulatedSensor(name="s", limits=Limits(min=0, max=100))),
             ("SimulatedI2CBus", lambda: SimulatedI2CBus()),
             ("SimulatedSPIBus", lambda: SimulatedSPIBus()),

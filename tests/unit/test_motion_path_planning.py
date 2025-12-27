@@ -480,9 +480,7 @@ class TestPathSmoother:
     def test_smooth_shortcut(self) -> None:
         """Test shortcut smoothing."""
         # Create a zigzag path
-        points = [
-            PathPoint(position=(float(i), float(i % 2))) for i in range(10)
-        ]
+        points = [PathPoint(position=(float(i), float(i % 2))) for i in range(10)]
         path = Path(points=points)
         smoother = PathSmoother(method=SmoothingMethod.SHORTCUT, iterations=5)
         smoothed = smoother.smooth(path)

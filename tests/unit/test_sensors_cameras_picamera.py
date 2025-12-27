@@ -220,12 +220,16 @@ class TestPiCameraMocked:
         """Test initialization with mocked picamera2."""
         mock_module, _mock_picam = mock_picamera2
 
-        with patch.dict("sys.modules", {"picamera2": mock_module}), patch(
-            "robo_infra.sensors.cameras.picamera._get_camera_library",
-            return_value="picamera2",
-        ), patch(
-            "robo_infra.sensors.cameras.picamera._is_raspberry_pi",
-            return_value=True,
+        with (
+            patch.dict("sys.modules", {"picamera2": mock_module}),
+            patch(
+                "robo_infra.sensors.cameras.picamera._get_camera_library",
+                return_value="picamera2",
+            ),
+            patch(
+                "robo_infra.sensors.cameras.picamera._is_raspberry_pi",
+                return_value=True,
+            ),
         ):
             camera = PiCamera()
             camera.enable()
@@ -244,12 +248,16 @@ class TestPiCameraMocked:
 
         config = PiCameraConfig(flip_horizontal=True, flip_vertical=True)
 
-        with patch.dict("sys.modules", {"picamera2": mock_module}), patch(
-            "robo_infra.sensors.cameras.picamera._get_camera_library",
-            return_value="picamera2",
-        ), patch(
-            "robo_infra.sensors.cameras.picamera._is_raspberry_pi",
-            return_value=True,
+        with (
+            patch.dict("sys.modules", {"picamera2": mock_module}),
+            patch(
+                "robo_infra.sensors.cameras.picamera._get_camera_library",
+                return_value="picamera2",
+            ),
+            patch(
+                "robo_infra.sensors.cameras.picamera._is_raspberry_pi",
+                return_value=True,
+            ),
         ):
             camera = PiCamera(config=config)
             camera.enable()
@@ -285,12 +293,15 @@ class TestPiCameraDiscovery:
             {"Model": "imx708", "Location": 1},
         ]
 
-        with patch.dict("sys.modules", {"picamera2": mock_module}), patch(
-            "robo_infra.sensors.cameras.picamera._get_camera_library",
-            return_value="picamera2",
+        with (
+            patch.dict("sys.modules", {"picamera2": mock_module}),
+            patch(
+                "robo_infra.sensors.cameras.picamera._get_camera_library",
+                return_value="picamera2",
+            ),
         ):
             PiCamera.list_devices()
-                # Returns list of CameraInfo
+            # Returns list of CameraInfo
 
 
 class TestOpenPicamera:

@@ -464,9 +464,7 @@ class INA219Driver(PowerMonitorDriver):
         self._current_lsb = self._config.max_expected_current / 32768
 
         # Calculate calibration = trunc(0.04096 / (current_lsb * shunt))
-        self._calibration = int(
-            0.04096 / (self._current_lsb * self._config.shunt_ohms)
-        )
+        self._calibration = int(0.04096 / (self._current_lsb * self._config.shunt_ohms))
 
         # Clamp to 16-bit
         self._calibration = min(0xFFFF, self._calibration)
@@ -818,9 +816,7 @@ class INA226Driver(PowerMonitorDriver):
         self._current_lsb = self._config.max_expected_current / 32768
 
         # Calculate calibration = 0.00512 / (current_lsb * shunt)
-        self._calibration = int(
-            0.00512 / (self._current_lsb * self._config.shunt_ohms)
-        )
+        self._calibration = int(0.00512 / (self._current_lsb * self._config.shunt_ohms))
 
         # Clamp to 16-bit
         self._calibration = min(0xFFFF, self._calibration)

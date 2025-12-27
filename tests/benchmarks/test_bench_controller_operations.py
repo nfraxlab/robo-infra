@@ -51,6 +51,7 @@ class TestControllerCreation:
 
     def test_controller_with_actuators(self, benchmarker: Benchmarker) -> None:
         """Benchmark controller creation with multiple actuators."""
+
         def create_with_actuators() -> SimulatedController:
             controller = SimulatedController(name="bench")
             for i in range(6):
@@ -69,10 +70,13 @@ class TestControllerCreation:
         )
 
         print(f"\n{result}")
-        assert result.passed, f"Controller+actuators creation too slow: {format_time(result.mean_time)}"
+        assert result.passed, (
+            f"Controller+actuators creation too slow: {format_time(result.mean_time)}"
+        )
 
     def test_controller_with_sensors(self, benchmarker: Benchmarker) -> None:
         """Benchmark controller creation with multiple sensors."""
+
         def create_with_sensors() -> SimulatedController:
             controller = SimulatedController(name="bench")
             for i in range(4):
@@ -91,7 +95,9 @@ class TestControllerCreation:
         )
 
         print(f"\n{result}")
-        assert result.passed, f"Controller+sensors creation too slow: {format_time(result.mean_time)}"
+        assert result.passed, (
+            f"Controller+sensors creation too slow: {format_time(result.mean_time)}"
+        )
 
 
 class TestControllerEnableDisable:
@@ -181,8 +187,7 @@ class TestActuatorOperations:
     def test_multi_actuator_set(self, benchmarker: Benchmarker) -> None:
         """Benchmark setting multiple actuators."""
         actuators = [
-            SimulatedActuator(name=f"a{i}", limits=Limits(min=0, max=180))
-            for i in range(6)
+            SimulatedActuator(name=f"a{i}", limits=Limits(min=0, max=180)) for i in range(6)
         ]
         for a in actuators:
             a.enable()
@@ -225,10 +230,7 @@ class TestSensorOperations:
 
     def test_multi_sensor_read(self, benchmarker: Benchmarker) -> None:
         """Benchmark reading multiple sensors."""
-        sensors = [
-            SimulatedSensor(name=f"s{i}", limits=Limits(min=0, max=100))
-            for i in range(4)
-        ]
+        sensors = [SimulatedSensor(name=f"s{i}", limits=Limits(min=0, max=100)) for i in range(4)]
         for s in sensors:
             s.enable()
 
@@ -251,6 +253,7 @@ class TestControllerLifecycle:
 
     def test_full_lifecycle(self, benchmarker: Benchmarker) -> None:
         """Benchmark complete controller lifecycle."""
+
         def lifecycle() -> None:
             # Create
             controller = SimulatedController(name="bench")
@@ -288,7 +291,10 @@ class TestComponentComparison:
         """Compare creation times for different component types."""
         components = [
             ("SimulatedController", lambda: SimulatedController(name="c")),
-            ("SimulatedActuator", lambda: SimulatedActuator(name="a", limits=Limits(min=0, max=180))),
+            (
+                "SimulatedActuator",
+                lambda: SimulatedActuator(name="a", limits=Limits(min=0, max=180)),
+            ),
             ("SimulatedSensor", lambda: SimulatedSensor(name="s", limits=Limits(min=0, max=100))),
         ]
 

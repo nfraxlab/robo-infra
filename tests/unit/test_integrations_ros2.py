@@ -450,9 +450,7 @@ class TestServiceCallbacks:
         assert response.success is True
         assert "stopped" in response.message.lower()
 
-    def test_enable_service_callback_enable(
-        self, joint_group: JointGroup
-    ) -> None:
+    def test_enable_service_callback_enable(self, joint_group: JointGroup) -> None:
         """Test enable service callback for enabling."""
         node = controller_to_ros2_node(joint_group)
         mock_node = node.get_node()
@@ -465,9 +463,7 @@ class TestServiceCallbacks:
         assert response.success is True
         assert "enabled" in response.message.lower()
 
-    def test_enable_service_callback_disable(
-        self, enabled_joint_group: JointGroup
-    ) -> None:
+    def test_enable_service_callback_disable(self, enabled_joint_group: JointGroup) -> None:
         """Test enable service callback for disabling."""
         node = controller_to_ros2_node(enabled_joint_group)
         mock_node = node.get_node()
@@ -509,9 +505,7 @@ class TestLaunchFileGeneration:
         assert "executable='arm_node'" in content
         assert "output='log'" in content
 
-    def test_generate_launch_file_with_remappings(
-        self, joint_group: JointGroup
-    ) -> None:
+    def test_generate_launch_file_with_remappings(self, joint_group: JointGroup) -> None:
         """Test generating a launch file with remappings."""
         config = LaunchConfig(
             remappings=[
@@ -524,18 +518,14 @@ class TestLaunchFileGeneration:
         assert "/cmd_vel" in content
         assert "/robot/cmd_vel" in content
 
-    def test_generate_launch_file_with_parameters(
-        self, joint_group: JointGroup
-    ) -> None:
+    def test_generate_launch_file_with_parameters(self, joint_group: JointGroup) -> None:
         """Test generating a launch file with parameters file."""
         config = LaunchConfig(parameters_file="/path/to/params.yaml")
         content = generate_launch_file(joint_group, config)
         assert "parameters=" in content
         assert "/path/to/params.yaml" in content
 
-    def test_generate_launch_file_with_arguments(
-        self, joint_group: JointGroup
-    ) -> None:
+    def test_generate_launch_file_with_arguments(self, joint_group: JointGroup) -> None:
         """Test generating a launch file with arguments."""
         config = LaunchConfig(arguments=["--ros-args", "--log-level", "debug"])
         content = generate_launch_file(joint_group, config)
@@ -559,9 +549,7 @@ class TestParametersFileGeneration:
         assert "publish_rate_hz:" in content
         assert "frame_id:" in content
 
-    def test_generate_parameters_file_with_config(
-        self, joint_group: JointGroup
-    ) -> None:
+    def test_generate_parameters_file_with_config(self, joint_group: JointGroup) -> None:
         """Test generating a parameters file with custom config."""
         config = ROS2NodeConfig(
             node_name="my_arm",
@@ -572,12 +560,10 @@ class TestParametersFileGeneration:
         content = generate_parameters_file(joint_group, config)
         assert "my_arm:" in content
         assert "publish_rate_hz: 100.0" in content
-        assert "frame_id: \"arm_base\"" in content
+        assert 'frame_id: "arm_base"' in content
         assert "use_sim_time: true" in content
 
-    def test_generate_parameters_file_includes_actuators(
-        self, joint_group: JointGroup
-    ) -> None:
+    def test_generate_parameters_file_includes_actuators(self, joint_group: JointGroup) -> None:
         """Test parameters file includes actuator configuration."""
         content = generate_parameters_file(joint_group)
         assert "actuators:" in content
@@ -682,9 +668,7 @@ class TestIntegration:
         assert "robot_arm" in launch_content
 
         # Generate parameters file
-        params_content = generate_parameters_file(
-            arm, ROS2NodeConfig(node_name="arm_node")
-        )
+        params_content = generate_parameters_file(arm, ROS2NodeConfig(node_name="arm_node"))
         assert "arm_node:" in params_content
 
         # Cleanup
@@ -726,9 +710,7 @@ class TestROS2NodeCreation:
 
         node.destroy_node()
 
-    def test_ros2_node_creation_with_custom_name(
-        self, servos: list[Servo]
-    ) -> None:
+    def test_ros2_node_creation_with_custom_name(self, servos: list[Servo]) -> None:
         """Test ROS2 node creation with custom name."""
         joints = {s.name: s for s in servos}
         arm = JointGroup(name="arm", joints=joints)
@@ -961,9 +943,7 @@ class TestROS2LaunchFileGeneration:
         assert len(content) > 0
         assert "launch_arm" in content
 
-    def test_launch_file_generation_with_config(
-        self, servos: list[Servo]
-    ) -> None:
+    def test_launch_file_generation_with_config(self, servos: list[Servo]) -> None:
         """Test launch file generation with config."""
         joints = {s.name: s for s in servos}
         arm = JointGroup(name="arm", joints=joints)
@@ -977,9 +957,7 @@ class TestROS2LaunchFileGeneration:
 
         assert "my_robot_pkg" in content
 
-    def test_launch_file_generation_python_format(
-        self, servos: list[Servo]
-    ) -> None:
+    def test_launch_file_generation_python_format(self, servos: list[Servo]) -> None:
         """Test launch file uses Python format."""
         joints = {s.name: s for s in servos}
         arm = JointGroup(name="arm", joints=joints)

@@ -742,9 +742,7 @@ class TestLIDARConfigAdvanced:
 
     def test_config_with_metadata(self) -> None:
         """Test config with custom metadata."""
-        config = LIDARConfig(
-            metadata={"calibration_date": "2024-01-01", "location": "robot_front"}
-        )
+        config = LIDARConfig(metadata={"calibration_date": "2024-01-01", "location": "robot_front"})
 
         assert config.metadata["calibration_date"] == "2024-01-01"
         assert config.metadata["location"] == "robot_front"
@@ -1086,6 +1084,7 @@ class TestRPLIDARErrorHandling:
 
         # Mock import to fail
         import builtins
+
         original_import = builtins.__import__
 
         def mock_import(name, *args, **kwargs):
@@ -1390,4 +1389,3 @@ class TestGetLidarFactory:
         """Test get_lidar with simulation=True forces simulation mode."""
         lidar = get_lidar(model=LIDARModel.RPLIDAR_A2, simulation=True)
         assert isinstance(lidar, SimulatedLIDAR)
-

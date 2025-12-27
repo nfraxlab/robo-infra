@@ -468,8 +468,9 @@ class TestModelDetection:
         model_file = tmp_path / "model"
         model_file.write_text("Raspberry Pi 4 Model B Rev 1.4\x00")
 
-        with patch.object(Path, "exists", return_value=True), patch.object(
-            Path, "read_text", return_value="Raspberry Pi 4 Model B Rev 1.4\x00"
+        with (
+            patch.object(Path, "exists", return_value=True),
+            patch.object(Path, "read_text", return_value="Raspberry Pi 4 Model B Rev 1.4\x00"),
         ):
             model = mock_rpi_platform._detect_model()
             assert "Pi 4" in model or "Raspberry" in model

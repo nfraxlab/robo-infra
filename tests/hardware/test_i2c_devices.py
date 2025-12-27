@@ -187,9 +187,7 @@ class TestMPU6050:
         # At rest, one axis should show ~16384 (1g at default sensitivity)
         # Z-axis typically shows ~+16384 when flat
         total_accel = (accel_x**2 + accel_y**2 + accel_z**2) ** 0.5
-        assert 10000 < total_accel < 25000, (
-            f"Unexpected acceleration magnitude: {total_accel}"
-        )
+        assert 10000 < total_accel < 25000, f"Unexpected acceleration magnitude: {total_accel}"
 
 
 class TestPCA9685:

@@ -338,7 +338,9 @@ class TestCANOpenMaster:
         master.send_sync(counter=42)
         # Just verify it doesn't raise
 
-    def test_process_heartbeat_message(self, master: CANOpenMaster, can_bus: SimulatedCANBus) -> None:
+    def test_process_heartbeat_message(
+        self, master: CANOpenMaster, can_bus: SimulatedCANBus
+    ) -> None:
         """Test processing heartbeat message."""
         node = master.get_node(5)
 
@@ -749,7 +751,9 @@ class TestCANOpenHeartbeat:
             expected_cobid = COB_ID.HEARTBEAT + node_id
             assert expected_cobid == 0x700 + node_id
 
-    def test_process_heartbeat_operational(self, master: CANOpenMaster, can_bus: SimulatedCANBus) -> None:
+    def test_process_heartbeat_operational(
+        self, master: CANOpenMaster, can_bus: SimulatedCANBus
+    ) -> None:
         """Test processing heartbeat in operational state."""
         node = master.get_node(5)
 
@@ -761,7 +765,9 @@ class TestCANOpenHeartbeat:
 
         assert node.state == NMTState.OPERATIONAL
 
-    def test_process_heartbeat_stopped(self, master: CANOpenMaster, can_bus: SimulatedCANBus) -> None:
+    def test_process_heartbeat_stopped(
+        self, master: CANOpenMaster, can_bus: SimulatedCANBus
+    ) -> None:
         """Test processing heartbeat in stopped state."""
         node = master.get_node(3)
 
@@ -773,7 +779,9 @@ class TestCANOpenHeartbeat:
 
         assert node.state == NMTState.STOPPED
 
-    def test_process_heartbeat_pre_operational(self, master: CANOpenMaster, can_bus: SimulatedCANBus) -> None:
+    def test_process_heartbeat_pre_operational(
+        self, master: CANOpenMaster, can_bus: SimulatedCANBus
+    ) -> None:
         """Test processing heartbeat in pre-operational state."""
         node = master.get_node(10)
 
@@ -817,7 +825,9 @@ class TestCANOpenHeartbeat:
 
         assert node.is_alive(timeout=2.0) is False
 
-    def test_process_heartbeat_unknown_node(self, master: CANOpenMaster, can_bus: SimulatedCANBus) -> None:
+    def test_process_heartbeat_unknown_node(
+        self, master: CANOpenMaster, can_bus: SimulatedCANBus
+    ) -> None:
         """Test processing heartbeat from unknown node (should not crash)."""
         # Don't create node 99
         msg = CANMessage(

@@ -78,9 +78,7 @@ def ultrasonic_sensor() -> SimulatedSensor:
 class TestCreateRoverWithMotors:
     """Test creating and controlling a rover with simulated DC motors."""
 
-    def test_create_2_dc_motor_actuators(
-        self, left_motor: DCMotor, right_motor: DCMotor
-    ) -> None:
+    def test_create_2_dc_motor_actuators(self, left_motor: DCMotor, right_motor: DCMotor) -> None:
         """Test creating 2 simulated DC motor actuators."""
         assert left_motor.name == "left_wheel"
         assert right_motor.name == "right_wheel"
@@ -115,16 +113,12 @@ class TestCreateRoverWithMotors:
         with pytest.raises(ValueError, match="Both left and right motors are required"):
             DifferentialDrive(name="invalid", left=None, right=motor)  # type: ignore
 
-    def test_rover_starts_disabled(
-        self, left_motor: DCMotor, right_motor: DCMotor
-    ) -> None:
+    def test_rover_starts_disabled(self, left_motor: DCMotor, right_motor: DCMotor) -> None:
         """Test that rover starts in disabled state."""
         rover = DifferentialDrive(name="test", left=left_motor, right=right_motor)
         assert not rover.is_enabled
 
-    def test_enable_rover(
-        self, left_motor: DCMotor, right_motor: DCMotor
-    ) -> None:
+    def test_enable_rover(self, left_motor: DCMotor, right_motor: DCMotor) -> None:
         """Test enabling the rover."""
         rover = DifferentialDrive(name="test", left=left_motor, right=right_motor)
         rover.enable()
@@ -318,9 +312,7 @@ class TestRoverWithUltrasonicSensor:
         assert reading.value >= ultrasonic_sensor.limits.min
         assert reading.value <= ultrasonic_sensor.limits.max
 
-    def test_distance_within_reasonable_range(
-        self, ultrasonic_sensor: SimulatedSensor
-    ) -> None:
+    def test_distance_within_reasonable_range(self, ultrasonic_sensor: SimulatedSensor) -> None:
         """Test that distance reading is reasonable."""
         ultrasonic_sensor.enable()
         reading = ultrasonic_sensor.read()
@@ -479,9 +471,7 @@ class TestRoverWithAPI:
 class TestFullE2EFlow:
     """Test complete end-to-end integration of all components."""
 
-    def test_rover_created_tools_generated_api_mounted(
-        self, rover: DifferentialDrive
-    ) -> None:
+    def test_rover_created_tools_generated_api_mounted(self, rover: DifferentialDrive) -> None:
         """Test full flow: create rover -> generate tools -> create API."""
         # 1. Rover already created via fixture
         assert rover.left_motor is not None

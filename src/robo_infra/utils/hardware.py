@@ -187,7 +187,9 @@ class MovementState:
         distance_to_target = abs(self.target - self.position)
 
         # Stopping distance at current velocity
-        stopping_distance = (self.velocity ** 2) / (2 * config.acceleration) if config.acceleration > 0 else 0
+        stopping_distance = (
+            (self.velocity**2) / (2 * config.acceleration) if config.acceleration > 0 else 0
+        )
 
         # Accelerate or decelerate
         if stopping_distance >= distance_to_target:
@@ -204,7 +206,9 @@ class MovementState:
         self.position += self.velocity * dt
 
         # Check if overshot
-        if (direction > 0 and self.position > self.target) or (direction < 0 and self.position < self.target):
+        if (direction > 0 and self.position > self.target) or (
+            direction < 0 and self.position < self.target
+        ):
             self.position = self.target
             self.velocity = 0.0
 
@@ -289,7 +293,7 @@ class HardwareProbe:
                         found=False,
                         response_time=time.time() - start,
                         error=f"I2C bus {bus} not found at {bus_path}. "
-                              "Ensure I2C is enabled and the bus number is correct.",
+                        "Ensure I2C is enabled and the bus number is correct.",
                     )
 
                 # Check bus is accessible
@@ -298,12 +302,13 @@ class HardwareProbe:
                         found=False,
                         response_time=time.time() - start,
                         error=f"Cannot access I2C bus {bus}. "
-                              "Add user to 'i2c' group: sudo usermod -a -G i2c $USER",
+                        "Add user to 'i2c' group: sudo usermod -a -G i2c $USER",
                     )
 
                 # Try to probe the device using ioctl
                 # This is a lightweight probe that doesn't require smbus2
                 import fcntl
+
                 I2C_SLAVE = 0x0703
 
                 with open(bus_path, "rb") as f:
@@ -353,7 +358,7 @@ class HardwareProbe:
                 found=False,
                 response_time=time.time() - start,
                 error="No GPIO chips found at /dev/gpiochip*. "
-                      "GPIO may not be available or enabled on this system.",
+                "GPIO may not be available or enabled on this system.",
             )
 
         # Check access to first chip
@@ -363,8 +368,8 @@ class HardwareProbe:
                 found=False,
                 response_time=time.time() - start,
                 error=f"Cannot access {chip}. "
-                      "Add user to 'gpio' group: sudo usermod -a -G gpio $USER "
-                      "or run as root.",
+                "Add user to 'gpio' group: sudo usermod -a -G gpio $USER "
+                "or run as root.",
             )
 
         return ProbeResult(
@@ -390,7 +395,7 @@ class HardwareProbe:
                 found=False,
                 response_time=time.time() - start,
                 error=f"Serial port {port} not found. "
-                      "Check if device is connected and port name is correct.",
+                "Check if device is connected and port name is correct.",
             )
 
         if not os.access(port_path, os.R_OK | os.W_OK):
@@ -398,12 +403,13 @@ class HardwareProbe:
                 found=False,
                 response_time=time.time() - start,
                 error=f"Cannot access serial port {port}. "
-                      "Add user to 'dialout' group: sudo usermod -a -G dialout $USER",
+                "Add user to 'dialout' group: sudo usermod -a -G dialout $USER",
             )
 
         # Check if port is busy (try exclusive open)
         try:
             import fcntl
+
             with open(port_path, "rb") as f:
                 try:
                     fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -441,7 +447,7 @@ class HardwareProbe:
                 found=False,
                 response_time=time.time() - start,
                 error=f"SPI device {spi_path} not found. "
-                      "Ensure SPI is enabled and bus/device numbers are correct.",
+                "Ensure SPI is enabled and bus/device numbers are correct.",
             )
 
         if not os.access(spi_path, os.R_OK | os.W_OK):
@@ -449,7 +455,7 @@ class HardwareProbe:
                 found=False,
                 response_time=time.time() - start,
                 error=f"Cannot access SPI device {spi_path}. "
-                      "Add user to 'spi' group: sudo usermod -a -G spi $USER",
+                "Add user to 'spi' group: sudo usermod -a -G spi $USER",
             )
 
         return ProbeResult(
@@ -984,7 +990,7 @@ def check_hardware_access(
                     results[f"i2c-{bus}"] = ProbeResult(
                         found=False,
                         error=f"Cannot access I2C bus {bus}. "
-                              "Add user to 'i2c' group: sudo usermod -a -G i2c $USER",
+                        "Add user to 'i2c' group: sudo usermod -a -G i2c $USER",
                     )
             else:
                 results[f"i2c-{bus}"] = ProbeResult(

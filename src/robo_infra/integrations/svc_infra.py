@@ -67,8 +67,7 @@ def _check_svc_infra() -> None:
     """Raise ImportError if svc-infra is not available."""
     if not _SVC_INFRA_AVAILABLE:
         raise ImportError(
-            "svc-infra is required for API integration. "
-            "Install with: pip install robo-infra[api]"
+            "svc-infra is required for API integration. Install with: pip install robo-infra[api]"
         )
 
 
@@ -292,8 +291,7 @@ def controller_to_router(
         from pydantic import BaseModel
     except ImportError as e:
         raise ImportError(
-            "Pydantic is required for svc-infra integration. "
-            "Install with: pip install pydantic"
+            "Pydantic is required for svc-infra integration. Install with: pip install pydantic"
         ) from e
 
     # Use helper to create dual router (reduces code duplication)
@@ -492,8 +490,7 @@ def actuator_to_router(
         from pydantic import BaseModel, Field
     except ImportError as e:
         raise ImportError(
-            "Pydantic is required for svc-infra integration. "
-            "Install with: pip install pydantic"
+            "Pydantic is required for svc-infra integration. Install with: pip install pydantic"
         ) from e
 
     # Use helper to create dual router (reduces code duplication)
@@ -703,9 +700,7 @@ def create_websocket_router(
                         response = await _handle_ws_command(controller, command)
                         await websocket.send_json(response)
                     except json.JSONDecodeError:
-                        await websocket.send_json(
-                            {"type": "error", "error": "Invalid JSON"}
-                        )
+                        await websocket.send_json({"type": "error", "error": "Invalid JSON"})
             finally:
                 update_task.cancel()
                 try:

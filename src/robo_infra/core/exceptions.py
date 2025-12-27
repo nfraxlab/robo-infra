@@ -200,10 +200,7 @@ class LimitsExceededError(SafetyError):
             self.max_limit = max_limit
             self.name = name
             name_str = f" for {name}" if name else ""
-            message = (
-                f"Value {value} exceeds limits "
-                f"[{min_limit}, {max_limit}]{name_str}"
-            )
+            message = f"Value {value} exceeds limits [{min_limit}, {max_limit}]{name_str}"
         elif isinstance(value_or_message, str):
             # Simple message format: LimitsExceededError("some message")
             self.value = None
@@ -219,8 +216,7 @@ class LimitsExceededError(SafetyError):
             self.name = name
             name_str = f" for {name}" if name else ""
             message = (
-                f"Value {value_or_message} exceeds limits "
-                f"[{min_limit}, {max_limit}]{name_str}"
+                f"Value {value_or_message} exceeds limits [{min_limit}, {max_limit}]{name_str}"
             )
         else:
             # Fallback

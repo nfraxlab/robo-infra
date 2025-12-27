@@ -57,7 +57,6 @@ from robo_infra.sensors.camera import (
 
 
 if TYPE_CHECKING:
-
     from numpy.typing import NDArray
 
 
@@ -232,9 +231,7 @@ class PiCamera(Camera):
 
         # Validate we're on a Pi (unless simulating)
         if not _is_raspberry_pi() and not os.getenv("ROBO_SIMULATION"):
-            logger.warning(
-                "Not running on Raspberry Pi. Set ROBO_SIMULATION=true to simulate."
-            )
+            logger.warning("Not running on Raspberry Pi. Set ROBO_SIMULATION=true to simulate.")
 
     @property
     def camera_num(self) -> int:
@@ -492,9 +489,7 @@ class PiCamera(Camera):
         """Capture frame using legacy picamera."""
 
         # Capture to numpy array
-        output = np.empty(
-            (self._config.height, self._config.width, 3), dtype=np.uint8
-        )
+        output = np.empty((self._config.height, self._config.width, 3), dtype=np.uint8)
         self._picam.capture(output, "rgb")
 
         # Apply flips

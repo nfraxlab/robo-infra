@@ -721,9 +721,7 @@ def add_robotics_health_routes(
 
 
 # Context variable for robotics correlation ID (uses svc-infra when available)
-_robotics_correlation_id: ContextVar[str | None] = ContextVar(
-    "robotics_request_id", default=None
-)
+_robotics_correlation_id: ContextVar[str | None] = ContextVar("robotics_request_id", default=None)
 
 
 def get_robotics_request_id() -> str | None:

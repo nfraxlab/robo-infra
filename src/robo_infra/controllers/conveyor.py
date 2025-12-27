@@ -429,9 +429,7 @@ class Conveyor(Controller):
         # Validate speed
         speed = abs(speed)
         if speed > self._conveyor_config.speed_max:
-            raise ValueError(
-                f"Speed {speed} exceeds maximum {self._conveyor_config.speed_max}"
-            )
+            raise ValueError(f"Speed {speed} exceeds maximum {self._conveyor_config.speed_max}")
 
         # Set direction
         self._direction = ConveyorDirection.REVERSE if reverse else ConveyorDirection.FORWARD
@@ -501,9 +499,7 @@ class Conveyor(Controller):
         # Validate speed
         speed = abs(speed)
         if speed > self._conveyor_config.speed_max:
-            raise ValueError(
-                f"Speed {speed} exceeds maximum {self._conveyor_config.speed_max}"
-            )
+            raise ValueError(f"Speed {speed} exceeds maximum {self._conveyor_config.speed_max}")
 
         # Determine direction from distance sign
         reverse = distance < 0
@@ -575,9 +571,7 @@ class Conveyor(Controller):
 
         speed = abs(speed)
         if speed > self._conveyor_config.speed_max:
-            raise ValueError(
-                f"Speed {speed} exceeds maximum {self._conveyor_config.speed_max}"
-            )
+            raise ValueError(f"Speed {speed} exceeds maximum {self._conveyor_config.speed_max}")
 
         self._target_speed = speed
 

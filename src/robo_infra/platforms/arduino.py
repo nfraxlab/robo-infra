@@ -783,11 +783,7 @@ class ArduinoPlatform(BasePlatform):
             import serial.tools.list_ports
 
             for port in serial.tools.list_ports.comports():
-                if (
-                    port.device == self._port
-                    and port.vid is not None
-                    and port.pid is not None
-                ):
+                if port.device == self._port and port.vid is not None and port.pid is not None:
                     board = ARDUINO_USB_IDS.get((port.vid, port.pid))
                     if board is not None:
                         return board

@@ -55,7 +55,6 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -897,7 +896,9 @@ class Hexapod(Controller):
 
         self._robot_state = LeggedRobotState.POSING
         # In real implementation, this would adjust all leg positions
-        self._robot_state = LeggedRobotState.STANDING if self._is_standing else LeggedRobotState.IDLE
+        self._robot_state = (
+            LeggedRobotState.STANDING if self._is_standing else LeggedRobotState.IDLE
+        )
 
         logger.debug(f"Hexapod '{self.name}' pose: {self._body_pose}")
 
@@ -1344,9 +1345,18 @@ class Quadruped(Controller):
         if isinstance(gait, str):
             gait = GaitType(gait)
 
-        valid_gaits = (GaitType.TROT, GaitType.WALK, GaitType.CREEP, GaitType.PACE, GaitType.BOUND, GaitType.GALLOP)
+        valid_gaits = (
+            GaitType.TROT,
+            GaitType.WALK,
+            GaitType.CREEP,
+            GaitType.PACE,
+            GaitType.BOUND,
+            GaitType.GALLOP,
+        )
         if gait not in valid_gaits:
-            raise ValueError(f"Invalid quadruped gait: {gait}. Use trot, walk, creep, pace, bound, or gallop.")
+            raise ValueError(
+                f"Invalid quadruped gait: {gait}. Use trot, walk, creep, pace, bound, or gallop."
+            )
 
         self._current_gait = gait
         logger.info(f"Quadruped '{self.name}' gait set to {gait.value}")
@@ -1401,9 +1411,7 @@ class Quadruped(Controller):
         self._robot_state = LeggedRobotState.WALKING
         self._walk_start_time = time.time()
 
-        logger.info(
-            f"Quadruped '{self.name}' moving: vx={vx:.2f}, vy={vy:.2f}, yaw={yaw_rate:.2f}"
-        )
+        logger.info(f"Quadruped '{self.name}' moving: vx={vx:.2f}, vy={vy:.2f}, yaw={yaw_rate:.2f}")
 
     def set_body_pose(
         self,
@@ -1438,7 +1446,9 @@ class Quadruped(Controller):
             self._body_pose.height = height
 
         self._robot_state = LeggedRobotState.POSING
-        self._robot_state = LeggedRobotState.STANDING if self._is_standing else LeggedRobotState.IDLE
+        self._robot_state = (
+            LeggedRobotState.STANDING if self._is_standing else LeggedRobotState.IDLE
+        )
 
         logger.debug(f"Quadruped '{self.name}' pose: {self._body_pose}")
 

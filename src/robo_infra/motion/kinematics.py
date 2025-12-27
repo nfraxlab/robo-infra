@@ -381,9 +381,7 @@ class KinematicChain(ABC):
             JointLimitError: If any angle exceeds limits (and raise_on_error=True).
         """
         if len(angles) != self.num_joints:
-            raise ValueError(
-                f"Expected {self.num_joints} angles, got {len(angles)}"
-            )
+            raise ValueError(f"Expected {self.num_joints} angles, got {len(angles)}")
 
         for i, (angle, limits) in enumerate(zip(angles, self._joint_limits, strict=True)):
             if not limits.contains(angle):
@@ -405,13 +403,10 @@ class KinematicChain(ABC):
             ValueError: If angles length doesn't match num_joints.
         """
         if len(angles) != self.num_joints:
-            raise ValueError(
-                f"Expected {self.num_joints} angles, got {len(angles)}"
-            )
+            raise ValueError(f"Expected {self.num_joints} angles, got {len(angles)}")
 
         return [
-            limits.clamp(angle)
-            for angle, limits in zip(angles, self._joint_limits, strict=True)
+            limits.clamp(angle) for angle, limits in zip(angles, self._joint_limits, strict=True)
         ]
 
     @abstractmethod
@@ -487,9 +482,7 @@ class KinematicChain(ABC):
     def __repr__(self) -> str:
         """Return a string representation."""
         return (
-            f"{self.__class__.__name__}("
-            f"links={self._link_lengths}, "
-            f"max_reach={self.max_reach:.3f})"
+            f"{self.__class__.__name__}(links={self._link_lengths}, max_reach={self.max_reach:.3f})"
         )
 
 
@@ -922,16 +915,8 @@ class ThreeLinkArm(KinematicChain):
         theta123 = theta12 + theta3
 
         # Position of end effector
-        x = (
-            self.l1 * math.cos(theta1)
-            + self.l2 * math.cos(theta12)
-            + self.l3 * math.cos(theta123)
-        )
-        y = (
-            self.l1 * math.sin(theta1)
-            + self.l2 * math.sin(theta12)
-            + self.l3 * math.sin(theta123)
-        )
+        x = self.l1 * math.cos(theta1) + self.l2 * math.cos(theta12) + self.l3 * math.cos(theta123)
+        y = self.l1 * math.sin(theta1) + self.l2 * math.sin(theta12) + self.l3 * math.sin(theta123)
 
         return EndEffectorPose(x=x, y=y, z=0.0, orientation=theta123)
 
@@ -1015,9 +1000,7 @@ class ThreeLinkArm(KinematicChain):
         # Solve 2-link IK for wrist position
         # Law of cosines for θ2
         wrist_dist_sq = x_wrist**2 + y_wrist**2
-        cos_theta2 = (wrist_dist_sq - self.l1**2 - self.l2**2) / (
-            2 * self.l1 * self.l2
-        )
+        cos_theta2 = (wrist_dist_sq - self.l1**2 - self.l2**2) / (2 * self.l1 * self.l2)
         cos_theta2 = max(-1.0, min(1.0, cos_theta2))
 
         if configuration == ElbowConfiguration.UP:
@@ -1088,9 +1071,7 @@ class ThreeLinkArm(KinematicChain):
             if min_wrist_reach <= wrist_dist <= max_wrist_reach:
                 # Solve 2-link IK
                 wrist_dist_sq = x_wrist**2 + y_wrist**2
-                cos_theta2 = (wrist_dist_sq - self.l1**2 - self.l2**2) / (
-                    2 * self.l1 * self.l2
-                )
+                cos_theta2 = (wrist_dist_sq - self.l1**2 - self.l2**2) / (2 * self.l1 * self.l2)
                 cos_theta2 = max(-1.0, min(1.0, cos_theta2))
 
                 if configuration == ElbowConfiguration.UP:

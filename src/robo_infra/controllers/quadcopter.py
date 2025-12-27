@@ -224,9 +224,7 @@ class Position3D:
     def distance_to(self, other: Position3D) -> float:
         """Calculate distance to another position."""
         return math.sqrt(
-            (other.x - self.x) ** 2
-            + (other.y - self.y) ** 2
-            + (other.z - self.z) ** 2
+            (other.x - self.x) ** 2 + (other.y - self.y) ** 2 + (other.z - self.z) ** 2
         )
 
     def horizontal_distance_to(self, other: Position3D) -> float:
@@ -528,10 +526,7 @@ def mix_motors(
     outputs = []
     for i in range(4):
         output = (
-            mixer[i][0] * throttle
-            + mixer[i][1] * roll
-            + mixer[i][2] * pitch
-            + mixer[i][3] * yaw
+            mixer[i][0] * throttle + mixer[i][1] * roll + mixer[i][2] * pitch + mixer[i][3] * yaw
         )
         outputs.append(max(0.0, min(1.0, output)))
 
@@ -1091,7 +1086,9 @@ class Quadcopter(Controller):
         vx = max(-max_speed, min(max_speed, vx))
         vy = max(-max_speed, min(max_speed, vy))
         vz = max(-self._quad_config.max_descent_rate, min(self._quad_config.max_climb_rate, vz))
-        yaw_rate = max(-self._quad_config.max_yaw_rate, min(self._quad_config.max_yaw_rate, yaw_rate))
+        yaw_rate = max(
+            -self._quad_config.max_yaw_rate, min(self._quad_config.max_yaw_rate, yaw_rate)
+        )
 
         # Store velocity
         self._velocity = Velocity(vx=vx, vy=vy, vz=vz, yaw_rate=yaw_rate)
@@ -1146,7 +1143,9 @@ class Quadcopter(Controller):
         # Check geofence
         distance = math.sqrt(x**2 + y**2)
         if distance > self._quad_config.geofence_radius:
-            raise SafetyError(f"Position outside geofence ({distance:.1f}m > {self._quad_config.geofence_radius}m)")
+            raise SafetyError(
+                f"Position outside geofence ({distance:.1f}m > {self._quad_config.geofence_radius}m)"
+            )
 
         # Set target
         self._target_position = Position3D(

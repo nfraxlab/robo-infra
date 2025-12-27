@@ -913,4 +913,3 @@ class TestToolsFromObjectUsage:
         assert any("public_action" in name for name in tool_names)
         # internal_helper should be excluded
         assert not any("internal_helper" in name for name in tool_names)
-

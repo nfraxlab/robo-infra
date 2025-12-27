@@ -250,7 +250,7 @@ class TestINA219Driver:
         """Test with mocked I2C bus."""
         mock_bus = MagicMock()
         # Mock read to return valid voltage (12V = 3000 << 3 with 4mV LSB)
-        voltage_raw = (3000 << 3)
+        voltage_raw = 3000 << 3
         mock_bus.read.return_value = struct.pack(">H", voltage_raw)
 
         driver = INA219Driver(bus=mock_bus)

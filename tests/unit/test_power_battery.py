@@ -189,14 +189,22 @@ class TestBatteryReading:
     def test_is_low_property(self) -> None:
         """Test is_low property (< 20%)."""
         low_reading = BatteryReading(
-            voltage=10.0, current=0.5, power=5.0,
-            percentage=15.0, cell_voltage=3.33,
-            state=BatteryState.LOW, temperature=None,
+            voltage=10.0,
+            current=0.5,
+            power=5.0,
+            percentage=15.0,
+            cell_voltage=3.33,
+            state=BatteryState.LOW,
+            temperature=None,
         )
         normal_reading = BatteryReading(
-            voltage=11.0, current=0.5, power=5.5,
-            percentage=50.0, cell_voltage=3.67,
-            state=BatteryState.DISCHARGING, temperature=None,
+            voltage=11.0,
+            current=0.5,
+            power=5.5,
+            percentage=50.0,
+            cell_voltage=3.67,
+            state=BatteryState.DISCHARGING,
+            temperature=None,
         )
 
         assert low_reading.is_low is True
@@ -205,14 +213,22 @@ class TestBatteryReading:
     def test_is_critical_property(self) -> None:
         """Test is_critical property (< 10%)."""
         critical_reading = BatteryReading(
-            voltage=9.5, current=0.5, power=4.75,
-            percentage=5.0, cell_voltage=3.17,
-            state=BatteryState.CRITICAL, temperature=None,
+            voltage=9.5,
+            current=0.5,
+            power=4.75,
+            percentage=5.0,
+            cell_voltage=3.17,
+            state=BatteryState.CRITICAL,
+            temperature=None,
         )
         low_reading = BatteryReading(
-            voltage=10.0, current=0.5, power=5.0,
-            percentage=15.0, cell_voltage=3.33,
-            state=BatteryState.LOW, temperature=None,
+            voltage=10.0,
+            current=0.5,
+            power=5.0,
+            percentage=15.0,
+            cell_voltage=3.33,
+            state=BatteryState.LOW,
+            temperature=None,
         )
 
         assert critical_reading.is_critical is True
@@ -221,14 +237,22 @@ class TestBatteryReading:
     def test_is_full_property(self) -> None:
         """Test is_full property (> 95%)."""
         full_reading = BatteryReading(
-            voltage=12.6, current=-0.1, power=1.26,
-            percentage=98.0, cell_voltage=4.2,
-            state=BatteryState.FULL, temperature=None,
+            voltage=12.6,
+            current=-0.1,
+            power=1.26,
+            percentage=98.0,
+            cell_voltage=4.2,
+            state=BatteryState.FULL,
+            temperature=None,
         )
         normal_reading = BatteryReading(
-            voltage=11.0, current=0.5, power=5.5,
-            percentage=50.0, cell_voltage=3.67,
-            state=BatteryState.DISCHARGING, temperature=None,
+            voltage=11.0,
+            current=0.5,
+            power=5.5,
+            percentage=50.0,
+            cell_voltage=3.67,
+            state=BatteryState.DISCHARGING,
+            temperature=None,
         )
 
         assert full_reading.is_full is True
@@ -238,9 +262,13 @@ class TestBatteryReading:
         """Test that timestamp defaults to current time."""
         before = time.time()
         reading = BatteryReading(
-            voltage=11.1, current=0.5, power=5.55,
-            percentage=50.0, cell_voltage=3.7,
-            state=BatteryState.DISCHARGING, temperature=None,
+            voltage=11.1,
+            current=0.5,
+            power=5.55,
+            percentage=50.0,
+            cell_voltage=3.7,
+            state=BatteryState.DISCHARGING,
+            temperature=None,
         )
         after = time.time()
 
@@ -439,7 +467,10 @@ class TestBatteryMonitor:
 
         # LiPo nominal: 3.7V
         # LiFePO4 nominal: 3.2V
-        assert BatteryChemistry.LIPO.get_nominal_voltage() > BatteryChemistry.LIFEPO4.get_nominal_voltage()
+        assert (
+            BatteryChemistry.LIPO.get_nominal_voltage()
+            > BatteryChemistry.LIFEPO4.get_nominal_voltage()
+        )
 
 
 # =============================================================================

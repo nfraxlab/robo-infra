@@ -949,13 +949,9 @@ class TestControlLoopTimer:
 
         timer.stop()
 
-    def test_severe_overrun_logged_as_error(
-        self, caplog: pytest.LogCaptureFixture
-    ) -> None:
+    def test_severe_overrun_logged_as_error(self, caplog: pytest.LogCaptureFixture) -> None:
         """Severe overrun (2x target) logs error."""
-        timer = ControlLoopTimer(
-            frequency=100.0, warn_on_overrun=True, max_overrun_ratio=2.0
-        )
+        timer = ControlLoopTimer(frequency=100.0, warn_on_overrun=True, max_overrun_ratio=2.0)
         timer.start()
 
         with caplog.at_level(logging.ERROR):

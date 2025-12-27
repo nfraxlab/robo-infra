@@ -113,13 +113,13 @@ class PRUState(Enum):
 # Calculated as: gpio_bank * 32 + gpio_pin
 # e.g., GPIO1_28 = 1 * 32 + 28 = 60
 P8_GPIO_MAP: dict[int, int] = {
-    3: 38,   # P8_3  -> GPIO1_6
-    4: 39,   # P8_4  -> GPIO1_7
-    5: 34,   # P8_5  -> GPIO1_2
-    6: 35,   # P8_6  -> GPIO1_3
-    7: 66,   # P8_7  -> GPIO2_2
-    8: 67,   # P8_8  -> GPIO2_3
-    9: 69,   # P8_9  -> GPIO2_5
+    3: 38,  # P8_3  -> GPIO1_6
+    4: 39,  # P8_4  -> GPIO1_7
+    5: 34,  # P8_5  -> GPIO1_2
+    6: 35,  # P8_6  -> GPIO1_3
+    7: 66,  # P8_7  -> GPIO2_2
+    8: 67,  # P8_8  -> GPIO2_3
+    9: 69,  # P8_9  -> GPIO2_5
     10: 68,  # P8_10 -> GPIO2_4
     11: 45,  # P8_11 -> GPIO1_13
     12: 44,  # P8_12 -> GPIO1_12
@@ -143,9 +143,9 @@ P8_GPIO_MAP: dict[int, int] = {
     30: 89,  # P8_30 -> GPIO2_25
     31: 10,  # P8_31 -> GPIO0_10
     32: 11,  # P8_32 -> GPIO0_11
-    33: 9,   # P8_33 -> GPIO0_9
+    33: 9,  # P8_33 -> GPIO0_9
     34: 81,  # P8_34 -> GPIO2_17 (EHRPWM1B)
-    35: 8,   # P8_35 -> GPIO0_8
+    35: 8,  # P8_35 -> GPIO0_8
     36: 80,  # P8_36 -> GPIO2_16 (EHRPWM1A)
     37: 78,  # P8_37 -> GPIO2_14
     38: 79,  # P8_38 -> GPIO2_15
@@ -166,21 +166,21 @@ P9_GPIO_MAP: dict[int, int] = {
     14: 50,  # P9_14 -> GPIO1_18 (EHRPWM1A)
     15: 48,  # P9_15 -> GPIO1_16
     16: 51,  # P9_16 -> GPIO1_19 (EHRPWM1B)
-    17: 5,   # P9_17 -> GPIO0_5
-    18: 4,   # P9_18 -> GPIO0_4
-    21: 3,   # P9_21 -> GPIO0_3 (EHRPWM0B)
-    22: 2,   # P9_22 -> GPIO0_2 (EHRPWM0A)
+    17: 5,  # P9_17 -> GPIO0_5
+    18: 4,  # P9_18 -> GPIO0_4
+    21: 3,  # P9_21 -> GPIO0_3 (EHRPWM0B)
+    22: 2,  # P9_22 -> GPIO0_2 (EHRPWM0A)
     23: 49,  # P9_23 -> GPIO1_17
     24: 15,  # P9_24 -> GPIO0_15
-    25: 117, # P9_25 -> GPIO3_21
+    25: 117,  # P9_25 -> GPIO3_21
     26: 14,  # P9_26 -> GPIO0_14
-    27: 115, # P9_27 -> GPIO3_19
-    28: 113, # P9_28 -> GPIO3_17
-    29: 111, # P9_29 -> GPIO3_15
-    30: 112, # P9_30 -> GPIO3_16
-    31: 110, # P9_31 -> GPIO3_14
+    27: 115,  # P9_27 -> GPIO3_19
+    28: 113,  # P9_28 -> GPIO3_17
+    29: 111,  # P9_29 -> GPIO3_15
+    30: 112,  # P9_30 -> GPIO3_16
+    31: 110,  # P9_31 -> GPIO3_14
     41: 20,  # P9_41 -> GPIO0_20
-    42: 7,   # P9_42 -> GPIO0_7 (ECAP0)
+    42: 7,  # P9_42 -> GPIO0_7 (ECAP0)
 }
 
 # PWM-capable pins: maps header pin to PWM module
@@ -197,7 +197,7 @@ PWM_PINS: dict[str, tuple[str, str]] = {
     "P9_16": ("ehrpwm1", "B"),  # EHRPWM1B
     "P9_21": ("ehrpwm0", "B"),  # EHRPWM0B
     "P9_22": ("ehrpwm0", "A"),  # EHRPWM0A
-    "P9_42": ("ecap0", "0"),    # ECAP0
+    "P9_42": ("ecap0", "0"),  # ECAP0
 }
 
 # ADC channels: BeagleBone has 7 ADC channels (AIN0-AIN6)
@@ -595,8 +595,7 @@ class BeagleBonePWMPin(PWMPin):
 
         if pin_name not in PWM_PINS:
             raise ValueError(
-                f"Pin {pin_name} does not support PWM. "
-                f"Valid PWM pins: {list(PWM_PINS.keys())}"
+                f"Pin {pin_name} does not support PWM. Valid PWM pins: {list(PWM_PINS.keys())}"
             )
 
         self._pwm_module, self._pwm_channel = PWM_PINS[pin_name]
@@ -729,9 +728,7 @@ class BeagleBoneADCPin(AnalogPin):
             reference_voltage: ADC reference voltage (default 1.8V)
         """
         if channel not in ADC_PINS:
-            raise ValueError(
-                f"Invalid ADC channel {channel}. Valid channels: 0-6"
-            )
+            raise ValueError(f"Invalid ADC channel {channel}. Valid channels: 0-6")
 
         self._channel = channel
         self._pin_name = ADC_PINS[channel]
@@ -1091,7 +1088,9 @@ class BeagleBonePlatform(BasePlatform):
                 simulation = not self._is_beaglebone()
 
         self._simulation = simulation
-        self._backend = backend or (BBIOBackend.SIMULATION if simulation else self._detect_backend())
+        self._backend = backend or (
+            BBIOBackend.SIMULATION if simulation else self._detect_backend()
+        )
         self._model = BeagleBoneModel.UNKNOWN
         self._capabilities: BeagleBoneCapabilities | None = None
 
@@ -1107,7 +1106,9 @@ class BeagleBonePlatform(BasePlatform):
 
         if not simulation:
             self._model = self._detect_model()
-            self._capabilities = BB_CAPABILITIES.get(self._model, BB_CAPABILITIES[BeagleBoneModel.UNKNOWN])
+            self._capabilities = BB_CAPABILITIES.get(
+                self._model, BB_CAPABILITIES[BeagleBoneModel.UNKNOWN]
+            )
         else:
             self._model = BeagleBoneModel.BLACK
             self._capabilities = BB_CAPABILITIES[BeagleBoneModel.BLACK]
@@ -1154,6 +1155,7 @@ class BeagleBonePlatform(BasePlatform):
         # Try Adafruit_BBIO first (most feature-complete)
         try:
             import Adafruit_BBIO.GPIO  # noqa: F401
+
             return BBIOBackend.ADAFRUIT_BBIO
         except ImportError:
             pass
@@ -1161,6 +1163,7 @@ class BeagleBonePlatform(BasePlatform):
         # Try gpiod
         try:
             import gpiod  # noqa: F401
+
             return BBIOBackend.GPIOD
         except ImportError:
             pass
@@ -1500,6 +1503,7 @@ class BeagleBonePlatform(BasePlatform):
             bus_num = kwargs.get("bus", 1)
             if self._simulation:
                 from robo_infra.core.bus import SimulatedI2CBus
+
                 return SimulatedI2CBus(bus_num)
             return I2CBus(bus_num)
         elif bus_type.lower() == "spi":
@@ -1507,6 +1511,7 @@ class BeagleBonePlatform(BasePlatform):
             device = kwargs.get("device", 0)
             if self._simulation:
                 from robo_infra.core.bus import SimulatedSPIBus
+
                 return SimulatedSPIBus(bus_num, device)
             return SPIBus(bus_num, device)
         elif bus_type.lower() == "uart":
@@ -1514,6 +1519,7 @@ class BeagleBonePlatform(BasePlatform):
             baudrate = kwargs.get("baudrate", 115200)
             if self._simulation:
                 from robo_infra.core.bus import SimulatedUARTBus
+
                 return SimulatedUARTBus(port, baudrate)
             return UARTBus(port, baudrate)
         else:
@@ -1545,6 +1551,7 @@ class BeagleBonePlatform(BasePlatform):
         if self._backend == BBIOBackend.ADAFRUIT_BBIO:
             with contextlib.suppress(Exception):
                 from Adafruit_BBIO import ADC
+
                 ADC.cleanup()
 
         logger.info("BeagleBone platform cleanup complete")

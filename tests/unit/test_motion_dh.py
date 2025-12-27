@@ -99,12 +99,14 @@ class TestDHParameter:
 
         # With theta=0, should translate 1 unit along x
         matrix = T.as_matrix()
-        expected = np.array([
-            [1, 0, 0, 1],
-            [0, 1, 0, 0],
-            [0, 0, 1, 0],
-            [0, 0, 0, 1],
-        ])
+        expected = np.array(
+            [
+                [1, 0, 0, 1],
+                [0, 1, 0, 0],
+                [0, 0, 1, 0],
+                [0, 0, 0, 1],
+            ]
+        )
         np.testing.assert_array_almost_equal(matrix, expected)
 
     def test_transform_with_theta(self) -> None:
@@ -344,8 +346,8 @@ class TestPUMA560:
 
         # All joints should have limits
         for limit in limits:
-            assert limit.min_val > -float('inf')
-            assert limit.max_val < float('inf')
+            assert limit.min_val > -float("inf")
+            assert limit.max_val < float("inf")
 
     def test_forward_at_zero(self) -> None:
         """Test FK at zero configuration."""
@@ -398,8 +400,8 @@ class TestUR5:
 
         # All revolute joints should have ±2π limits
         for limit in limits:
-            assert limit.min_val == pytest.approx(-2*math.pi, abs=0.01)
-            assert limit.max_val == pytest.approx(2*math.pi, abs=0.01)
+            assert limit.min_val == pytest.approx(-2 * math.pi, abs=0.01)
+            assert limit.max_val == pytest.approx(2 * math.pi, abs=0.01)
 
 
 class TestStanfordArm:
@@ -415,10 +417,7 @@ class TestStanfordArm:
         stanford = create_stanford_arm()
 
         # Joint 3 (index 2) should be prismatic
-        has_prismatic = any(
-            p.joint_type == JointType.PRISMATIC
-            for p in stanford.parameters
-        )
+        has_prismatic = any(p.joint_type == JointType.PRISMATIC for p in stanford.parameters)
         assert has_prismatic
 
     def test_forward_with_prismatic(self) -> None:

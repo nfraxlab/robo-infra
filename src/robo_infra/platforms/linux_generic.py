@@ -615,7 +615,9 @@ class LinuxGenericPlatform(BasePlatform):
                 simulation = not self._has_gpio_chips()
 
         self._simulation = simulation
-        self._backend = backend or (GPIOBackend.SIMULATION if simulation else self._detect_backend())
+        self._backend = backend or (
+            GPIOBackend.SIMULATION if simulation else self._detect_backend()
+        )
         self._default_chip = default_chip
         self._sbc_type = LinuxSBCType.GENERIC
 
@@ -669,6 +671,7 @@ class LinuxGenericPlatform(BasePlatform):
         # Try libgpiod first (modern, preferred)
         try:
             import gpiod  # noqa: F401
+
             return GPIOBackend.GPIOD
         except ImportError:
             pass
@@ -824,8 +827,9 @@ class LinuxGenericPlatform(BasePlatform):
             caps.add(PlatformCapability.SPI)
 
         # Check for UART
-        if any(Path(f"/dev/ttyS{i}").exists() for i in range(5)) or \
-           any(Path(f"/dev/ttyAMA{i}").exists() for i in range(5)):
+        if any(Path(f"/dev/ttyS{i}").exists() for i in range(5)) or any(
+            Path(f"/dev/ttyAMA{i}").exists() for i in range(5)
+        ):
             caps.add(PlatformCapability.UART)
 
         return caps
@@ -835,16 +839,9 @@ class LinuxGenericPlatform(BasePlatform):
         gpio_chips = [c.name for c in self._gpio_chips]
         i2c_buses = [i for i in range(10) if Path(f"/dev/i2c-{i}").exists()]
         spi_buses = [
-            (i, j)
-            for i in range(3)
-            for j in range(3)
-            if Path(f"/dev/spidev{i}.{j}").exists()
+            (i, j) for i in range(3) for j in range(3) if Path(f"/dev/spidev{i}.{j}").exists()
         ]
-        uart_ports = [
-            f"/dev/ttyS{i}"
-            for i in range(5)
-            if Path(f"/dev/ttyS{i}").exists()
-        ]
+        uart_ports = [f"/dev/ttyS{i}" for i in range(5) if Path(f"/dev/ttyS{i}").exists()]
 
         return PlatformInfo(
             platform_type=PlatformType.LINUX_GENERIC,
@@ -904,7 +901,9 @@ class LinuxGenericPlatform(BasePlatform):
                         offset=i,
                         name=line.name or "",
                         consumer=line.consumer or "",
-                        direction="output" if line.direction == gpiod.Line.DIRECTION_OUTPUT else "input",
+                        direction="output"
+                        if line.direction == gpiod.Line.DIRECTION_OUTPUT
+                        else "input",
                         active_low=line.is_active_low,
                         used=line.is_used,
                     )
@@ -1091,16 +1090,9 @@ class LinuxGenericPlatform(BasePlatform):
         gpio_chips = [c.name for c in self._gpio_chips]
         i2c_buses = [i for i in range(10) if Path(f"/dev/i2c-{i}").exists()]
         spi_buses = [
-            (i, j)
-            for i in range(3)
-            for j in range(3)
-            if Path(f"/dev/spidev{i}.{j}").exists()
+            (i, j) for i in range(3) for j in range(3) if Path(f"/dev/spidev{i}.{j}").exists()
         ]
-        uart_ports = [
-            f"/dev/ttyS{i}"
-            for i in range(5)
-            if Path(f"/dev/ttyS{i}").exists()
-        ]
+        uart_ports = [f"/dev/ttyS{i}" for i in range(5) if Path(f"/dev/ttyS{i}").exists()]
 
         return PlatformInfo(
             platform_type=PlatformType.LINUX_GENERIC,

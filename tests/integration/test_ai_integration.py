@@ -98,9 +98,7 @@ def rover_tools(rover_controller: DifferentialDrive) -> list:
 class TestToolCallToActuator:
     """Test AI tool calls flow through to actuators."""
 
-    def test_generate_tools_from_controller(
-        self, arm_controller: JointGroup
-    ) -> None:
+    def test_generate_tools_from_controller(self, arm_controller: JointGroup) -> None:
         """Test generating AI tools from a controller."""
         tools = controller_to_tools(arm_controller)
 
@@ -153,9 +151,7 @@ class TestMoveToolExecution:
         assert positions["base"] == pytest.approx(45, abs=0.1)
         assert positions["shoulder"] == pytest.approx(60, abs=0.1)
 
-    def test_move_tool_single_joint(
-        self, arm_tools: list, arm_controller: JointGroup
-    ) -> None:
+    def test_move_tool_single_joint(self, arm_tools: list, arm_controller: JointGroup) -> None:
         """Test moving a single joint via tool."""
         move_tool = next(t for t in arm_tools if t.__name__ == "robot_arm_move")
 
@@ -164,9 +160,7 @@ class TestMoveToolExecution:
 
         assert arm_controller.get_joint_position("wrist") == pytest.approx(135, abs=0.1)
 
-    def test_move_tool_respects_limits(
-        self, arm_tools: list, arm_controller: JointGroup
-    ) -> None:
+    def test_move_tool_respects_limits(self, arm_tools: list, arm_controller: JointGroup) -> None:
         """Test that move tool raises error when exceeding actuator limits."""
         from robo_infra.core.exceptions import LimitsExceededError
 
@@ -180,9 +174,7 @@ class TestMoveToolExecution:
 class TestHomeToolExecution:
     """Test home tool execution."""
 
-    def test_home_tool_returns_to_home(
-        self, arm_tools: list, arm_controller: JointGroup
-    ) -> None:
+    def test_home_tool_returns_to_home(self, arm_tools: list, arm_controller: JointGroup) -> None:
         """Test that home tool returns to home positions."""
         move_tool = next(t for t in arm_tools if t.__name__ == "robot_arm_move")
         home_tool = next(t for t in arm_tools if t.__name__ == "robot_arm_home")
@@ -243,9 +235,7 @@ class TestRoverTools:
         """Test that rover tools are generated."""
         assert len(rover_tools) > 0
 
-    def test_rover_tool_names(
-        self, rover_tools: list, rover_controller: DifferentialDrive
-    ) -> None:
+    def test_rover_tool_names(self, rover_tools: list, rover_controller: DifferentialDrive) -> None:
         """Test rover tool naming."""
         for tool in rover_tools:
             assert tool.__name__.startswith(rover_controller.name)
@@ -256,9 +246,7 @@ class TestRoverTools:
 
         # Should have some form of movement command
         has_movement = any(
-            name
-            for name in tool_names
-            if "move" in name or "drive" in name or "forward" in name
+            name for name in tool_names if "move" in name or "drive" in name or "forward" in name
         )
         assert has_movement or len(tool_names) >= 1  # At least some tools
 
@@ -300,9 +288,7 @@ class TestMultiControllerTools:
 class TestToolExecution:
     """Test complete tool execution scenarios."""
 
-    def test_sequential_tool_calls(
-        self, arm_tools: list, arm_controller: JointGroup
-    ) -> None:
+    def test_sequential_tool_calls(self, arm_tools: list, arm_controller: JointGroup) -> None:
         """Test sequential tool calls work correctly."""
         move_tool = next(t for t in arm_tools if t.__name__ == "robot_arm_move")
         status_tool = next(t for t in arm_tools if t.__name__ == "robot_arm_status")
@@ -323,9 +309,7 @@ class TestToolExecution:
         home_tool()
         assert arm_controller.get_joint_position("base") == pytest.approx(180, abs=0.1)
 
-    def test_llm_style_tool_execution(
-        self, arm_tools: list, arm_controller: JointGroup
-    ) -> None:
+    def test_llm_style_tool_execution(self, arm_tools: list, arm_controller: JointGroup) -> None:
         """Test tool execution as an LLM would invoke them."""
         # Simulate LLM picking tools by name
         tools_by_name = {t.__name__: t for t in arm_tools}
@@ -385,9 +369,7 @@ class TestToolDocumentation:
 class TestToolWithAPI:
     """Test tools work alongside API."""
 
-    def test_tool_and_api_share_state(
-        self, arm_controller: JointGroup, arm_tools: list
-    ) -> None:
+    def test_tool_and_api_share_state(self, arm_controller: JointGroup, arm_tools: list) -> None:
         """Test that tools and API share the same controller state."""
         from fastapi import FastAPI
         from fastapi.testclient import TestClient

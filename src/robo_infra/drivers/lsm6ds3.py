@@ -251,14 +251,14 @@ class LSM6DS3Driver(Driver):
 
     # Scale factors (sensitivity in LSB/unit)
     ACCEL_SENSITIVITY = {
-        AccelScale.SCALE_2G: 16384.0,    # LSB/g
+        AccelScale.SCALE_2G: 16384.0,  # LSB/g
         AccelScale.SCALE_4G: 8192.0,
         AccelScale.SCALE_8G: 4096.0,
         AccelScale.SCALE_16G: 1365.33,
     }
 
     GYRO_SENSITIVITY = {
-        GyroScale.SCALE_250DPS: 131.0,   # LSB/(°/s)
+        GyroScale.SCALE_250DPS: 131.0,  # LSB/(°/s)
         GyroScale.SCALE_500DPS: 65.5,
         GyroScale.SCALE_1000DPS: 32.8,
         GyroScale.SCALE_2000DPS: 16.4,

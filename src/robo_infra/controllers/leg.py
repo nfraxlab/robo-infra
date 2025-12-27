@@ -396,9 +396,9 @@ def inverse_kinematics_3dof(
     # Law of cosines to find tibia angle
     # c² = a² + b² - 2ab*cos(C)
     # where a = femur_length, b = tibia_length, c = distance
-    cos_tibia = (femur_length * femur_length + tibia_length * tibia_length - distance * distance) / (
-        2 * femur_length * tibia_length
-    )
+    cos_tibia = (
+        femur_length * femur_length + tibia_length * tibia_length - distance * distance
+    ) / (2 * femur_length * tibia_length)
 
     # Clamp to valid range for acos (handle floating point errors)
     cos_tibia = max(-1.0, min(1.0, cos_tibia))
@@ -666,9 +666,7 @@ class Leg(Controller):
             raise DisabledError(f"Leg '{self.name}' is not enabled")
 
         if validate:
-            if coxa is not None and not (
-                self._config.coxa_min <= coxa <= self._config.coxa_max
-            ):
+            if coxa is not None and not (self._config.coxa_min <= coxa <= self._config.coxa_max):
                 raise LimitsExceededError(
                     f"Coxa angle {coxa}° exceeds limits "
                     f"[{self._config.coxa_min}, {self._config.coxa_max}]"
@@ -847,7 +845,9 @@ class Leg(Controller):
         if contact:
             self._leg_state = LegState.STANCE
         else:
-            self._leg_state = LegState.SWING if self._leg_state == LegState.STANCE else self._leg_state
+            self._leg_state = (
+                LegState.SWING if self._leg_state == LegState.STANCE else self._leg_state
+            )
 
     def set_load(self, load: float) -> None:
         """Set load on the foot.

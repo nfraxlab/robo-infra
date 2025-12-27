@@ -83,9 +83,7 @@ def wide_config() -> PanTiltConfig:
 
 
 @pytest.fixture
-def pan_tilt(
-    pan_servo: Servo, tilt_servo: Servo, pan_tilt_config: PanTiltConfig
-) -> PanTilt:
+def pan_tilt(pan_servo: Servo, tilt_servo: Servo, pan_tilt_config: PanTiltConfig) -> PanTilt:
     """Create a PanTilt controller with default config."""
     return PanTilt(
         name="test_head",
@@ -103,9 +101,7 @@ def enabled_pan_tilt(pan_tilt: PanTilt) -> PanTilt:
 
 
 @pytest.fixture
-def wide_pan_tilt(
-    wide_pan_servo: Servo, tilt_servo: Servo, wide_config: PanTiltConfig
-) -> PanTilt:
+def wide_pan_tilt(wide_pan_servo: Servo, tilt_servo: Servo, wide_config: PanTiltConfig) -> PanTilt:
     """Create a PanTilt with wide range."""
     pt = PanTilt(
         name="wide",
@@ -195,9 +191,7 @@ class TestPanTiltInit:
         with pytest.raises(ValueError, match="Tilt actuator is required"):
             PanTilt(name="test", pan_actuator=pan_servo, tilt_actuator=None)  # type: ignore[arg-type]
 
-    def test_default_config_creation(
-        self, pan_servo: Servo, tilt_servo: Servo
-    ) -> None:
+    def test_default_config_creation(self, pan_servo: Servo, tilt_servo: Servo) -> None:
         """Test pan-tilt with no config uses defaults."""
         pt = PanTilt(name="test", pan_actuator=pan_servo, tilt_actuator=tilt_servo)
         assert pt.pt_config is not None

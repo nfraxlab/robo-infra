@@ -121,10 +121,22 @@ class TestStewartPlatform:
 
     def test_create_from_points(self) -> None:
         """Test creation from explicit points."""
-        base = [(0.1, 0, 0), (0.05, 0.087, 0), (-0.05, 0.087, 0),
-                (-0.1, 0, 0), (-0.05, -0.087, 0), (0.05, -0.087, 0)]
-        platform = [(0.05, 0, 0), (0.025, 0.043, 0), (-0.025, 0.043, 0),
-                    (-0.05, 0, 0), (-0.025, -0.043, 0), (0.025, -0.043, 0)]
+        base = [
+            (0.1, 0, 0),
+            (0.05, 0.087, 0),
+            (-0.05, 0.087, 0),
+            (-0.1, 0, 0),
+            (-0.05, -0.087, 0),
+            (0.05, -0.087, 0),
+        ]
+        platform = [
+            (0.05, 0, 0),
+            (0.025, 0.043, 0),
+            (-0.025, 0.043, 0),
+            (-0.05, 0, 0),
+            (-0.025, -0.043, 0),
+            (0.025, -0.043, 0),
+        ]
 
         stewart = StewartPlatform.create_from_points(
             base_joints=base,
@@ -230,9 +242,7 @@ class TestStewartForwardKinematics:
         pose = stewart.forward(home_joints)
 
         # Should recover approximately home pose
-        np.testing.assert_array_almost_equal(
-            pose.position, [0, 0, stewart.home_height], decimal=2
-        )
+        np.testing.assert_array_almost_equal(pose.position, [0, 0, stewart.home_height], decimal=2)
 
     def test_fk_ik_round_trip(self, stewart: StewartPlatform) -> None:
         """Test FK recovers IK input for small perturbations from home."""
@@ -251,9 +261,7 @@ class TestStewartForwardKinematics:
             recovered = stewart.forward(joints, initial_guess=home)
 
             # Should match within tolerance
-            np.testing.assert_array_almost_equal(
-                target.position, recovered.position, decimal=2
-            )
+            np.testing.assert_array_almost_equal(target.position, recovered.position, decimal=2)
         except ValueError:
             # FK may not converge for some platform configurations
             pytest.skip("FK did not converge for this configuration")
@@ -276,9 +284,7 @@ class TestStewartForwardKinematics:
 
         pose = stewart.forward(home_joints, initial_guess=initial)
 
-        np.testing.assert_array_almost_equal(
-            pose.position, initial.position, decimal=2
-        )
+        np.testing.assert_array_almost_equal(pose.position, initial.position, decimal=2)
 
 
 class TestStewartValidation:
@@ -302,9 +308,7 @@ class TestStewartValidation:
         """Test home_pose method."""
         pose = stewart.home_pose()
 
-        np.testing.assert_array_almost_equal(
-            pose.position, [0, 0, stewart.home_height]
-        )
+        np.testing.assert_array_almost_equal(pose.position, [0, 0, stewart.home_height])
         # Should be level (identity rotation)
         euler = pose.rotation.as_euler()
         np.testing.assert_array_almost_equal(euler, [0, 0, 0])

@@ -66,7 +66,7 @@ def create_color_blob_frame(
     # Draw circular blob
     y, x = np.ogrid[:height, :width]
     cx, cy = blob_center
-    mask = (x - cx) ** 2 + (y - cy) ** 2 <= blob_radius ** 2
+    mask = (x - cx) ** 2 + (y - cy) ** 2 <= blob_radius**2
     data[mask] = blob_color
 
     if format == PixelFormat.BGR:
@@ -626,7 +626,7 @@ class TestFilteringOptions:
         for i in range(5):
             y, x = np.ogrid[:480, :640]
             cx, cy = 100 + i * 100, 240
-            mask = (x - cx) ** 2 + (y - cy) ** 2 <= 30 ** 2
+            mask = (x - cx) ** 2 + (y - cy) ** 2 <= 30**2
             data[mask] = (255, 0, 0)
 
         frame = Frame(
@@ -750,7 +750,7 @@ class TestColorDetectorDetectComprehensive:
         for i in range(3):
             y, x = np.ogrid[:480, :640]
             cx, cy = 100 + i * 200, 240
-            mask = (x - cx) ** 2 + (y - cy) ** 2 <= 40 ** 2
+            mask = (x - cx) ** 2 + (y - cy) ** 2 <= 40**2
             data[mask] = (255, 0, 0)
 
         frame = Frame(
@@ -778,7 +778,7 @@ class TestColorDetectorDetectComprehensive:
         for i, r in enumerate(radii):
             y, x = np.ogrid[:480, :640]
             cx, cy = 100 + i * 200, 240
-            mask = (x - cx) ** 2 + (y - cy) ** 2 <= r ** 2
+            mask = (x - cx) ** 2 + (y - cy) ** 2 <= r**2
             data[mask] = (255, 0, 0)
 
         frame = Frame(
@@ -802,9 +802,7 @@ class TestColorDetectorDetectComprehensive:
 
         detector = ColorDetector.red(min_area=50)
         center = (320, 240)
-        frame = create_color_blob_frame(
-            blob_color=(255, 0, 0), blob_center=center, blob_radius=40
-        )
+        frame = create_color_blob_frame(blob_color=(255, 0, 0), blob_center=center, blob_radius=40)
 
         blobs = detector.detect(frame)
 
@@ -968,9 +966,7 @@ class TestColorDetectorDrawBlobsComprehensive:
         """Create a sample blob for testing."""
         from robo_infra.vision.color import ColorBlob
 
-        contour = np.array(
-            [[100, 100], [200, 100], [200, 200], [100, 200]], dtype=np.int32
-        )
+        contour = np.array([[100, 100], [200, 100], [200, 200], [100, 200]], dtype=np.int32)
         return ColorBlob(
             center=(150.0, 150.0),
             area=10000.0,
@@ -1286,4 +1282,3 @@ class TestColorDetectionIntegration:
         blobs = detector.detect(frame)
         # May or may not find depending on exact HSV conversion
         assert isinstance(blobs, list)
-

@@ -162,9 +162,7 @@ class TestArUcoMarker:
         """Test creating an ArUcoMarker."""
         from robo_infra.vision.markers import ArUcoMarker
 
-        corners = np.array(
-            [[100, 100], [200, 100], [200, 200], [100, 200]], dtype=np.float32
-        )
+        corners = np.array([[100, 100], [200, 100], [200, 200], [100, 200]], dtype=np.float32)
 
         marker = ArUcoMarker(
             id=42,
@@ -180,9 +178,7 @@ class TestArUcoMarker:
         from robo_infra.vision.markers import ArUcoMarker
 
         # 100x100 square
-        corners = np.array(
-            [[0, 0], [100, 0], [100, 100], [0, 100]], dtype=np.float32
-        )
+        corners = np.array([[0, 0], [100, 0], [100, 100], [0, 100]], dtype=np.float32)
 
         marker = ArUcoMarker(
             id=1,
@@ -197,9 +193,7 @@ class TestArUcoMarker:
         from robo_infra.vision.markers import ArUcoMarker
 
         # 100x100 square
-        corners = np.array(
-            [[0, 0], [100, 0], [100, 100], [0, 100]], dtype=np.float32
-        )
+        corners = np.array([[0, 0], [100, 0], [100, 100], [0, 100]], dtype=np.float32)
 
         marker = ArUcoMarker(
             id=1,
@@ -213,9 +207,7 @@ class TestArUcoMarker:
         """Test ArUcoMarker bounding box."""
         from robo_infra.vision.markers import ArUcoMarker
 
-        corners = np.array(
-            [[100, 100], [200, 100], [200, 200], [100, 200]], dtype=np.float32
-        )
+        corners = np.array([[100, 100], [200, 100], [200, 200], [100, 200]], dtype=np.float32)
 
         marker = ArUcoMarker(
             id=1,
@@ -242,9 +234,7 @@ class TestAprilTag:
         """Test creating an AprilTag."""
         from robo_infra.vision.markers import AprilTag
 
-        corners = np.array(
-            [[100, 100], [200, 100], [200, 200], [100, 200]], dtype=np.float32
-        )
+        corners = np.array([[100, 100], [200, 100], [200, 200], [100, 200]], dtype=np.float32)
 
         tag = AprilTag(
             id=5,
@@ -260,9 +250,7 @@ class TestAprilTag:
         """Test AprilTag size calculation."""
         from robo_infra.vision.markers import AprilTag
 
-        corners = np.array(
-            [[0, 0], [50, 0], [50, 50], [0, 50]], dtype=np.float32
-        )
+        corners = np.array([[0, 0], [50, 0], [50, 50], [0, 50]], dtype=np.float32)
 
         tag = AprilTag(
             id=1,
@@ -321,9 +309,7 @@ class TestArUcoDetectorSimulated:
         """Test creating detector with enum."""
         from robo_infra.vision.markers import ArUcoDetector, ArUcoDictionary
 
-        detector = ArUcoDetector(
-            dictionary=ArUcoDictionary.DICT_6X6_250, simulation=True
-        )
+        detector = ArUcoDetector(dictionary=ArUcoDictionary.DICT_6X6_250, simulation=True)
 
         assert detector.dictionary_name == "DICT_6X6_250"
 
@@ -347,15 +333,11 @@ class TestArUcoDetectorSimulated:
         detector = ArUcoDetector(simulation=True)
 
         # Create mock marker
-        corners = np.array(
-            [[100, 100], [200, 100], [200, 200], [100, 200]], dtype=np.float32
-        )
+        corners = np.array([[100, 100], [200, 100], [200, 200], [100, 200]], dtype=np.float32)
         marker = ArUcoMarker(id=1, corners=corners, center=(150, 150))
 
         # Create mock intrinsics
-        intrinsics = CameraIntrinsics(
-            fx=600, fy=600, cx=320, cy=240, width=640, height=480
-        )
+        intrinsics = CameraIntrinsics(fx=600, fy=600, cx=320, cy=240, width=640, height=480)
 
         pose = detector.estimate_pose(marker, intrinsics, marker_size=0.1)
 
@@ -369,9 +351,7 @@ class TestArUcoDetectorSimulated:
         detector = ArUcoDetector(simulation=True)
         frame = create_test_frame()
 
-        corners = np.array(
-            [[100, 100], [200, 100], [200, 200], [100, 200]], dtype=np.float32
-        )
+        corners = np.array([[100, 100], [200, 100], [200, 200], [100, 200]], dtype=np.float32)
         markers = [ArUcoMarker(id=1, corners=corners, center=(150, 150))]
 
         result = detector.draw_markers(frame, markers)
@@ -708,9 +688,7 @@ class TestArUcoMarkerPropertiesComprehensive:
         from robo_infra.vision.markers import ArUcoMarker
 
         # 100x100 square
-        corners = np.array(
-            [[0, 0], [100, 0], [100, 100], [0, 100]], dtype=np.float32
-        )
+        corners = np.array([[0, 0], [100, 0], [100, 100], [0, 100]], dtype=np.float32)
 
         marker = ArUcoMarker(id=1, corners=corners, center=(50.0, 50.0))
 
@@ -721,9 +699,7 @@ class TestArUcoMarkerPropertiesComprehensive:
         from robo_infra.vision.markers import ArUcoMarker
 
         # Rectangle: 100 wide, 50 tall
-        corners = np.array(
-            [[0, 0], [100, 0], [100, 50], [0, 50]], dtype=np.float32
-        )
+        corners = np.array([[0, 0], [100, 0], [100, 50], [0, 50]], dtype=np.float32)
 
         marker = ArUcoMarker(id=1, corners=corners, center=(50.0, 25.0))
 
@@ -734,9 +710,7 @@ class TestArUcoMarkerPropertiesComprehensive:
         """Test bounding box with offset marker."""
         from robo_infra.vision.markers import ArUcoMarker
 
-        corners = np.array(
-            [[200, 150], [300, 150], [300, 250], [200, 250]], dtype=np.float32
-        )
+        corners = np.array([[200, 150], [300, 150], [300, 250], [200, 250]], dtype=np.float32)
 
         marker = ArUcoMarker(id=1, corners=corners, center=(250.0, 200.0))
 
@@ -750,9 +724,7 @@ class TestArUcoMarkerPropertiesComprehensive:
         """Test that area is auto-calculated in __post_init__."""
         from robo_infra.vision.markers import ArUcoMarker
 
-        corners = np.array(
-            [[0, 0], [100, 0], [100, 100], [0, 100]], dtype=np.float32
-        )
+        corners = np.array([[0, 0], [100, 0], [100, 100], [0, 100]], dtype=np.float32)
 
         marker = ArUcoMarker(id=1, corners=corners, center=(50.0, 50.0))
 
@@ -780,9 +752,7 @@ class TestArUcoPoseEstimationComprehensive:
         """Create camera intrinsics."""
         from robo_infra.sensors.camera import CameraIntrinsics
 
-        return CameraIntrinsics(
-            fx=600, fy=600, cx=320, cy=240, width=640, height=480
-        )
+        return CameraIntrinsics(fx=600, fy=600, cx=320, cy=240, width=640, height=480)
 
     def test_pose_estimation_returns_marker_id(self, cv2_aruco, intrinsics):
         """Test pose estimation preserves marker ID."""
@@ -790,9 +760,7 @@ class TestArUcoPoseEstimationComprehensive:
 
         detector = ArUcoDetector()
 
-        corners = np.array(
-            [[280, 200], [360, 200], [360, 280], [280, 280]], dtype=np.float32
-        )
+        corners = np.array([[280, 200], [360, 200], [360, 280], [280, 280]], dtype=np.float32)
         marker = ArUcoMarker(id=42, corners=corners, center=(320, 240))
 
         pose = detector.estimate_pose(marker, intrinsics, marker_size=0.1)
@@ -805,9 +773,7 @@ class TestArUcoPoseEstimationComprehensive:
 
         detector = ArUcoDetector()
 
-        corners = np.array(
-            [[280, 200], [360, 200], [360, 280], [280, 280]], dtype=np.float32
-        )
+        corners = np.array([[280, 200], [360, 200], [360, 280], [280, 280]], dtype=np.float32)
         marker = ArUcoMarker(id=1, corners=corners, center=(320, 240))
 
         pose = detector.estimate_pose(marker, intrinsics, marker_size=0.1)
@@ -820,9 +786,7 @@ class TestArUcoPoseEstimationComprehensive:
 
         detector = ArUcoDetector()
 
-        corners = np.array(
-            [[280, 200], [360, 200], [360, 280], [280, 280]], dtype=np.float32
-        )
+        corners = np.array([[280, 200], [360, 200], [360, 280], [280, 280]], dtype=np.float32)
         marker = ArUcoMarker(id=1, corners=corners, center=(320, 240))
 
         pose = detector.estimate_pose(marker, intrinsics, marker_size=0.1)
@@ -851,9 +815,7 @@ class TestArUcoDrawMarkersComprehensive:
         """Create a sample marker."""
         from robo_infra.vision.markers import ArUcoMarker
 
-        corners = np.array(
-            [[100, 100], [200, 100], [200, 200], [100, 200]], dtype=np.float32
-        )
+        corners = np.array([[100, 100], [200, 100], [200, 200], [100, 200]], dtype=np.float32)
         return ArUcoMarker(id=5, corners=corners, center=(150.0, 150.0))
 
     def test_draw_markers_rgb(self, cv2_aruco, sample_marker):
@@ -885,9 +847,7 @@ class TestArUcoDrawMarkersComprehensive:
         detector = ArUcoDetector()
         frame = create_test_frame()
 
-        result = detector.draw_markers(
-            frame, [sample_marker], color=(255, 0, 0), thickness=3
-        )
+        result = detector.draw_markers(frame, [sample_marker], color=(255, 0, 0), thickness=3)
 
         assert result.width == frame.width
 
@@ -956,12 +916,8 @@ class TestArUcoGenerateMarkerComprehensive:
         """Test generating marker with custom border."""
         from robo_infra.vision.markers import ArUcoDetector
 
-        marker1 = ArUcoDetector.generate_marker(
-            "DICT_4X4_50", 1, size=100, border_bits=1
-        )
-        marker2 = ArUcoDetector.generate_marker(
-            "DICT_4X4_50", 1, size=100, border_bits=2
-        )
+        marker1 = ArUcoDetector.generate_marker("DICT_4X4_50", 1, size=100, border_bits=1)
+        marker2 = ArUcoDetector.generate_marker("DICT_4X4_50", 1, size=100, border_bits=2)
 
         # Different border sizes produce different images
         assert not np.array_equal(marker1.data, marker2.data)
@@ -1013,9 +969,7 @@ class TestAprilTagDetectorComprehensive:
 
         detector = AprilTagDetector()
 
-        corners = np.array(
-            [[280, 200], [360, 200], [360, 280], [280, 280]], dtype=np.float32
-        )
+        corners = np.array([[280, 200], [360, 200], [360, 280], [280, 280]], dtype=np.float32)
         tag = AprilTag(
             id=5,
             family="tag36h11",
@@ -1023,9 +977,7 @@ class TestAprilTagDetectorComprehensive:
             center=(320.0, 240.0),
         )
 
-        intrinsics = CameraIntrinsics(
-            fx=600, fy=600, cx=320, cy=240, width=640, height=480
-        )
+        intrinsics = CameraIntrinsics(fx=600, fy=600, cx=320, cy=240, width=640, height=480)
 
         pose = detector.estimate_pose(tag, intrinsics, tag_size=0.1)
 
@@ -1039,9 +991,7 @@ class TestAprilTagDetectorComprehensive:
         detector = AprilTagDetector()
         frame = create_test_frame()
 
-        corners = np.array(
-            [[100, 100], [200, 100], [200, 200], [100, 200]], dtype=np.float32
-        )
+        corners = np.array([[100, 100], [200, 100], [200, 200], [100, 200]], dtype=np.float32)
         tags = [
             AprilTag(
                 id=1,

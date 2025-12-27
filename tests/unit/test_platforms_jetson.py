@@ -67,8 +67,18 @@ class TestJetsonModel:
 
     def test_all_models_defined(self) -> None:
         """Test all expected models are defined."""
-        expected = ["NANO", "NANO_2GB", "TX1", "TX2", "TX2_NX",
-                    "XAVIER_NX", "AGX_XAVIER", "ORIN_NANO", "ORIN_NX", "AGX_ORIN"]
+        expected = [
+            "NANO",
+            "NANO_2GB",
+            "TX1",
+            "TX2",
+            "TX2_NX",
+            "XAVIER_NX",
+            "AGX_XAVIER",
+            "ORIN_NANO",
+            "ORIN_NX",
+            "AGX_ORIN",
+        ]
         for model in expected:
             assert hasattr(JetsonModel, model)
 
@@ -337,6 +347,7 @@ class TestJetsonPlatform:
     def test_unsupported_bus_raises(self, platform: JetsonPlatform) -> None:
         """Test that unsupported bus type raises error."""
         from robo_infra.core.exceptions import HardwareNotFoundError
+
         with pytest.raises(HardwareNotFoundError):
             platform.get_bus("can")
 
@@ -415,9 +426,7 @@ class TestModelDetection:
 
     @patch("robo_infra.platforms.jetson.Path.exists")
     @patch("robo_infra.platforms.jetson.Path.read_text")
-    def test_model_detection_orin(
-        self, mock_read: MagicMock, mock_exists: MagicMock
-    ) -> None:
+    def test_model_detection_orin(self, mock_read: MagicMock, mock_exists: MagicMock) -> None:
         """Test model detection for Orin."""
         mock_exists.return_value = True
         mock_read.return_value = "NVIDIA Jetson AGX Orin"
@@ -487,12 +496,7 @@ class TestEdgeCases:
         """Test PWM pin with custom options."""
         with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
             platform = JetsonPlatform()
-            pin = platform.get_pin(
-                32,
-                mode=PinMode.PWM,
-                frequency=100,
-                duty_cycle=0.5
-            )
+            pin = platform.get_pin(32, mode=PinMode.PWM, frequency=100, duty_cycle=0.5)
             assert isinstance(pin, JetsonPWMPin)
             assert pin.frequency == 100
             assert pin.duty_cycle == 0.5
@@ -599,17 +603,13 @@ class TestJetsonGPIOSetup:
 
     def test_gpio_setup_with_initial_high(self) -> None:
         """Test GPIO setup with initial HIGH state."""
-        pin = JetsonDigitalPin(
-            22, mode=PinMode.OUTPUT, initial=PinState.HIGH, simulation=True
-        )
+        pin = JetsonDigitalPin(22, mode=PinMode.OUTPUT, initial=PinState.HIGH, simulation=True)
         pin.setup()
         assert pin.state == PinState.HIGH
 
     def test_gpio_setup_with_initial_low(self) -> None:
         """Test GPIO setup with initial LOW state."""
-        pin = JetsonDigitalPin(
-            23, mode=PinMode.OUTPUT, initial=PinState.LOW, simulation=True
-        )
+        pin = JetsonDigitalPin(23, mode=PinMode.OUTPUT, initial=PinState.LOW, simulation=True)
         pin.setup()
         assert pin.state == PinState.LOW
 
@@ -801,6 +801,7 @@ class TestJetsonPWM:
     def test_pwm_all_hardware_pins(self) -> None:
         """Test all hardware PWM pins are detected."""
         from robo_infra.platforms.jetson import HARDWARE_PWM_PINS
+
         for pin_num in HARDWARE_PWM_PINS:
             pin = JetsonPWMPin(pin_num, simulation=True)
             assert pin._hardware_pwm is True
@@ -979,9 +980,7 @@ class TestJetsonCUDAVersion:
 
     @patch("robo_infra.platforms.jetson.Path.exists")
     @patch("robo_infra.platforms.jetson.Path.read_text")
-    def test_cuda_version_from_file(
-        self, mock_read: MagicMock, mock_exists: MagicMock
-    ) -> None:
+    def test_cuda_version_from_file(self, mock_read: MagicMock, mock_exists: MagicMock) -> None:
         """Test CUDA version parsing from file."""
         mock_exists.return_value = True
         mock_read.return_value = "CUDA Version 11.4.315"
@@ -1171,6 +1170,7 @@ class TestJetsonBusCreation:
     def test_invalid_bus_type_raises(self) -> None:
         """Test invalid bus type raises HardwareNotFoundError."""
         from robo_infra.core.exceptions import HardwareNotFoundError
+
         with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
             platform = JetsonPlatform()
             with pytest.raises(HardwareNotFoundError):
@@ -1189,6 +1189,7 @@ class TestJetsonPlatformConfig:
     def test_platform_type_is_jetson(self) -> None:
         """Test platform type is JETSON."""
         from robo_infra.platforms.base import PlatformType
+
         with patch.dict(os.environ, {"ROBO_SIMULATION": "true"}):
             platform = JetsonPlatform()
             assert platform.info.platform_type == PlatformType.JETSON

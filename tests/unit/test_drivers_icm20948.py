@@ -170,6 +170,7 @@ class TestICM20948ReadAccel:
     def test_accel_reading_structure(self) -> None:
         """Test acceleration reading structure."""
         from robo_infra.core.types import Vector3
+
         reading = ICM20948Reading(
             acceleration=Vector3(x=0.0, y=0.0, z=9.81),
             gyroscope=Vector3(x=0.0, y=0.0, z=0.0),
@@ -200,6 +201,7 @@ class TestICM20948ReadGyro:
     def test_gyro_reading_structure(self) -> None:
         """Test gyroscope reading structure."""
         from robo_infra.core.types import Vector3
+
         reading = ICM20948Reading(
             acceleration=Vector3(x=0.0, y=0.0, z=9.81),
             gyroscope=Vector3(x=10.0, y=20.0, z=30.0),
@@ -232,6 +234,7 @@ class TestICM20948ReadMag:
     def test_mag_reading_structure(self) -> None:
         """Test magnetometer reading structure."""
         from robo_infra.core.types import Vector3
+
         reading = ICM20948Reading(
             acceleration=Vector3(x=0.0, y=0.0, z=9.81),
             gyroscope=Vector3(x=0.0, y=0.0, z=0.0),
@@ -268,11 +271,13 @@ class TestICM20948WhoAmI:
     def test_who_am_i_expected_value(self) -> None:
         """Test expected WHO_AM_I value."""
         from robo_infra.drivers.icm20948 import ICM20948_WHO_AM_I
+
         assert ICM20948_WHO_AM_I == 0xEA
 
     def test_ak09916_who_am_i(self) -> None:
         """Test AK09916 magnetometer WHO_AM_I value."""
         from robo_infra.drivers.icm20948 import AK09916_WHO_AM_I
+
         assert AK09916_WHO_AM_I == 0x09
 
 
@@ -314,6 +319,7 @@ class TestICM20948RegisterBanks:
     def test_bank_enum_values(self) -> None:
         """Test bank enum values."""
         from robo_infra.drivers.icm20948 import ICM20948Bank
+
         assert ICM20948Bank.BANK_0 == 0x00
         assert ICM20948Bank.BANK_1 == 0x10
         assert ICM20948Bank.BANK_2 == 0x20
@@ -359,6 +365,7 @@ class TestICM20948TemperatureSensor:
     def test_temperature_reading(self) -> None:
         """Test temperature reading structure."""
         from robo_infra.core.types import Vector3
+
         reading = ICM20948Reading(
             acceleration=Vector3(x=0.0, y=0.0, z=9.81),
             gyroscope=Vector3(x=0.0, y=0.0, z=0.0),
@@ -380,6 +387,7 @@ class TestICM20948ReadingTimestamp:
     def test_reading_has_timestamp(self) -> None:
         """Test reading includes timestamp."""
         from robo_infra.core.types import Vector3
+
         reading = ICM20948Reading(
             acceleration=Vector3(x=0.0, y=0.0, z=9.81),
             gyroscope=Vector3(x=0.0, y=0.0, z=0.0),
@@ -392,6 +400,7 @@ class TestICM20948ReadingTimestamp:
     def test_timestamp_positive(self) -> None:
         """Test timestamp is positive."""
         from robo_infra.core.types import Vector3
+
         reading = ICM20948Reading(
             acceleration=Vector3(x=0.0, y=0.0, z=9.81),
             gyroscope=Vector3(x=0.0, y=0.0, z=0.0),

@@ -318,9 +318,7 @@ class DegradedModeController:
         )
 
         if skipped_targets:
-            status.warnings.append(
-                f"Skipping degraded actuators: {list(skipped_targets.keys())}"
-            )
+            status.warnings.append(f"Skipping degraded actuators: {list(skipped_targets.keys())}")
             logger.warning(
                 "Moving in degraded mode, skipping: %s",
                 list(skipped_targets.keys()),

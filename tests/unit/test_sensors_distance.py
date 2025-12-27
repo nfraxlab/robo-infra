@@ -826,15 +826,12 @@ class TestMultipleSensors:
         for i in range(4):
             driver.set_channel_config(i, ChannelConfig(min_value=0.0, max_value=50000.0))
 
-        driver.set_channel(0, 580.0)   # 10 cm
+        driver.set_channel(0, 580.0)  # 10 cm
         driver.set_channel(1, 1160.0)  # 20 cm
         driver.set_channel(2, 2320.0)  # 40 cm
         driver.set_channel(3, 4640.0)  # 80 cm
 
-        sensors = [
-            Ultrasonic(driver=driver, channel=i, unit=Unit.CENTIMETERS)
-            for i in range(4)
-        ]
+        sensors = [Ultrasonic(driver=driver, channel=i, unit=Unit.CENTIMETERS) for i in range(4)]
 
         for s in sensors:
             s.enable()

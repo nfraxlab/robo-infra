@@ -188,9 +188,7 @@ class RaspberryPiDigitalPin(DigitalPin):
             self._setup_simulation()
 
         self._initialized = True
-        logger.debug(
-            "Initialized pin %d with backend %s", self._number, self._backend.value
-        )
+        logger.debug("Initialized pin %d with backend %s", self._number, self._backend.value)
 
     def _setup_gpiozero(self) -> None:
         """Setup using gpiozero library."""
@@ -199,9 +197,7 @@ class RaspberryPiDigitalPin(DigitalPin):
                 from gpiozero import DigitalOutputDevice
 
                 initial = self._initial == PinState.HIGH
-                self._gpio_obj = DigitalOutputDevice(
-                    self._number, initial_value=initial
-                )
+                self._gpio_obj = DigitalOutputDevice(self._number, initial_value=initial)
             else:
                 from gpiozero import DigitalInputDevice
 
@@ -581,9 +577,7 @@ class RaspberryPiPWMPin(PWMPin):
                 duty = int(self._duty_cycle * 1_000_000)
                 self._pwm_obj["pi"].hardware_PWM(self._number, self._frequency, duty)
             else:
-                self._pwm_obj["pi"].set_PWM_dutycycle(
-                    self._number, int(self._duty_cycle * 255)
-                )
+                self._pwm_obj["pi"].set_PWM_dutycycle(self._number, int(self._duty_cycle * 255))
         else:
             self._pwm_obj["duty_cycle"] = self._duty_cycle
 
@@ -697,9 +691,7 @@ class RaspberryPiPlatform(BasePlatform):
         self._backend = backend or self._detect_backend()
         self._model: str | None = None
 
-        logger.info(
-            "Raspberry Pi platform initialized with backend: %s", self._backend.value
-        )
+        logger.info("Raspberry Pi platform initialized with backend: %s", self._backend.value)
 
     def _detect_backend(self) -> GPIOBackend:
         """Detect the best available GPIO backend.

@@ -182,10 +182,7 @@ class GPSReading:
         dlat = math.radians(other.latitude - self.latitude)
         dlon = math.radians(other.longitude - self.longitude)
 
-        a = (
-            math.sin(dlat / 2) ** 2
-            + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
-        )
+        a = math.sin(dlat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
         c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
         return EARTH_RADIUS * c
@@ -204,9 +201,7 @@ class GPSReading:
         dlon = math.radians(other.longitude - self.longitude)
 
         x = math.sin(dlon) * math.cos(lat2)
-        y = math.cos(lat1) * math.sin(lat2) - math.sin(lat1) * math.cos(lat2) * math.cos(
-            dlon
-        )
+        y = math.cos(lat1) * math.sin(lat2) - math.sin(lat1) * math.cos(lat2) * math.cos(dlon)
 
         bearing = math.degrees(math.atan2(x, y))
         return (bearing + 360) % 360
@@ -356,9 +351,7 @@ class NMEAParser:
                 "speed_mps": float(fields[6]) * KNOTS_TO_MPS if fields[6] else 0.0,
                 "heading": float(fields[7]) if fields[7] else 0.0,
                 "date": self._parse_date(fields[8]) if len(fields) > 8 and fields[8] else None,
-                "magnetic_variation": float(fields[9])
-                if len(fields) > 9 and fields[9]
-                else None,
+                "magnetic_variation": float(fields[9]) if len(fields) > 9 and fields[9] else None,
             }
             self._last_rmc = result
             return result
@@ -550,25 +543,15 @@ class GPSConfig(BaseModel):
     baudrate: int = Field(default=9600, description="Serial baudrate")
 
     # Update rate
-    update_rate: float = Field(
-        default=1.0, ge=0.1, le=20.0, description="Update rate in Hz"
-    )
+    update_rate: float = Field(default=1.0, ge=0.1, le=20.0, description="Update rate in Hz")
 
     # Filtering
-    filter_invalid: bool = Field(
-        default=True, description="Filter out invalid readings"
-    )
-    min_satellites: int = Field(
-        default=3, ge=0, description="Minimum satellites for valid fix"
-    )
-    max_hdop: float = Field(
-        default=10.0, gt=0.0, description="Maximum acceptable HDOP"
-    )
+    filter_invalid: bool = Field(default=True, description="Filter out invalid readings")
+    min_satellites: int = Field(default=3, ge=0, description="Minimum satellites for valid fix")
+    max_hdop: float = Field(default=10.0, gt=0.0, description="Maximum acceptable HDOP")
 
     # Timeout
-    timeout: float = Field(
-        default=2.0, gt=0.0, description="Read timeout in seconds"
-    )
+    timeout: float = Field(default=2.0, gt=0.0, description="Read timeout in seconds")
 
     # u-blox specific
     dynamic_model: str = Field(
@@ -922,9 +905,7 @@ class SimulatedGPS(GPS):
 
             # Update position (simplified flat-earth calculation)
             dlat = (distance * math.cos(bearing)) / 111320.0
-            dlon = (distance * math.sin(bearing)) / (
-                111320.0 * math.cos(math.radians(self._lat))
-            )
+            dlon = (distance * math.sin(bearing)) / (111320.0 * math.cos(math.radians(self._lat)))
 
             self._lat += dlat
             self._lon += dlon
@@ -1025,9 +1006,7 @@ class SerialGPS(GPS):
     def connect(self) -> None:
         """Connect to GPS via serial port."""
         if os.environ.get("ROBO_SIMULATION", "").lower() in ("true", "1", "yes"):
-            logger.warning(
-                "⚠️ SIMULATION MODE - %s not connected to real hardware", self.name
-            )
+            logger.warning("⚠️ SIMULATION MODE - %s not connected to real hardware", self.name)
             self._gps_state = GPSState.TRACKING
             return
 

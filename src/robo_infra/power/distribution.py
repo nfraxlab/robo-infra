@@ -725,10 +725,7 @@ def create_distribution_board(
         ...     ("motors", 22),
         ... ])
     """
-    power_rails = [
-        PowerRail(name=rail_name, enable_pin=pin)
-        for rail_name, pin in rails
-    ]
+    power_rails = [PowerRail(name=rail_name, enable_pin=pin) for rail_name, pin in rails]
 
     config = PowerDistributionConfig(
         name=name,

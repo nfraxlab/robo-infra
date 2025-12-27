@@ -125,8 +125,7 @@ def resize(
 
     if interpolation not in interp_map:
         raise ValueError(
-            f"Unknown interpolation '{interpolation}'. "
-            f"Choose from: {list(interp_map.keys())}"
+            f"Unknown interpolation '{interpolation}'. Choose from: {list(interp_map.keys())}"
         )
 
     interp_flag = interp_map[interpolation]
@@ -229,8 +228,7 @@ def rotate(
 
     if border_mode not in border_map:
         raise ValueError(
-            f"Unknown border_mode '{border_mode}'. "
-            f"Choose from: {list(border_map.keys())}"
+            f"Unknown border_mode '{border_mode}'. Choose from: {list(border_map.keys())}"
         )
 
     border_flag = border_map[border_mode]
@@ -318,7 +316,16 @@ def threshold(
     frame: Frame,
     value: int,
     *,
-    thresh_type: Literal["binary", "binary_inv", "trunc", "tozero", "tozero_inv", "otsu", "adaptive_mean", "adaptive_gaussian"] = "binary",
+    thresh_type: Literal[
+        "binary",
+        "binary_inv",
+        "trunc",
+        "tozero",
+        "tozero_inv",
+        "otsu",
+        "adaptive_mean",
+        "adaptive_gaussian",
+    ] = "binary",
     max_value: int = 255,
     block_size: int = 11,
     c: int = 2,
@@ -399,9 +406,7 @@ def threshold(
         )
     else:
         all_types = [*type_map.keys(), "otsu", "adaptive_mean", "adaptive_gaussian"]
-        raise ValueError(
-            f"Unknown thresh_type '{thresh_type}'. Choose from: {all_types}"
-        )
+        raise ValueError(f"Unknown thresh_type '{thresh_type}'. Choose from: {all_types}")
 
     return Frame(
         data=result,
@@ -461,10 +466,7 @@ def blur(
     elif method == "median":
         blurred = cv2.medianBlur(frame.data, kernel_size)
     else:
-        raise ValueError(
-            f"Unknown blur method '{method}'. "
-            f"Choose from: average, gaussian, median"
-        )
+        raise ValueError(f"Unknown blur method '{method}'. Choose from: average, gaussian, median")
 
     return Frame(
         data=blurred,
@@ -761,9 +763,7 @@ def erode(
     if kernel_shape not in shape_map:
         raise ValueError(f"Unknown kernel_shape '{kernel_shape}'")
 
-    kernel = cv2.getStructuringElement(
-        shape_map[kernel_shape], (kernel_size, kernel_size)
-    )
+    kernel = cv2.getStructuringElement(shape_map[kernel_shape], (kernel_size, kernel_size))
     eroded = cv2.erode(frame.data, kernel, iterations=iterations)
 
     return Frame(
@@ -810,9 +810,7 @@ def dilate(
     if kernel_shape not in shape_map:
         raise ValueError(f"Unknown kernel_shape '{kernel_shape}'")
 
-    kernel = cv2.getStructuringElement(
-        shape_map[kernel_shape], (kernel_size, kernel_size)
-    )
+    kernel = cv2.getStructuringElement(shape_map[kernel_shape], (kernel_size, kernel_size))
     dilated = cv2.dilate(frame.data, kernel, iterations=iterations)
 
     return Frame(
@@ -877,12 +875,8 @@ def morphology(
     if kernel_shape not in shape_map:
         raise ValueError(f"Unknown kernel_shape '{kernel_shape}'")
 
-    kernel = cv2.getStructuringElement(
-        shape_map[kernel_shape], (kernel_size, kernel_size)
-    )
-    result = cv2.morphologyEx(
-        frame.data, op_map[operation], kernel, iterations=iterations
-    )
+    kernel = cv2.getStructuringElement(shape_map[kernel_shape], (kernel_size, kernel_size))
+    result = cv2.morphologyEx(frame.data, op_map[operation], kernel, iterations=iterations)
 
     return Frame(
         data=result,
@@ -957,7 +951,9 @@ def histogram_equalize(frame: Frame) -> Frame:
         timestamp=frame.timestamp,
         width=frame.width,
         height=frame.height,
-        format=frame.format if frame.format in (PixelFormat.RGB, PixelFormat.BGR) else PixelFormat.RGB,
+        format=frame.format
+        if frame.format in (PixelFormat.RGB, PixelFormat.BGR)
+        else PixelFormat.RGB,
         frame_number=frame.frame_number,
         exposure_time=frame.exposure_time,
         metadata=frame.metadata.copy(),
