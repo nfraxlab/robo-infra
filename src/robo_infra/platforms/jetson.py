@@ -912,8 +912,9 @@ class JetsonPlatform(BasePlatform):
 
         if not self._simulation:
             try:
-                from robo_infra.core.bus import SMBus2I2CBus  # type: ignore[attr-defined]
-                return SMBus2I2CBus(config=config)  # type: ignore[no-any-return]
+                from robo_infra.core.bus import SMBus2I2CBus
+
+                return SMBus2I2CBus(config=config)
             except (ImportError, AttributeError):
                 logger.warning("smbus2 not available, using simulated I2C")
 
@@ -929,8 +930,9 @@ class JetsonPlatform(BasePlatform):
 
         if not self._simulation:
             try:
-                from robo_infra.core.bus import SpiDevSPIBus  # type: ignore[attr-defined]
-                return SpiDevSPIBus(config=config)  # type: ignore[no-any-return]
+                from robo_infra.core.bus import SpiDevSPIBus
+
+                return SpiDevSPIBus(config=config)
             except (ImportError, AttributeError):
                 logger.warning("spidev not available, using simulated SPI")
 
@@ -947,8 +949,9 @@ class JetsonPlatform(BasePlatform):
 
         if not self._simulation:
             try:
-                from robo_infra.core.bus import PySerialBus  # type: ignore[attr-defined]
-                return PySerialBus(config=config)  # type: ignore[no-any-return]
+                from robo_infra.core.bus import PySerialBus
+
+                return PySerialBus(config=config)
             except (ImportError, AttributeError):
                 logger.warning("pyserial not available, using simulated Serial")
 

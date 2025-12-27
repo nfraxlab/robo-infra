@@ -594,6 +594,471 @@ class SerialBus(Bus):
 
 
 # =============================================================================
+# Real Hardware Implementations
+# =============================================================================
+
+
+class SMBus2I2CBus(I2CBus):
+    """Real I2C bus using smbus2 library.
+
+    This implementation uses the smbus2 library to communicate with
+    real I2C hardware on Linux systems (Raspberry Pi, etc.).
+
+    Requires: pip install smbus2
+
+    Example:
+        >>> bus = SMBus2I2CBus(I2CConfig(bus_number=1))
+        >>> bus.open()
+        >>> devices = bus.scan()
+        >>> print(f"Found devices: {[hex(d) for d in devices]}")
+    """
+
+    def __init__(self, config: I2CConfig | None = None, name: str | None = None) -> None:
+        """Initialize real I2C bus.
+
+        Args:
+            config: I2C configuration.
+            name: Optional human-readable name.
+        """
+        super().__init__(config, name or f"I2C-{config.bus_number if config else 1}")
+        self._bus: object | None = None  # SMBus instance
+
+    def open(self) -> None:
+        """Open the I2C bus."""
+        try:
+            from smbus2 import SMBus
+        except ImportError as e:
+            raise ImportError(
+                "smbus2 library required for real I2C. Install with: pip install smbus2"
+            ) from e
+
+        self._bus = SMBus(self.config.bus_number)
+        self._is_open = True
+        logger.info("Opened real I2C bus %d", self.config.bus_number)
+
+    def close(self) -> None:
+        """Close the I2C bus."""
+        if self._bus is not None:
+            self._bus.close()  # type: ignore[union-attr]
+            self._bus = None
+        self._is_open = False
+        logger.debug("Closed real I2C bus %d", self.config.bus_number)
+
+    def _ensure_open(self) -> None:
+        """Ensure bus is open."""
+        if not self._is_open or self._bus is None:
+            raise RuntimeError("I2C bus is not open")
+
+    def scan(self) -> list[int]:
+        """Scan the bus for connected devices.
+
+        Probes addresses 0x03-0x77 (valid 7-bit I2C addresses).
+
+        Returns:
+            List of detected device addresses.
+        """
+        self._ensure_open()
+        devices = []
+
+        for address in range(0x03, 0x78):
+            try:
+                self._bus.read_byte(address)  # type: ignore[union-attr]
+                devices.append(address)
+            except OSError:
+                # No device at this address
+                pass
+
+        logger.debug("I2C scan found %d devices: %s", len(devices), [hex(a) for a in devices])
+        return devices
+
+    def write(self, address: int, data: bytes | Sequence[int]) -> int:
+        """Write data to a device.
+
+        Args:
+            address: 7-bit device address.
+            data: Data bytes to write.
+
+        Returns:
+            Number of bytes written.
+        """
+        self._ensure_open()
+        data_bytes = bytes(data)
+        self._bus.write_i2c_block_data(address, data_bytes[0], list(data_bytes[1:]))  # type: ignore[union-attr]
+        logger.debug("I2C write to %s: %s", hex(address), data_bytes.hex())
+        return len(data_bytes)
+
+    def read(self, address: int, length: int) -> bytes:
+        """Read data from a device.
+
+        Args:
+            address: 7-bit device address.
+            length: Number of bytes to read.
+
+        Returns:
+            Bytes read from device.
+        """
+        self._ensure_open()
+        result = bytes(self._bus.read_i2c_block_data(address, 0, length))  # type: ignore[union-attr]
+        logger.debug("I2C read from %s (%d bytes): %s", hex(address), length, result.hex())
+        return result
+
+    def write_register(self, address: int, register: int, data: bytes | Sequence[int]) -> int:
+        """Write data to a device register.
+
+        Args:
+            address: 7-bit device address.
+            register: Register address.
+            data: Data bytes to write.
+
+        Returns:
+            Number of bytes written.
+        """
+        self._ensure_open()
+        data_bytes = bytes(data)
+        self._bus.write_i2c_block_data(address, register, list(data_bytes))  # type: ignore[union-attr]
+        logger.debug("I2C write register %s[%s] = %s", hex(address), hex(register), data_bytes.hex())
+        return len(data_bytes)
+
+    def read_register(self, address: int, register: int, length: int) -> bytes:
+        """Read data from a device register.
+
+        Args:
+            address: 7-bit device address.
+            register: Register address.
+            length: Number of bytes to read.
+
+        Returns:
+            Bytes read from register.
+        """
+        self._ensure_open()
+        result = bytes(self._bus.read_i2c_block_data(address, register, length))  # type: ignore[union-attr]
+        logger.debug("I2C read register %s[%s] (%d bytes): %s", hex(address), hex(register), length, result.hex())
+        return result
+
+    def write_byte(self, address: int, value: int) -> None:
+        """Write a single byte to a device.
+
+        Args:
+            address: 7-bit device address.
+            value: Byte value to write (0-255).
+        """
+        self._ensure_open()
+        self._bus.write_byte(address, value)  # type: ignore[union-attr]
+
+    def read_byte(self, address: int) -> int:
+        """Read a single byte from a device.
+
+        Args:
+            address: 7-bit device address.
+
+        Returns:
+            Byte value read (0-255).
+        """
+        self._ensure_open()
+        return self._bus.read_byte(address)  # type: ignore[union-attr]
+
+    def write_byte_data(self, address: int, register: int, value: int) -> None:
+        """Write a byte to a device register.
+
+        Args:
+            address: 7-bit device address.
+            register: Register address.
+            value: Byte value to write (0-255).
+        """
+        self._ensure_open()
+        self._bus.write_byte_data(address, register, value)  # type: ignore[union-attr]
+
+    def read_byte_data(self, address: int, register: int) -> int:
+        """Read a byte from a device register.
+
+        Args:
+            address: 7-bit device address.
+            register: Register address.
+
+        Returns:
+            Byte value read (0-255).
+        """
+        self._ensure_open()
+        return self._bus.read_byte_data(address, register)  # type: ignore[union-attr]
+
+    def write_word_data(self, address: int, register: int, value: int) -> None:
+        """Write a 16-bit word to a device register.
+
+        Args:
+            address: 7-bit device address.
+            register: Register address.
+            value: 16-bit word value.
+        """
+        self._ensure_open()
+        self._bus.write_word_data(address, register, value)  # type: ignore[union-attr]
+
+    def read_word_data(self, address: int, register: int) -> int:
+        """Read a 16-bit word from a device register.
+
+        Args:
+            address: 7-bit device address.
+            register: Register address.
+
+        Returns:
+            16-bit word value.
+        """
+        self._ensure_open()
+        return self._bus.read_word_data(address, register)  # type: ignore[union-attr]
+
+
+class SpiDevSPIBus(SPIBus):
+    """Real SPI bus using spidev library.
+
+    This implementation uses the spidev library to communicate with
+    real SPI hardware on Linux systems.
+
+    Requires: pip install spidev
+
+    Example:
+        >>> bus = SpiDevSPIBus(SPIConfig(bus=0, device=0))
+        >>> bus.open()
+        >>> response = bus.transfer(bytes([0x01, 0x02, 0x03]))
+    """
+
+    def __init__(self, config: SPIConfig | None = None, name: str | None = None) -> None:
+        """Initialize real SPI bus.
+
+        Args:
+            config: SPI configuration.
+            name: Optional human-readable name.
+        """
+        cfg = config or SPIConfig()
+        super().__init__(cfg, name or f"SPI-{cfg.bus}:{cfg.device}")
+        self._spi: object | None = None  # SpiDev instance
+
+    def open(self) -> None:
+        """Open the SPI bus."""
+        try:
+            from spidev import SpiDev
+        except ImportError as e:
+            raise ImportError(
+                "spidev library required for real SPI. Install with: pip install spidev"
+            ) from e
+
+        self._spi = SpiDev()
+        self._spi.open(self.config.bus, self.config.device)  # type: ignore[union-attr]
+        self._spi.max_speed_hz = self.config.max_speed_hz  # type: ignore[union-attr]
+        self._spi.mode = self.config.mode.value  # type: ignore[union-attr]
+        self._spi.bits_per_word = self.config.bits_per_word  # type: ignore[union-attr]
+        self._spi.lsbfirst = self.config.lsb_first  # type: ignore[union-attr]
+        self._is_open = True
+        logger.info("Opened real SPI bus %d:%d", self.config.bus, self.config.device)
+
+    def close(self) -> None:
+        """Close the SPI bus."""
+        if self._spi is not None:
+            self._spi.close()  # type: ignore[union-attr]
+            self._spi = None
+        self._is_open = False
+        logger.debug("Closed real SPI bus %d:%d", self.config.bus, self.config.device)
+
+    def _ensure_open(self) -> None:
+        """Ensure bus is open."""
+        if not self._is_open or self._spi is None:
+            raise RuntimeError("SPI bus is not open")
+
+    def transfer(self, data: bytes | Sequence[int]) -> bytes:
+        """Perform a simultaneous read/write transfer.
+
+        Args:
+            data: Data bytes to send.
+
+        Returns:
+            Bytes received during transfer.
+        """
+        self._ensure_open()
+        result = bytes(self._spi.xfer2(list(data)))  # type: ignore[union-attr]
+        logger.debug("SPI transfer: sent=%s, received=%s", bytes(data).hex(), result.hex())
+        return result
+
+    def set_speed(self, speed_hz: int) -> None:
+        """Set the clock speed.
+
+        Args:
+            speed_hz: Clock speed in Hz.
+        """
+        self._ensure_open()
+        self._spi.max_speed_hz = speed_hz  # type: ignore[union-attr]
+        self.config.max_speed_hz = speed_hz
+        logger.debug("SPI speed set to %d Hz", speed_hz)
+
+    def set_mode(self, mode: SPIMode) -> None:
+        """Set the SPI mode.
+
+        Args:
+            mode: SPI mode (0-3).
+        """
+        self._ensure_open()
+        self._spi.mode = mode.value  # type: ignore[union-attr]
+        self.config.mode = mode
+        logger.debug("SPI mode set to %s", mode)
+
+
+class PySerialBus(SerialBus):
+    """Real serial bus using pyserial library.
+
+    This implementation uses the pyserial library to communicate with
+    real serial ports (USB-to-serial, hardware UART, etc.).
+
+    Requires: pip install pyserial
+
+    Example:
+        >>> bus = PySerialBus(SerialConfig(port="/dev/ttyUSB0", baudrate=115200))
+        >>> bus.open()
+        >>> bus.write(b"AT\\r\\n")
+        >>> response = bus.readline()
+    """
+
+    def __init__(self, config: SerialConfig | None = None, name: str | None = None) -> None:
+        """Initialize real serial bus.
+
+        Args:
+            config: Serial configuration.
+            name: Optional human-readable name.
+        """
+        cfg = config or SerialConfig()
+        super().__init__(cfg, name or f"Serial-{cfg.port}")
+        self._serial: object | None = None  # Serial instance
+
+    def open(self) -> None:
+        """Open the serial port."""
+        try:
+            from serial import Serial
+        except ImportError as e:
+            raise ImportError(
+                "pyserial library required for real serial. Install with: pip install pyserial"
+            ) from e
+
+        self._serial = Serial(
+            port=self.config.port,
+            baudrate=self.config.baudrate,
+            bytesize=self.config.bytesize,
+            parity=self.config.parity.value,
+            stopbits=self.config.stopbits.value,
+            timeout=self.config.timeout,
+            write_timeout=self.config.write_timeout,
+            xonxoff=self.config.xonxoff,
+            rtscts=self.config.rtscts,
+        )
+        self._is_open = True
+        logger.info("Opened real serial port %s at %d baud", self.config.port, self.config.baudrate)
+
+    def close(self) -> None:
+        """Close the serial port."""
+        if self._serial is not None:
+            self._serial.close()  # type: ignore[union-attr]
+            self._serial = None
+        self._is_open = False
+        logger.debug("Closed real serial port %s", self.config.port)
+
+    def _ensure_open(self) -> None:
+        """Ensure port is open."""
+        if not self._is_open or self._serial is None:
+            raise RuntimeError("Serial port is not open")
+
+    def write(self, data: bytes | str) -> int:
+        """Write data to the serial port.
+
+        Args:
+            data: Data to write (bytes or string).
+
+        Returns:
+            Number of bytes written.
+        """
+        self._ensure_open()
+        if isinstance(data, str):
+            data = data.encode()
+        result = self._serial.write(data)  # type: ignore[union-attr]
+        logger.debug("Serial write: %s", data.hex())
+        return result  # type: ignore[return-value]
+
+    def read(self, length: int) -> bytes:
+        """Read exact number of bytes.
+
+        Args:
+            length: Number of bytes to read.
+
+        Returns:
+            Bytes read (may be fewer if timeout).
+        """
+        self._ensure_open()
+        result = self._serial.read(length)  # type: ignore[union-attr]
+        logger.debug("Serial read (%d bytes): %s", length, result.hex())
+        return result  # type: ignore[return-value]
+
+    def readline(self) -> bytes:
+        """Read a line (until newline or timeout).
+
+        Returns:
+            Line read including the newline character.
+        """
+        self._ensure_open()
+        result = self._serial.readline()  # type: ignore[union-attr]
+        logger.debug("Serial readline: %s", result.hex())
+        return result  # type: ignore[return-value]
+
+    def read_until(self, terminator: bytes = b"\n") -> bytes:
+        """Read until a terminator is found.
+
+        Args:
+            terminator: Byte sequence to stop at.
+
+        Returns:
+            Data read including the terminator.
+        """
+        self._ensure_open()
+        result = self._serial.read_until(terminator)  # type: ignore[union-attr]
+        logger.debug("Serial read_until(%s): %s", terminator.hex(), result.hex())
+        return result  # type: ignore[return-value]
+
+    @property
+    def in_waiting(self) -> int:
+        """Number of bytes waiting to be read."""
+        self._ensure_open()
+        return self._serial.in_waiting  # type: ignore[union-attr, return-value]
+
+    @property
+    def out_waiting(self) -> int:
+        """Number of bytes waiting to be written."""
+        self._ensure_open()
+        return self._serial.out_waiting  # type: ignore[union-attr, return-value]
+
+    def flush(self) -> None:
+        """Wait until all data is written."""
+        self._ensure_open()
+        self._serial.flush()  # type: ignore[union-attr]
+        logger.debug("Serial flush")
+
+    def reset_input_buffer(self) -> None:
+        """Clear input buffer."""
+        self._ensure_open()
+        self._serial.reset_input_buffer()  # type: ignore[union-attr]
+        logger.debug("Serial reset input buffer")
+
+    def reset_output_buffer(self) -> None:
+        """Clear output buffer."""
+        self._ensure_open()
+        self._serial.reset_output_buffer()  # type: ignore[union-attr]
+        logger.debug("Serial reset output buffer")
+
+    def set_baudrate(self, baudrate: int) -> None:
+        """Change the baud rate.
+
+        Args:
+            baudrate: New baud rate.
+        """
+        self._ensure_open()
+        self._serial.baudrate = baudrate  # type: ignore[union-attr]
+        self.config.baudrate = baudrate
+        logger.debug("Serial baudrate set to %d", baudrate)
+
+
+# =============================================================================
 # Simulated Implementations
 # =============================================================================
 
@@ -1095,10 +1560,9 @@ def get_i2c(
         logger.warning("⚠️ SIMULATION MODE — Using simulated I2C bus %d", bus_number)
         return SimulatedI2CBus(config)
 
-    # Real hardware implementation would go here
-    # For now, return simulated
-    logger.info("Using simulated I2C bus %d (no real implementation yet)", bus_number)
-    return SimulatedI2CBus(config)
+    # Use real hardware implementation
+    logger.info("Using real I2C bus %d with smbus2", bus_number)
+    return SMBus2I2CBus(config)
 
 
 def get_spi(
@@ -1152,9 +1616,9 @@ def get_spi(
         logger.warning("⚠️ SIMULATION MODE — Using simulated SPI bus %d:%d", bus, device)
         return SimulatedSPIBus(config)
 
-    # Real hardware implementation would go here
-    logger.info("Using simulated SPI bus %d:%d (no real implementation yet)", bus, device)
-    return SimulatedSPIBus(config)
+    # Use real hardware implementation
+    logger.info("Using real SPI bus %d:%d with spidev", bus, device)
+    return SpiDevSPIBus(config)
 
 
 def get_serial(
@@ -1207,6 +1671,6 @@ def get_serial(
         logger.warning("⚠️ SIMULATION MODE — Using simulated serial port %s", port)
         return SimulatedSerialBus(config)
 
-    # Real hardware implementation would go here
-    logger.info("Using simulated serial port %s (no real implementation yet)", port)
-    return SimulatedSerialBus(config)
+    # Use real hardware implementation
+    logger.info("Using real serial port %s with pyserial", port)
+    return PySerialBus(config)
