@@ -31,6 +31,7 @@ packages = [{ include = "robo_infra", from = "src" }]
 python = ">=3.11,<4.0"
 pydantic = ">=2.0"
 typing-extensions = ">=4.0"
+numpy = ">=1.24"
 
 # Optional infrastructure integrations
 svc-infra = {version = "^0.1.716", optional = true}
