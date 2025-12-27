@@ -23,9 +23,9 @@ Example:
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
-from robo_infra.core.bus import Bus, I2CBus, I2CConfig, SPIBus, SPIConfig
+from robo_infra.core.bus import Bus, I2CBus, SPIBus
 from robo_infra.core.pin import Pin, PinMode
 from robo_infra.platforms.base import (
     PlatformCapability,
@@ -33,10 +33,6 @@ from robo_infra.platforms.base import (
     get_platform,
 )
 from robo_infra.platforms.detection import detect_platform
-
-
-if TYPE_CHECKING:
-    pass
 
 
 logger = logging.getLogger(__name__)

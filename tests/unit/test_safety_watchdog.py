@@ -1486,7 +1486,7 @@ class TestControlLoopTimerExtended:
         start = time.perf_counter()
         timer.begin_cycle()
         # Very fast cycle (< 1ms)
-        elapsed = timer.end_cycle()
+        timer.end_cycle()
         actual = time.perf_counter() - start
 
         # Should have slept to reach ~20ms

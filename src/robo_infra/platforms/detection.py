@@ -472,10 +472,7 @@ def is_simulation_mode() -> bool:
         return True
 
     # macOS and Windows are always simulation mode for GPIO
-    if detect_macos() or detect_windows():
-        return True
-
-    return False
+    return bool(detect_macos() or detect_windows())
 
 
 def is_raspberry_pi() -> bool:

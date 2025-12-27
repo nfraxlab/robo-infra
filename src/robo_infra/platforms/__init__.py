@@ -96,6 +96,16 @@ from robo_infra.platforms.esp32 import (
     ESP32TouchPin,
     MicroPythonREPL,
 )
+from robo_infra.platforms.factory import (
+    get_gpio,
+    get_i2c,
+    get_spi,
+    get_uart,
+    list_available_gpio,
+    list_available_i2c,
+    list_available_spi,
+    list_available_uart,
+)
 from robo_infra.platforms.jetson import (
     HARDWARE_PWM_PINS as JETSON_HARDWARE_PWM_PINS,
 )
@@ -130,16 +140,6 @@ from robo_infra.platforms.raspberry_pi import (
     RaspberryPiDigitalPin,
     RaspberryPiPlatform,
     RaspberryPiPWMPin,
-)
-from robo_infra.platforms.factory import (
-    get_gpio,
-    get_i2c,
-    get_spi,
-    get_uart,
-    list_available_gpio,
-    list_available_i2c,
-    list_available_spi,
-    list_available_uart,
 )
 
 
@@ -241,18 +241,18 @@ __all__ = [
     "detect_raspberry_pi",
     "detect_rock_pi",
     "detect_windows",
-    # Module-level functions
-    "get_platform",
-    "get_platform_info",
-    "register_platform",
-    "reset_platform",
     # Factory functions
     "get_gpio",
     "get_i2c",
+    # Module-level functions
+    "get_platform",
+    "get_platform_info",
     "get_spi",
     "get_uart",
     "list_available_gpio",
     "list_available_i2c",
     "list_available_spi",
     "list_available_uart",
+    "register_platform",
+    "reset_platform",
 ]

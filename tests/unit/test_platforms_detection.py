@@ -16,9 +16,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from unittest.mock import MagicMock, patch
-
-import pytest
+from unittest.mock import patch
 
 from robo_infra.platforms.base import PlatformCapability, PlatformInfo, PlatformType
 from robo_infra.platforms.detection import (
@@ -277,7 +275,7 @@ class TestDetectRaspberryPi:
         with patch.object(
             Path, "exists", return_value=True
         ), patch.object(Path, "read_text", return_value=mock_model):
-            is_detected, model = detect_raspberry_pi()
+            _is_detected, _model = detect_raspberry_pi()
             # Note: May not work due to path-specific mocking
             # This test verifies the interface
 

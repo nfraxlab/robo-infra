@@ -6,7 +6,6 @@ Tests the cross-platform hardware access factory: get_gpio, get_i2c, get_spi, ge
 from __future__ import annotations
 
 import os
-from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -18,7 +17,6 @@ from robo_infra.platforms.base import (
     PlatformCapability,
     PlatformInfo,
     PlatformType,
-    SimulationPlatform,
     reset_platform,
 )
 from robo_infra.platforms.factory import (
@@ -31,10 +29,6 @@ from robo_infra.platforms.factory import (
     list_available_spi,
     list_available_uart,
 )
-
-
-if TYPE_CHECKING:
-    pass
 
 
 # =============================================================================
@@ -222,9 +216,8 @@ class TestGetGpio:
 
         with patch(
             "robo_infra.platforms.factory.get_platform", return_value=mock_limited_platform
-        ):
-            with pytest.raises(HardwareNotFoundError) as exc_info:
-                get_gpio(17)
+        ), pytest.raises(HardwareNotFoundError) as exc_info:
+            get_gpio(17)
 
         assert "GPIO" in str(exc_info.value)
 
@@ -332,9 +325,8 @@ class TestGetI2c:
         """Test that HardwareNotFoundError is raised when I2C not supported."""
         with patch(
             "robo_infra.platforms.factory.get_platform", return_value=mock_limited_platform
-        ):
-            with pytest.raises(HardwareNotFoundError) as exc_info:
-                get_i2c(bus=1)
+        ), pytest.raises(HardwareNotFoundError) as exc_info:
+            get_i2c(bus=1)
 
         assert "I2C" in str(exc_info.value)
 
@@ -475,9 +467,8 @@ class TestGetSpi:
         """Test that HardwareNotFoundError is raised when SPI not supported."""
         with patch(
             "robo_infra.platforms.factory.get_platform", return_value=mock_limited_platform
-        ):
-            with pytest.raises(HardwareNotFoundError) as exc_info:
-                get_spi(bus=0, device=0)
+        ), pytest.raises(HardwareNotFoundError) as exc_info:
+            get_spi(bus=0, device=0)
 
         assert "SPI" in str(exc_info.value)
 
@@ -588,9 +579,8 @@ class TestGetUart:
         """Test that HardwareNotFoundError is raised when UART not supported."""
         with patch(
             "robo_infra.platforms.factory.get_platform", return_value=mock_limited_platform
-        ):
-            with pytest.raises(HardwareNotFoundError) as exc_info:
-                get_uart(port="/dev/ttyS0")
+        ), pytest.raises(HardwareNotFoundError) as exc_info:
+            get_uart(port="/dev/ttyS0")
 
         assert "UART" in str(exc_info.value)
 
@@ -766,9 +756,8 @@ class TestFactoryErrorHandling:
 
         with patch(
             "robo_infra.platforms.factory.get_platform", return_value=mock_limited_platform
-        ):
-            with pytest.raises(HardwareNotFoundError) as exc_info:
-                get_gpio(17)
+        ), pytest.raises(HardwareNotFoundError) as exc_info:
+            get_gpio(17)
 
         assert "17" in str(exc_info.value) or "GPIO" in str(exc_info.value)
 
@@ -778,9 +767,8 @@ class TestFactoryErrorHandling:
         """Test that I2C error includes bus information."""
         with patch(
             "robo_infra.platforms.factory.get_platform", return_value=mock_limited_platform
-        ):
-            with pytest.raises(HardwareNotFoundError) as exc_info:
-                get_i2c(bus=5)
+        ), pytest.raises(HardwareNotFoundError) as exc_info:
+            get_i2c(bus=5)
 
         assert "5" in str(exc_info.value) or "I2C" in str(exc_info.value)
 
@@ -790,9 +778,8 @@ class TestFactoryErrorHandling:
         """Test that SPI error includes bus:device information."""
         with patch(
             "robo_infra.platforms.factory.get_platform", return_value=mock_limited_platform
-        ):
-            with pytest.raises(HardwareNotFoundError) as exc_info:
-                get_spi(bus=1, device=2)
+        ), pytest.raises(HardwareNotFoundError) as exc_info:
+            get_spi(bus=1, device=2)
 
         assert "SPI" in str(exc_info.value)
 
