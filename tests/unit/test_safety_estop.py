@@ -1,6 +1,6 @@
 """Unit tests for robo_infra.safety.estop module.
 
-Phase 5.6.3: E-Stop Tests
+Phase 7.1: E-Stop Tests
 Target coverage: 61% → 90%+
 
 Tests cover:
@@ -15,6 +15,10 @@ Tests cover:
 - Callback handling
 - HardwareEStop GPIO integration
 - Thread safety and edge cases
+- State transitions and edge cases
+- Trigger when already triggered
+- Callback ordering and error handling
+- Recovery scenarios
 """
 
 from __future__ import annotations
@@ -1023,3 +1027,477 @@ class TestLogging:
             estop.disable_system()
 
         assert "disabled" in caplog.text.lower()
+
+
+# =============================================================================
+# Phase 7.1: Additional Test Classes for Coverage Improvement
+# =============================================================================
+
+
+class TestTriggerWhenAlreadyTriggered:
+    """Tests for triggering E-stop when already in triggered state."""
+
+    def test_trigger_when_already_triggered_stays_triggered(self) -> None:
+        """Re-triggering keeps state as TRIGGERED."""
+        estop = EStop()
+        estop.trigger("first trigger")
+        assert estop.is_triggered
+
+        estop.trigger("second trigger")
+
+        assert estop.is_triggered
+        assert estop.state == EStopState.TRIGGERED
+
+    def test_trigger_when_already_triggered_adds_to_log(self) -> None:
+        """Re-triggering adds another event to the log."""
+        estop = EStop()
+        estop.trigger("first")
+        estop.trigger("second")
+
+        assert len(estop.event_log) == 2
+        assert estop.event_log[0].reason == "first"
+        assert estop.event_log[1].reason == "second"
+
+    def test_trigger_when_already_triggered_still_attempts_disable(self) -> None:
+        """Re-triggering still attempts to disable actuators."""
+        estop = EStop()
+        motor = MockActuator(name="motor1")
+        estop.register_actuator(motor)
+        estop.trigger("first")
+
+        # Reset disable count
+        motor.disable_count = 0
+
+        estop.trigger("second")
+
+        # Should have attempted disable again
+        assert motor.disable_count >= 1
+
+    def test_trigger_when_already_triggered_calls_callbacks(self) -> None:
+        """Re-triggering still calls callbacks."""
+        estop = EStop()
+        callback = MagicMock()
+        estop.register_callback(callback)
+
+        estop.trigger("first")
+        estop.trigger("second")
+
+        assert callback.call_count == 2
+
+
+class TestCallbackOrder:
+    """Tests for callback execution order."""
+
+    def test_callbacks_called_in_registration_order(self) -> None:
+        """Callbacks are called in the order they were registered."""
+        estop = EStop()
+        call_order: list[int] = []
+
+        def make_callback(n: int) -> MagicMock:
+            def cb(event: EStopEvent) -> None:
+                call_order.append(n)
+            return cb
+
+        estop.register_callback(make_callback(1))
+        estop.register_callback(make_callback(2))
+        estop.register_callback(make_callback(3))
+
+        estop.trigger("test")
+
+        assert call_order == [1, 2, 3]
+
+    def test_callbacks_called_after_actuator_disable(self) -> None:
+        """Callbacks are called AFTER actuators are disabled."""
+        estop = EStop()
+        actuator_state_during_callback: bool | None = None
+        motor = MockActuator(name="motor1")
+        estop.register_actuator(motor)
+
+        def capture_state(event: EStopEvent) -> None:
+            nonlocal actuator_state_during_callback
+            actuator_state_during_callback = motor.disabled
+
+        estop.register_callback(capture_state)
+        estop.trigger("test")
+
+        # Motor should have been disabled before callback was called
+        assert actuator_state_during_callback is True
+
+    def test_earlier_callback_exception_doesnt_prevent_later_callbacks(self) -> None:
+        """If a callback fails, later callbacks are still called."""
+        estop = EStop()
+        first_callback = MagicMock(side_effect=Exception("fail"))
+        second_callback = MagicMock()
+
+        estop.register_callback(first_callback)
+        estop.register_callback(second_callback)
+
+        estop.trigger("test")
+
+        first_callback.assert_called_once()
+        second_callback.assert_called_once()
+
+
+class TestStateTransitions:
+    """Tests for E-stop state transitions."""
+
+    def test_armed_to_triggered(self) -> None:
+        """ARMED -> TRIGGERED via trigger()."""
+        estop = EStop()
+        assert estop.state == EStopState.ARMED
+
+        estop.trigger("test")
+
+        assert estop.state == EStopState.TRIGGERED
+
+    def test_triggered_to_reset_pending(self) -> None:
+        """TRIGGERED -> RESET_PENDING via reset() with confirmation."""
+        config = EStopConfig(require_reset_confirmation=True)
+        estop = EStop(config=config)
+        estop.trigger("test")
+
+        estop.reset()
+
+        assert estop.state == EStopState.RESET_PENDING
+
+    def test_triggered_to_armed_without_confirmation(self) -> None:
+        """TRIGGERED -> ARMED via reset() without confirmation requirement."""
+        config = EStopConfig(require_reset_confirmation=False)
+        estop = EStop(config=config)
+        estop.trigger("test")
+
+        estop.reset()
+
+        assert estop.state == EStopState.ARMED
+
+    def test_armed_to_disabled(self) -> None:
+        """ARMED -> DISABLED via disable_system()."""
+        estop = EStop()
+        assert estop.state == EStopState.ARMED
+
+        estop.disable_system()
+
+        assert estop.state == EStopState.DISABLED
+
+    def test_disabled_to_armed(self) -> None:
+        """DISABLED -> ARMED via enable_system()."""
+        estop = EStop()
+        estop.disable_system()
+
+        estop.enable_system()
+
+        assert estop.state == EStopState.ARMED
+
+    def test_triggered_to_armed_via_force_arm(self) -> None:
+        """TRIGGERED -> ARMED via force_arm()."""
+        estop = EStop()
+        estop.trigger("test")
+
+        estop.force_arm()
+
+        assert estop.state == EStopState.ARMED
+
+    def test_reset_pending_to_armed_via_force_arm(self) -> None:
+        """RESET_PENDING -> ARMED via force_arm()."""
+        config = EStopConfig(require_reset_confirmation=True)
+        estop = EStop(config=config)
+        estop.trigger("test")
+        estop.reset()  # Sets to RESET_PENDING
+        assert estop.state == EStopState.RESET_PENDING
+
+        estop.force_arm()
+
+        assert estop.state == EStopState.ARMED
+
+
+class TestEStopConfigExtras:
+    """Tests for EStopConfig with extra fields."""
+
+    def test_config_allows_extra_fields(self) -> None:
+        """Config accepts extra fields due to extra='allow'."""
+        config = EStopConfig(
+            name="test",
+            custom_field="custom_value",  # type: ignore[call-arg]
+        )
+
+        assert config.name == "test"
+        assert config.custom_field == "custom_value"  # type: ignore[attr-defined]
+
+    def test_config_is_mutable(self) -> None:
+        """Config can be mutated due to frozen=False."""
+        config = EStopConfig(name="original")
+
+        config.name = "modified"
+
+        assert config.name == "modified"
+
+
+class TestEStopErrorDetails:
+    """Additional tests for EStopError exception."""
+
+    def test_error_message_includes_count(self) -> None:
+        """Error message includes count of failed actuators."""
+        error = EStopError(
+            failed_actuators=["motor1", "motor2", "motor3"],
+            successful_actuators=["motor4"],
+            errors={"motor1": Exception("err1")},
+        )
+
+        assert "3" in str(error) or "motor1" in str(error)
+
+    def test_error_with_empty_successful_list(self) -> None:
+        """Error can have empty successful list."""
+        error = EStopError(
+            failed_actuators=["motor1"],
+            successful_actuators=[],
+            errors={},
+        )
+
+        assert error.successful_actuators == []
+
+    def test_error_with_empty_errors_dict(self) -> None:
+        """Error can have empty errors dict."""
+        error = EStopError(
+            failed_actuators=["motor1"],
+            successful_actuators=["motor2"],
+            errors={},
+        )
+
+        assert error.errors == {}
+
+
+class TestResetEdgeCases:
+    """Additional reset edge case tests."""
+
+    def test_reset_from_disabled_state(self) -> None:
+        """Reset from DISABLED state is no-op."""
+        estop = EStop()
+        estop.disable_system()
+
+        result = estop.reset()
+
+        # Should return True (no-op since not triggered)
+        assert result is True
+        assert estop.state == EStopState.DISABLED
+
+    def test_reset_from_reset_pending_without_confirm(self) -> None:
+        """Reset from RESET_PENDING without confirm stays pending."""
+        config = EStopConfig(require_reset_confirmation=True)
+        estop = EStop(config=config)
+        estop.trigger("test")
+        estop.reset()  # Sets RESET_PENDING
+
+        # State is RESET_PENDING, calling reset again without confirm
+        # should return True because state != TRIGGERED
+        result = estop.reset()
+
+        assert result is True  # No-op since not in TRIGGERED state
+
+    def test_double_reset_with_confirmation(self) -> None:
+        """Two resets with proper confirmation sequence."""
+        config = EStopConfig(require_reset_confirmation=True)
+        estop = EStop(config=config)
+        estop.trigger("test")
+
+        # First reset - sets pending
+        result1 = estop.reset()
+        assert result1 is False
+
+        # Force back to triggered to test confirm flow
+        estop._state = EStopState.TRIGGERED
+        estop._reset_confirmation_pending = True
+
+        # Second reset with confirm
+        result2 = estop.reset(confirm=True)
+        assert result2 is True
+        assert estop.state == EStopState.ARMED
+
+
+class TestActuatorDisableRetries:
+    """Tests for actuator disable retry logic."""
+
+    def test_actuator_succeeds_on_second_attempt(self) -> None:
+        """Actuator that fails once then succeeds."""
+        estop = EStop()
+
+        class FlakeyActuator:
+            name = "flakey"
+            attempt_count = 0
+            disabled = False
+
+            def disable(self) -> None:
+                self.attempt_count += 1
+                if self.attempt_count < 2:
+                    raise RuntimeError("Transient error")
+                self.disabled = True
+
+        motor = FlakeyActuator()
+        estop.register_actuator(motor)  # type: ignore[arg-type]
+
+        event = estop.trigger("test")
+
+        assert "flakey" in event.actuators_disabled
+        assert "flakey" not in event.actuators_failed
+        assert motor.disabled is True
+
+    def test_actuator_succeeds_on_third_attempt(self) -> None:
+        """Actuator that fails twice then succeeds on third attempt."""
+        config = EStopConfig(max_disable_attempts=3)
+        estop = EStop(config=config)
+
+        class VeryFlakeyActuator:
+            name = "very_flakey"
+            attempt_count = 0
+            disabled = False
+
+            def disable(self) -> None:
+                self.attempt_count += 1
+                if self.attempt_count < 3:
+                    raise RuntimeError(f"Transient error {self.attempt_count}")
+                self.disabled = True
+
+        motor = VeryFlakeyActuator()
+        estop.register_actuator(motor)  # type: ignore[arg-type]
+
+        event = estop.trigger("test")
+
+        assert "very_flakey" in event.actuators_disabled
+        assert motor.attempt_count == 3
+
+
+class TestHardwareEStopEdgeCases:
+    """Additional HardwareEStop edge case tests."""
+
+    def test_hardware_estop_with_no_button_fail_safe(self) -> None:
+        """NO button failure defaults to triggered state (fail-safe)."""
+        estop = EStop()
+        pin = MagicMock()
+        pin.read.side_effect = Exception("GPIO error")
+        hw = HardwareEStop(
+            pin=pin,
+            software_estop=estop,
+            normally_closed=False,  # NO button
+        )
+
+        # For NO button, error = assume triggered (pin high)
+        result = hw._read_button()
+
+        assert result is True  # NO button, error = triggered state
+
+    def test_is_triggered_state_nc(self) -> None:
+        """NC button: LOW = triggered."""
+        estop = EStop()
+        pin = MockPin()
+        hw = HardwareEStop(
+            pin=pin,
+            software_estop=estop,
+            normally_closed=True,
+        )
+
+        assert hw._is_triggered_state(False) is True  # LOW = triggered
+        assert hw._is_triggered_state(True) is False  # HIGH = not triggered
+
+    def test_is_triggered_state_no(self) -> None:
+        """NO button: HIGH = triggered."""
+        estop = EStop()
+        pin = MockPin()
+        hw = HardwareEStop(
+            pin=pin,
+            software_estop=estop,
+            normally_closed=False,
+        )
+
+        assert hw._is_triggered_state(True) is True  # HIGH = triggered
+        assert hw._is_triggered_state(False) is False  # LOW = not triggered
+
+    def test_stop_monitoring_without_start(self) -> None:
+        """Stopping monitoring that was never started is safe."""
+        estop = EStop()
+        pin = MockPin()
+        hw = HardwareEStop(pin=pin, software_estop=estop)
+
+        # Should not raise
+        hw.stop_monitoring()
+
+        assert hw._monitoring is False
+
+
+class TestStateProperties:
+    """Tests for state-related properties."""
+
+    def test_state_property_returns_current_state(self) -> None:
+        """state property returns the current EStopState."""
+        estop = EStop()
+
+        assert estop.state == EStopState.ARMED
+
+        estop.trigger("test")
+        assert estop.state == EStopState.TRIGGERED
+
+    def test_is_armed_property(self) -> None:
+        """is_armed is True only when ARMED."""
+        estop = EStop()
+        assert estop.is_armed is True
+
+        estop.trigger("test")
+        assert estop.is_armed is False
+
+        estop.force_arm()
+        assert estop.is_armed is True
+
+        estop.disable_system()
+        assert estop.is_armed is False
+
+    def test_is_triggered_false_when_reset_pending(self) -> None:
+        """is_triggered is False when in RESET_PENDING state."""
+        config = EStopConfig(require_reset_confirmation=True)
+        estop = EStop(config=config)
+        estop.trigger("test")
+        assert estop.is_triggered is True
+
+        estop.reset()  # Sets to RESET_PENDING
+
+        assert estop.is_triggered is False
+        assert estop.state == EStopState.RESET_PENDING
+
+
+class TestTriggerReturnValue:
+    """Tests for trigger return value details."""
+
+    def test_trigger_returns_event_with_correct_triggered_by(self) -> None:
+        """Trigger returns event with triggered_by field."""
+        estop = EStop()
+
+        event = estop.trigger("test", triggered_by="sensor_123")
+
+        assert event.triggered_by == "sensor_123"
+
+    def test_trigger_returns_event_with_none_triggered_by(self) -> None:
+        """Trigger returns event with None triggered_by when not specified."""
+        estop = EStop()
+
+        event = estop.trigger("test")
+
+        assert event.triggered_by is None
+
+    def test_trigger_event_has_valid_timestamp(self) -> None:
+        """Trigger event has timestamp close to current time."""
+        estop = EStop()
+        before = time.time()
+
+        event = estop.trigger("test")
+
+        after = time.time()
+        assert before <= event.timestamp <= after
+
+    def test_trigger_event_lists_all_actuators(self) -> None:
+        """Trigger event lists all actuators that were disabled."""
+        estop = EStop()
+        motors = [MockActuator(name=f"motor{i}") for i in range(5)]
+        for m in motors:
+            estop.register_actuator(m)
+
+        event = estop.trigger("test")
+
+        for i in range(5):
+            assert f"motor{i}" in event.actuators_disabled

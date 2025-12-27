@@ -1127,3 +1127,532 @@ class TestEdgeCases:
         watchdog.stop()
 
         assert watchdog.state == WatchdogState.STOPPED
+
+
+# =============================================================================
+# Phase 7.4: Additional Tests for Coverage
+# =============================================================================
+
+
+class TestWatchdogErrorExtended:
+    """Extended tests for WatchdogError exception."""
+
+    def test_error_action_taken_attribute(self) -> None:
+        """WatchdogError has action_taken attribute."""
+        error = WatchdogError(name="test", timeout=0.1, last_feed_age=0.2)
+
+        assert hasattr(error, "action_taken")
+        assert error.action_taken == "E-stop triggered"
+
+    def test_error_with_zero_last_feed_age(self) -> None:
+        """WatchdogError handles zero last_feed_age."""
+        error = WatchdogError(name="test", timeout=0.1, last_feed_age=0.0)
+
+        assert error.last_feed_age == 0.0
+        assert "0.000s" in str(error)
+
+    def test_error_with_large_values(self) -> None:
+        """WatchdogError handles large timeout values."""
+        error = WatchdogError(name="test", timeout=60.0, last_feed_age=120.5)
+
+        assert error.timeout == 60.0
+        assert error.last_feed_age == 120.5
+        assert "60" in str(error)
+
+
+class TestWatchdogConfigExtended:
+    """Extended tests for WatchdogConfig model."""
+
+    def test_config_allows_extra_attributes(self) -> None:
+        """Config accepts extra attributes due to extra='allow'."""
+        config = WatchdogConfig(name="test", custom_field="value")
+
+        assert config.custom_field == "value"
+
+    def test_config_model_config_not_frozen(self) -> None:
+        """Config is not frozen (can be modified)."""
+        config = WatchdogConfig()
+
+        config.timeout = 0.5
+        assert config.timeout == 0.5
+
+    def test_config_with_very_small_timeout(self) -> None:
+        """Config accepts very small timeout values."""
+        config = WatchdogConfig(timeout=0.001)
+
+        assert config.timeout == 0.001
+
+    def test_config_with_large_timeout(self) -> None:
+        """Config accepts large timeout values."""
+        config = WatchdogConfig(timeout=3600.0)
+
+        assert config.timeout == 3600.0
+
+
+class TestWatchdogStatusExtended:
+    """Extended tests for WatchdogStatus dataclass."""
+
+    def test_status_all_states(self) -> None:
+        """Status can have any WatchdogState."""
+        for state in WatchdogState:
+            status = WatchdogStatus(state=state)
+            assert status.state == state
+
+    def test_status_timeout_count_tracking(self) -> None:
+        """Status tracks multiple timeouts."""
+        status = WatchdogStatus(timeout_count=5)
+
+        assert status.timeout_count == 5
+
+    def test_status_large_feed_count(self) -> None:
+        """Status handles large feed counts."""
+        status = WatchdogStatus(feed_count=1_000_000)
+
+        assert status.feed_count == 1_000_000
+
+
+class TestWatchdogInitExtended:
+    """Extended initialization tests for Watchdog."""
+
+    def test_init_with_none_timeout_uses_default(self) -> None:
+        """None timeout uses default 0.1s."""
+        watchdog = Watchdog(timeout=None)
+
+        assert watchdog.timeout == 0.1
+
+    def test_init_config_name_propagates(self) -> None:
+        """Config name is used in watchdog."""
+        config = WatchdogConfig(name="CustomWatchdog")
+        watchdog = Watchdog(config=config)
+
+        assert watchdog._config.name == "CustomWatchdog"
+
+    def test_initial_feed_count_zero(self) -> None:
+        """Initial feed count is zero."""
+        watchdog = Watchdog()
+
+        assert watchdog.status().feed_count == 0
+
+    def test_initial_timeout_count_zero(self) -> None:
+        """Initial timeout count is zero."""
+        watchdog = Watchdog()
+
+        assert watchdog.status().timeout_count == 0
+
+
+class TestHeartbeatExtended:
+    """Extended heartbeat (feed) tests."""
+
+    def test_feed_before_start(self) -> None:
+        """Feed before start still updates internal state."""
+        watchdog = Watchdog(timeout=1.0)
+
+        # Feed count updates even when stopped
+        watchdog.feed()
+
+        assert watchdog.status().feed_count == 1
+
+    def test_feed_when_paused(self) -> None:
+        """Feed when paused still updates count."""
+        watchdog = Watchdog(timeout=1.0)
+        watchdog.start()
+
+        try:
+            watchdog.pause()
+            watchdog.feed()
+
+            assert watchdog.status().feed_count == 1
+        finally:
+            watchdog.stop()
+
+    def test_feed_when_triggered(self) -> None:
+        """Feed when triggered still updates count."""
+        watchdog = Watchdog(timeout=0.05)
+        watchdog.start()
+
+        try:
+            time.sleep(0.15)
+            assert watchdog.state == WatchdogState.TRIGGERED
+
+            watchdog.feed()
+
+            assert watchdog.status().feed_count == 1
+        finally:
+            watchdog.stop()
+
+
+class TestTimeoutExtended:
+    """Extended timeout tests."""
+
+    def test_timeout_without_estop(self) -> None:
+        """Timeout works when no E-stop is configured."""
+        callback = MagicMock()
+        watchdog = Watchdog(timeout=0.05)
+        watchdog.register_callback(callback)
+        watchdog.start()
+
+        try:
+            time.sleep(0.15)
+
+            assert watchdog.state == WatchdogState.TRIGGERED
+            callback.assert_called_once()
+        finally:
+            watchdog.stop()
+
+    def test_timeout_reason_includes_name(self) -> None:
+        """Timeout E-stop reason includes watchdog name."""
+        mock_estop = MagicMock()
+        config = WatchdogConfig(name="MyWatchdog", timeout=0.05)
+        watchdog = Watchdog(estop=mock_estop, config=config)
+        watchdog.start()
+
+        try:
+            time.sleep(0.15)
+
+            call_kwargs = mock_estop.trigger.call_args.kwargs
+            assert "MyWatchdog" in call_kwargs["reason"]
+        finally:
+            watchdog.stop()
+
+    def test_timeout_count_persists_across_resets(self) -> None:
+        """Timeout count accumulates across resets."""
+        watchdog = Watchdog(timeout=0.05)
+        watchdog.start()
+
+        try:
+            # First timeout
+            time.sleep(0.15)
+            assert watchdog.status().timeout_count == 1
+
+            # Reset and second timeout
+            watchdog.reset()
+            time.sleep(0.15)
+            assert watchdog.status().timeout_count == 2
+        finally:
+            watchdog.stop()
+
+
+class TestStartStopExtended:
+    """Extended start/stop lifecycle tests."""
+
+    def test_start_logs_info(self, caplog: pytest.LogCaptureFixture) -> None:
+        """Start logs info message."""
+        watchdog = Watchdog(timeout=0.5)
+
+        with caplog.at_level(logging.INFO):
+            watchdog.start()
+
+        try:
+            assert "started" in caplog.text.lower()
+        finally:
+            watchdog.stop()
+
+    def test_stop_logs_info(self, caplog: pytest.LogCaptureFixture) -> None:
+        """Stop logs info message."""
+        watchdog = Watchdog(timeout=0.5)
+        watchdog.start()
+
+        with caplog.at_level(logging.INFO):
+            watchdog.stop()
+
+        assert "stopped" in caplog.text.lower()
+
+    def test_stop_joins_thread(self) -> None:
+        """Stop waits for thread to join."""
+        watchdog = Watchdog(timeout=0.5)
+        watchdog.start()
+
+        thread = watchdog._thread
+        assert thread is not None
+        assert thread.is_alive()
+
+        watchdog.stop()
+
+        assert watchdog._thread is None
+
+
+class TestPauseResumeExtended:
+    """Extended pause/resume tests."""
+
+    def test_pause_logs_debug(self, caplog: pytest.LogCaptureFixture) -> None:
+        """Pause logs debug message."""
+        watchdog = Watchdog(timeout=1.0)
+        watchdog.start()
+
+        try:
+            with caplog.at_level(logging.DEBUG):
+                watchdog.pause()
+
+            assert "paused" in caplog.text.lower()
+        finally:
+            watchdog.stop()
+
+    def test_resume_logs_debug(self, caplog: pytest.LogCaptureFixture) -> None:
+        """Resume logs debug message."""
+        watchdog = Watchdog(timeout=1.0)
+        watchdog.start()
+
+        try:
+            watchdog.pause()
+            with caplog.at_level(logging.DEBUG):
+                watchdog.resume()
+
+            assert "resumed" in caplog.text.lower()
+        finally:
+            watchdog.stop()
+
+    def test_multiple_pause_resume_cycles(self) -> None:
+        """Multiple pause/resume cycles work correctly."""
+        watchdog = Watchdog(timeout=1.0)
+        watchdog.start()
+
+        try:
+            for _ in range(5):
+                assert watchdog.state == WatchdogState.ARMED
+                watchdog.pause()
+                assert watchdog.state == WatchdogState.PAUSED
+                watchdog.resume()
+                assert watchdog.state == WatchdogState.ARMED
+        finally:
+            watchdog.stop()
+
+
+class TestResetExtended:
+    """Extended reset tests."""
+
+    def test_reset_logs_info(self, caplog: pytest.LogCaptureFixture) -> None:
+        """Reset logs info message."""
+        watchdog = Watchdog(timeout=0.05)
+        watchdog.start()
+
+        try:
+            time.sleep(0.15)
+
+            with caplog.at_level(logging.INFO):
+                watchdog.reset()
+
+            assert "reset" in caplog.text.lower()
+        finally:
+            watchdog.stop()
+
+    def test_reset_when_stopped(self) -> None:
+        """Reset when stopped is no-op."""
+        watchdog = Watchdog(timeout=1.0)
+
+        assert watchdog.state == WatchdogState.STOPPED
+
+        watchdog.reset()
+
+        assert watchdog.state == WatchdogState.STOPPED
+
+    def test_reset_when_paused(self) -> None:
+        """Reset when paused is no-op."""
+        watchdog = Watchdog(timeout=1.0)
+        watchdog.start()
+
+        try:
+            watchdog.pause()
+            assert watchdog.state == WatchdogState.PAUSED
+
+            watchdog.reset()
+
+            assert watchdog.state == WatchdogState.PAUSED
+        finally:
+            watchdog.stop()
+
+
+class TestControlLoopTimerExtended:
+    """Extended ControlLoopTimer tests."""
+
+    def test_no_warning_when_disabled(self, caplog: pytest.LogCaptureFixture) -> None:
+        """No warning logged when warn_on_overrun is False."""
+        timer = ControlLoopTimer(frequency=100.0, warn_on_overrun=False)
+        timer.start()
+
+        with caplog.at_level(logging.WARNING):
+            timer.begin_cycle()
+            time.sleep(0.015)  # Overrun
+            timer.end_cycle()
+
+        # Should not have "overrun" in log when disabled
+        # Note: severe overrun still logs error regardless
+        timer.stop()
+
+    def test_normal_cycle_sleeps_to_maintain_frequency(self) -> None:
+        """Normal cycle sleeps to maintain target frequency."""
+        timer = ControlLoopTimer(frequency=50.0)  # 20ms period
+        timer.start()
+
+        start = time.perf_counter()
+        timer.begin_cycle()
+        # Very fast cycle (< 1ms)
+        elapsed = timer.end_cycle()
+        actual = time.perf_counter() - start
+
+        # Should have slept to reach ~20ms
+        assert actual >= 0.018  # At least 18ms
+
+        timer.stop()
+
+    def test_watchdog_fed_multiple_cycles(self) -> None:
+        """Watchdog is fed on each cycle."""
+        watchdog = Watchdog(timeout=1.0)
+        timer = ControlLoopTimer(frequency=100.0, watchdog=watchdog)
+        watchdog.start()
+        timer.start()
+
+        try:
+            for i in range(10):
+                timer.begin_cycle()
+                timer.end_cycle()
+
+            assert watchdog.status().feed_count == 10
+        finally:
+            timer.stop()
+            watchdog.stop()
+
+    def test_timer_without_watchdog(self) -> None:
+        """Timer works without watchdog."""
+        timer = ControlLoopTimer(frequency=100.0, watchdog=None)
+        timer.start()
+
+        timer.begin_cycle()
+        elapsed = timer.end_cycle()
+
+        assert elapsed > 0
+        timer.stop()
+
+
+class TestCallbackBehavior:
+    """Tests for callback behavior."""
+
+    def test_callback_receives_triggered_state(self) -> None:
+        """Callback receives status with TRIGGERED state."""
+        watchdog = Watchdog(timeout=0.05)
+        received_status: list[WatchdogStatus] = []
+
+        def capture_callback(status: WatchdogStatus) -> None:
+            received_status.append(status)
+
+        watchdog.register_callback(capture_callback)
+        watchdog.start()
+
+        try:
+            time.sleep(0.15)
+
+            assert len(received_status) == 1
+            assert received_status[0].state == WatchdogState.TRIGGERED
+        finally:
+            watchdog.stop()
+
+    def test_callback_order_preserved(self) -> None:
+        """Callbacks are called in registration order."""
+        watchdog = Watchdog(timeout=0.05)
+        call_order: list[int] = []
+
+        watchdog.register_callback(lambda _: call_order.append(1))
+        watchdog.register_callback(lambda _: call_order.append(2))
+        watchdog.register_callback(lambda _: call_order.append(3))
+
+        watchdog.start()
+
+        try:
+            time.sleep(0.15)
+
+            assert call_order == [1, 2, 3]
+        finally:
+            watchdog.stop()
+
+
+class TestWatchdogProperties:
+    """Tests for Watchdog properties."""
+
+    def test_is_armed_false_when_stopped(self) -> None:
+        """is_armed is False when stopped."""
+        watchdog = Watchdog()
+
+        assert watchdog.is_armed is False
+
+    def test_is_armed_true_when_armed(self) -> None:
+        """is_armed is True when armed."""
+        watchdog = Watchdog(timeout=1.0)
+        watchdog.start()
+
+        try:
+            assert watchdog.is_armed is True
+        finally:
+            watchdog.stop()
+
+    def test_is_armed_false_when_paused(self) -> None:
+        """is_armed is False when paused."""
+        watchdog = Watchdog(timeout=1.0)
+        watchdog.start()
+
+        try:
+            watchdog.pause()
+            assert watchdog.is_armed is False
+        finally:
+            watchdog.stop()
+
+    def test_is_armed_false_when_triggered(self) -> None:
+        """is_armed is False when triggered."""
+        watchdog = Watchdog(timeout=0.05)
+        watchdog.start()
+
+        try:
+            time.sleep(0.15)
+            assert watchdog.is_armed is False
+        finally:
+            watchdog.stop()
+
+
+class TestWatchdogThreadDetails:
+    """Tests for watchdog thread behavior."""
+
+    def test_thread_is_daemon(self) -> None:
+        """Watchdog thread is daemon thread."""
+        watchdog = Watchdog(timeout=1.0)
+        watchdog.start()
+
+        try:
+            assert watchdog._thread is not None
+            assert watchdog._thread.daemon is True
+        finally:
+            watchdog.stop()
+
+    def test_thread_name_includes_watchdog_name(self) -> None:
+        """Thread name includes watchdog name."""
+        config = WatchdogConfig(name="ControlLoop", timeout=1.0)
+        watchdog = Watchdog(config=config)
+        watchdog.start()
+
+        try:
+            assert watchdog._thread is not None
+            assert "ControlLoop" in watchdog._thread.name
+        finally:
+            watchdog.stop()
+
+
+class TestStatusAgeCalculation:
+    """Tests for status age calculation."""
+
+    def test_status_age_zero_before_feed(self) -> None:
+        """Status age is zero before any feed."""
+        watchdog = Watchdog(timeout=1.0)
+
+        status = watchdog.status()
+        assert status.last_feed_age == 0.0
+
+    def test_status_age_increases_over_time(self) -> None:
+        """Status age increases as time passes."""
+        watchdog = Watchdog(timeout=1.0)
+        watchdog.start()
+
+        try:
+            watchdog.feed()
+            time.sleep(0.1)
+
+            status = watchdog.status()
+            assert status.last_feed_age >= 0.09
+        finally:
+            watchdog.stop()

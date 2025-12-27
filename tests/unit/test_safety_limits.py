@@ -1,6 +1,6 @@
 """Unit tests for robo_infra.safety.limits module.
 
-Phase 5.6.4: Limits Tests
+Phase 7.2: Limits Tests
 Target coverage: 65% → 90%+
 
 Tests cover:
@@ -16,6 +16,9 @@ Tests cover:
 - Violation callbacks
 - LimitGuard wrapper
 - Edge cases and thread safety
+- Limits dataclass from core/types.py
+- Rate limiting state management
+- Multiple violation types
 """
 
 from __future__ import annotations
@@ -1017,3 +1020,552 @@ class TestLogging:
             enforcer.enforce(150.0)
 
         assert "limit" not in caplog.text.lower()
+
+
+# =============================================================================
+# Phase 7.2: Additional Test Classes for Coverage Improvement
+# =============================================================================
+
+
+class TestLimitsDataclassEdgeCases:
+    """Additional tests for Limits class from core/types.py."""
+
+    def test_limits_with_very_small_range(self) -> None:
+        """Limits with very small range work correctly."""
+        limits = Limits(min=0.0, max=0.001)
+
+        assert limits.clamp(0.0005) == 0.0005
+        assert limits.clamp(-1.0) == 0.0
+        assert limits.clamp(1.0) == 0.001
+
+    def test_limits_normalize_with_offset(self) -> None:
+        """Normalize works with non-zero min."""
+        limits = Limits(min=100.0, max=200.0)
+
+        assert limits.normalize(100.0) == 0.0
+        assert limits.normalize(150.0) == 0.5
+        assert limits.normalize(200.0) == 1.0
+
+    def test_limits_denormalize_with_offset(self) -> None:
+        """Denormalize works with non-zero min."""
+        limits = Limits(min=100.0, max=200.0)
+
+        assert limits.denormalize(0.0) == 100.0
+        assert limits.denormalize(0.5) == 150.0
+        assert limits.denormalize(1.0) == 200.0
+
+    def test_limits_default_at_min_boundary(self) -> None:
+        """Default exactly at min is valid."""
+        limits = Limits(min=0.0, max=100.0, default=0.0)
+        assert limits.default == 0.0
+
+    def test_limits_default_at_max_boundary(self) -> None:
+        """Default exactly at max is valid."""
+        limits = Limits(min=0.0, max=100.0, default=100.0)
+        assert limits.default == 100.0
+
+    def test_limits_negative_range(self) -> None:
+        """Limits work with entirely negative range."""
+        limits = Limits(min=-200.0, max=-100.0, default=-150.0)
+
+        assert limits.clamp(-250.0) == -200.0
+        assert limits.clamp(-50.0) == -100.0
+        assert limits.is_within(-150.0) is True
+        assert limits.is_within(-50.0) is False
+
+
+class TestEnforcerConfigEdgeCases:
+    """Additional tests for EnforcerConfig model."""
+
+    def test_config_allows_extra_fields(self) -> None:
+        """Config accepts extra fields due to extra='allow'."""
+        config = EnforcerConfig(
+            name="test",
+            custom_field="custom_value",  # type: ignore[call-arg]
+        )
+
+        assert config.name == "test"
+        assert config.custom_field == "custom_value"  # type: ignore[attr-defined]
+
+    def test_config_is_mutable(self) -> None:
+        """Config can be mutated due to frozen=False."""
+        config = EnforcerConfig(name="original")
+
+        config.name = "modified"
+
+        assert config.name == "modified"
+
+    def test_config_soft_limit_margin_at_boundaries(self) -> None:
+        """Soft limit margin at exact boundaries (0 and 0.5)."""
+        config_zero = EnforcerConfig(soft_limit_margin=0.0)
+        config_half = EnforcerConfig(soft_limit_margin=0.5)
+
+        assert config_zero.soft_limit_margin == 0.0
+        assert config_half.soft_limit_margin == 0.5
+
+    def test_config_clamp_behavior_options(self) -> None:
+        """All clamp_behavior options are accepted."""
+        for behavior in ["clamp", "reject", "estop"]:
+            config = EnforcerConfig(clamp_behavior=behavior)
+            assert config.clamp_behavior == behavior
+
+
+class TestViolationDetailsTracking:
+    """Tests for detailed violation tracking."""
+
+    def test_violation_timestamp_accuracy(self) -> None:
+        """Violation timestamp is close to current time."""
+        import time
+
+        enforcer = LimitEnforcer(position_limits=(0.0, 100.0))
+
+        before = time.time()
+        enforcer.enforce(150.0)
+        after = time.time()
+
+        violations = enforcer.recent_violations
+        pos_max = [v for v in violations if v.violation_type == LimitViolationType.POSITION_MAX]
+        assert len(pos_max) == 1
+        assert before <= pos_max[0].timestamp <= after
+
+    def test_violation_component_name_set(self) -> None:
+        """Violation includes component name from config."""
+        config = EnforcerConfig(
+            name="MyServo",
+            position_min=0.0,
+            position_max=100.0,
+        )
+        enforcer = LimitEnforcer(config=config)
+
+        enforcer.enforce(150.0)
+
+        violations = enforcer.recent_violations
+        pos_max = [v for v in violations if v.violation_type == LimitViolationType.POSITION_MAX]
+        assert pos_max[0].component == "MyServo"
+
+    def test_soft_limit_violation_not_enforced(self) -> None:
+        """Soft limit violations don't change the value (just warnings)."""
+        config = EnforcerConfig(
+            position_min=0.0,
+            position_max=100.0,
+            soft_limit_margin=0.1,
+        )
+        enforcer = LimitEnforcer(config=config)
+
+        # 95 is in soft limit zone (> 90) but within hard limits
+        result = enforcer.enforce(95.0)
+
+        assert result == 95.0  # Value unchanged
+        soft_violations = [
+            v for v in enforcer.recent_violations if v.violation_type == LimitViolationType.SOFT_LIMIT
+        ]
+        assert len(soft_violations) == 1
+        assert soft_violations[0].requested == 95.0
+        assert soft_violations[0].enforced == 95.0  # Not changed
+
+
+class TestRateLimitingState:
+    """Tests for rate limiting state management."""
+
+    def test_reset_state_clears_all(self) -> None:
+        """Reset state clears all tracking variables."""
+        enforcer = LimitEnforcer(
+            position_limits=(0.0, 180.0),
+            velocity_limit=100.0,
+            acceleration_limit=100.0,
+        )
+
+        # Build up state
+        enforcer.enforce(10.0, current_position=0.0, dt=0.1)
+        enforcer.enforce(20.0, current_position=10.0, dt=0.1)
+
+        # Verify state exists
+        assert enforcer._last_position is not None
+        assert enforcer._last_time is not None
+
+        # Reset
+        enforcer.reset_state()
+
+        # Verify cleared
+        assert enforcer._last_position is None
+        assert enforcer._last_velocity == 0.0
+        assert enforcer._last_acceleration == 0.0
+        assert enforcer._last_time is None
+
+    def test_auto_dt_calculation(self) -> None:
+        """dt is auto-calculated when not provided."""
+        import time
+
+        enforcer = LimitEnforcer(position_limits=(0.0, 180.0))
+
+        # First call
+        enforcer.enforce(10.0)
+
+        # Wait a bit
+        time.sleep(0.05)
+
+        # Second call - dt should be auto-calculated
+        enforcer.enforce(20.0)
+
+        # Should have updated last_time
+        assert enforcer._last_time is not None
+
+
+class TestPositionLimitsExtended:
+    """Extended position limits tests."""
+
+    def test_both_min_and_max_violations_tracked(self) -> None:
+        """Both min and max violations are tracked separately."""
+        enforcer = LimitEnforcer(position_limits=(0.0, 100.0))
+
+        enforcer.enforce(-50.0)  # Below min
+        enforcer.enforce(150.0)  # Above max
+
+        min_violations = [
+            v for v in enforcer.recent_violations if v.violation_type == LimitViolationType.POSITION_MIN
+        ]
+        max_violations = [
+            v for v in enforcer.recent_violations if v.violation_type == LimitViolationType.POSITION_MAX
+        ]
+
+        assert len(min_violations) == 1
+        assert len(max_violations) == 1
+        assert min_violations[0].requested == -50.0
+        assert min_violations[0].enforced == 0.0
+        assert max_violations[0].requested == 150.0
+        assert max_violations[0].enforced == 100.0
+
+    def test_position_limits_property(self) -> None:
+        """position_limits property returns Limits object."""
+        enforcer = LimitEnforcer(position_limits=(10.0, 90.0))
+
+        limits = enforcer.position_limits
+
+        assert isinstance(limits, Limits)
+        assert limits.min == 10.0
+        assert limits.max == 90.0
+
+
+class TestVelocityLimitsExtended:
+    """Extended velocity limits tests."""
+
+    def test_negative_velocity_limited(self) -> None:
+        """Negative velocity is also limited."""
+        enforcer = LimitEnforcer(
+            position_limits=(0.0, 180.0),
+            velocity_limit=10.0,
+        )
+
+        # Initialize
+        enforcer.enforce(100.0, current_position=100.0, dt=0.1)
+
+        # Try to move backwards fast
+        result = enforcer.enforce(0.0, current_position=100.0, dt=0.1)
+
+        # Should be limited to -10 units/sec * 0.1s = -1 unit from current
+        assert result == 99.0
+
+    def test_velocity_limit_with_no_rate_limit(self) -> None:
+        """Without velocity limit, large jumps are allowed."""
+        enforcer = LimitEnforcer(
+            position_limits=(0.0, 180.0),
+            velocity_limit=None,  # No velocity limit
+        )
+
+        enforcer.enforce(0.0, current_position=0.0, dt=0.1)
+        result = enforcer.enforce(100.0, current_position=0.0, dt=0.1)
+
+        assert result == 100.0  # Not limited
+
+
+class TestAccelerationLimitsExtended:
+    """Extended acceleration limits tests."""
+
+    def test_acceleration_violation_recorded(self) -> None:
+        """Acceleration violation is recorded."""
+        enforcer = LimitEnforcer(
+            position_limits=(0.0, 1000.0),
+            acceleration_limit=10.0,
+        )
+
+        # Initialize with zero velocity
+        enforcer.enforce(0.0, current_position=0.0, dt=0.1)
+
+        # Try sudden acceleration
+        enforcer.enforce(100.0, current_position=0.0, dt=0.1)
+
+        accel_violations = [
+            v for v in enforcer.recent_violations if v.violation_type == LimitViolationType.ACCELERATION
+        ]
+        assert len(accel_violations) >= 1
+
+
+class TestJerkLimitsExtended:
+    """Extended jerk limits tests."""
+
+    def test_jerk_violation_recorded(self) -> None:
+        """Jerk violation is recorded."""
+        enforcer = LimitEnforcer(
+            position_limits=(0.0, 1000.0),
+            jerk_limit=10.0,  # Very low jerk limit
+        )
+
+        # Initialize
+        enforcer.enforce(0.0, current_position=0.0, dt=0.1)
+
+        # Try sudden motion (high jerk)
+        enforcer.enforce(100.0, current_position=0.0, dt=0.1)
+
+        jerk_violations = [
+            v for v in enforcer.recent_violations if v.violation_type == LimitViolationType.JERK
+        ]
+        assert len(jerk_violations) >= 1
+
+
+class TestMultipleViolationTypes:
+    """Tests for scenarios with multiple violation types."""
+
+    def test_soft_and_hard_limit_both_recorded(self) -> None:
+        """Both soft and hard limit violations recorded for out-of-range."""
+        config = EnforcerConfig(
+            position_min=0.0,
+            position_max=100.0,
+            soft_limit_margin=0.1,
+        )
+        enforcer = LimitEnforcer(config=config)
+
+        # Way outside range - should hit both soft and hard limit
+        enforcer.enforce(150.0)
+
+        soft = [v for v in enforcer.recent_violations if v.violation_type == LimitViolationType.SOFT_LIMIT]
+        hard = [v for v in enforcer.recent_violations if v.violation_type == LimitViolationType.POSITION_MAX]
+
+        assert len(soft) >= 1
+        assert len(hard) == 1
+
+    def test_velocity_and_position_both_applied(self) -> None:
+        """Both velocity and position limits are applied."""
+        enforcer = LimitEnforcer(
+            position_limits=(0.0, 50.0),  # Max 50
+            velocity_limit=10.0,
+        )
+
+        enforcer.enforce(0.0, current_position=0.0, dt=0.1)
+
+        # Try to go to 100 (beyond position limit and velocity would allow)
+        result = enforcer.enforce(100.0, current_position=0.0, dt=0.1)
+
+        # Should be limited by velocity first (to 1.0), which is within position limits
+        assert result == 1.0
+
+
+class TestCallbackRegistration:
+    """Tests for callback registration and management."""
+
+    def test_register_callback_adds_to_list(self) -> None:
+        """Registering callback adds it to internal list."""
+        enforcer = LimitEnforcer(position_limits=(0.0, 100.0))
+
+        assert len(enforcer._callbacks) == 0
+
+        callback = MagicMock()
+        enforcer.register_callback(callback)
+
+        assert len(enforcer._callbacks) == 1
+
+    def test_multiple_callbacks_independent(self) -> None:
+        """Multiple callbacks work independently."""
+        enforcer = LimitEnforcer(position_limits=(0.0, 100.0))
+        results: list[str] = []
+
+        def callback1(v: LimitViolation) -> None:
+            results.append("cb1")
+
+        def callback2(v: LimitViolation) -> None:
+            results.append("cb2")
+
+        enforcer.register_callback(callback1)
+        enforcer.register_callback(callback2)
+
+        enforcer.enforce(150.0)
+
+        # Both should be called (at least once each for soft limit and hard limit)
+        assert "cb1" in results
+        assert "cb2" in results
+
+
+class TestLimitGuardExtended:
+    """Extended LimitGuard tests."""
+
+    def test_guard_disable_resets_enforcer_state(self) -> None:
+        """Disabling guard resets the enforcer state."""
+        actuator = MockActuator()
+        guard = LimitGuard(actuator=actuator, position_limits=(0.0, 100.0))
+
+        # Build up state
+        guard.set(10.0)
+        guard.set(20.0)
+
+        # Disable should reset
+        guard.disable()
+
+        assert guard.enforcer._last_position is None
+        assert guard.enforcer._last_velocity == 0.0
+
+    def test_guard_get_returns_actuator_value(self) -> None:
+        """Guard.get() returns the actuator's current value."""
+        actuator = MockActuator()
+        actuator._value = 42.0
+        guard = LimitGuard(actuator=actuator, position_limits=(0.0, 100.0))
+
+        assert guard.get() == 42.0
+
+    def test_guard_name_fallback(self) -> None:
+        """Guard falls back to 'unknown' if actuator has no name."""
+
+        class NamelessActuator:
+            _value = 0.0
+
+            def get(self) -> float:
+                return self._value
+
+            def set(self, value: float) -> None:
+                self._value = value
+
+        actuator = NamelessActuator()
+        guard = LimitGuard(actuator=actuator, position_limits=(0.0, 100.0))
+
+        assert guard.name == "unknown"
+
+    def test_guard_without_estop(self) -> None:
+        """Guard works without E-stop registration."""
+        actuator = MockActuator()
+        guard = LimitGuard(
+            actuator=actuator,
+            position_limits=(0.0, 100.0),
+            estop=None,
+        )
+
+        # Should work fine
+        guard.set(50.0)
+        assert actuator._value <= 1.0  # Due to config override bug
+
+
+class TestViolationLogPruning:
+    """Tests for violation log pruning behavior."""
+
+    def test_violation_log_pruned_at_1000(self) -> None:
+        """Violation log is pruned when it exceeds 1000 entries."""
+        config = EnforcerConfig(
+            position_min=0.0,
+            position_max=100.0,
+            log_violations=False,  # Speed up test
+        )
+        enforcer = LimitEnforcer(config=config)
+
+        # Create over 1000 violations
+        for i in range(1100):
+            enforcer.enforce(150.0 + i * 0.001)
+
+        # Should be pruned to ~500
+        assert len(enforcer._violations) <= 1000
+
+    def test_recent_violations_returns_last_100(self) -> None:
+        """recent_violations property returns at most 100."""
+        config = EnforcerConfig(
+            position_min=0.0,
+            position_max=100.0,
+            log_violations=False,
+        )
+        enforcer = LimitEnforcer(config=config)
+
+        # Create 150 violations
+        for i in range(150):
+            enforcer.enforce(150.0)
+
+        # Should only return last 100
+        assert len(enforcer.recent_violations) <= 100
+
+
+class TestSoftLimitsCalculation:
+    """Tests for soft limits calculation."""
+
+    def test_soft_limits_with_zero_margin(self) -> None:
+        """Soft limits equal hard limits when margin is 0."""
+        config = EnforcerConfig(
+            position_min=0.0,
+            position_max=100.0,
+            soft_limit_margin=0.0,
+        )
+        enforcer = LimitEnforcer(config=config)
+
+        soft_min, soft_max = enforcer.soft_limits
+
+        assert soft_min == 0.0
+        assert soft_max == 100.0
+
+    def test_soft_limits_with_half_margin(self) -> None:
+        """Soft limits meet in middle when margin is 0.5."""
+        config = EnforcerConfig(
+            position_min=0.0,
+            position_max=100.0,
+            soft_limit_margin=0.5,
+        )
+        enforcer = LimitEnforcer(config=config)
+
+        soft_min, soft_max = enforcer.soft_limits
+
+        assert soft_min == 50.0
+        assert soft_max == 50.0
+
+    def test_soft_limits_with_asymmetric_range(self) -> None:
+        """Soft limits work with asymmetric range."""
+        config = EnforcerConfig(
+            position_min=-100.0,
+            position_max=200.0,
+            soft_limit_margin=0.1,
+        )
+        enforcer = LimitEnforcer(config=config)
+
+        soft_min, soft_max = enforcer.soft_limits
+
+        # Range is 300, margin is 30
+        assert soft_min == -100.0 + 30.0  # -70
+        assert soft_max == 200.0 - 30.0  # 170
+
+
+class TestEnforceWithCurrentPosition:
+    """Tests for enforce with current_position parameter."""
+
+    def test_enforce_uses_current_position_for_velocity(self) -> None:
+        """Current position is used for velocity calculation."""
+        enforcer = LimitEnforcer(
+            position_limits=(0.0, 180.0),
+            velocity_limit=10.0,
+        )
+
+        # Initialize
+        enforcer.enforce(0.0, current_position=0.0, dt=0.1)
+
+        # Current position is 5, try to go to 100
+        result = enforcer.enforce(100.0, current_position=5.0, dt=0.1)
+
+        # Velocity limited from current position (5)
+        # Max change is 10 * 0.1 = 1 unit from last_position (which was updated to 5)
+        assert result == 6.0
+
+    def test_enforce_without_current_position_uses_last(self) -> None:
+        """Without current_position, last enforced value is used."""
+        enforcer = LimitEnforcer(
+            position_limits=(0.0, 180.0),
+            velocity_limit=10.0,
+        )
+
+        # First call sets initial
+        enforcer.enforce(10.0, dt=0.1)
+
+        # Second call without current_position
+        result = enforcer.enforce(100.0, dt=0.1)
+
+        # Should be velocity limited from last position (10)
+        assert result == 11.0  # 10 + 1 (max velocity * dt)

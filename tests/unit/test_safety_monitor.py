@@ -1,6 +1,7 @@
-"""Unit tests for safety monitoring system (Phase 5.6.1).
+"""Unit tests for safety monitoring system (Phase 7.3).
 
-Tests for SafetyMonitor, LimitConfig, and related safety infrastructure.
+Tests for SafetyMonitor, LimitConfig, CollisionDetector and related safety infrastructure.
+Target coverage: 28% → 80%+
 """
 
 from __future__ import annotations
@@ -866,3 +867,594 @@ class TestMonitorEdgeCases:
         config = monitor._limits["power:voltage"]
         is_warning = monitor._check_warning(11.0, config)
         assert is_warning is True  # Below warning_min
+
+
+# =============================================================================
+# Phase 7.3: Additional Test Classes for Coverage Improvement
+# =============================================================================
+
+
+class TestMonitorStateTransitions:
+    """Tests for monitor state transitions."""
+
+    def test_state_stopped_to_monitoring(self) -> None:
+        """State transitions from STOPPED to MONITORING on start."""
+        monitor = SafetyMonitor(check_interval=0.01)
+
+        assert monitor.state == MonitorState.STOPPED
+        monitor.start()
+        assert monitor.state == MonitorState.MONITORING
+
+        monitor.stop()
+        assert monitor.state == MonitorState.STOPPED
+
+    def test_warning_status_set_on_approach(self) -> None:
+        """Warning status is set when approaching limit."""
+        monitor = SafetyMonitor(check_interval=0.01)
+        monitor.add_limit(
+            LimitConfig(
+                component="motor1",
+                metric="current",
+                max_value=10.0,
+                warning_max=8.0,
+            )
+        )
+        monitor.start()
+
+        # Update with value in warning zone
+        monitor.update_current("motor1", 9.0)
+        time.sleep(0.05)
+
+        status = monitor._statuses["motor1:current"]
+        assert status.is_warning is True
+
+        monitor.stop()
+
+    def test_violated_status_set_on_exceed(self) -> None:
+        """Violated status is set when limit exceeded."""
+        monitor = SafetyMonitor(check_interval=0.01)
+        monitor.add_current_limit("motor1", max_current=5.0)
+        monitor.start()
+
+        # Update with violating value
+        monitor.update_current("motor1", 6.0)
+        time.sleep(0.05)
+
+        status = monitor._statuses["motor1:current"]
+        assert status.is_violated is True
+
+        monitor.stop()
+
+
+class TestMonitorStatusDataclass:
+    """Tests for MonitorStatus dataclass."""
+
+    def test_monitor_status_default_values(self) -> None:
+        """MonitorStatus has expected default values."""
+        status = MonitorStatus()
+
+        assert status.state == MonitorState.STOPPED
+        assert status.limits == {}
+        assert status.total_violations == 0
+        assert status.last_violation_time is None
+
+    def test_monitor_status_from_monitor(self) -> None:
+        """MonitorStatus correctly reflects monitor state."""
+        monitor = SafetyMonitor()
+        monitor.add_current_limit("motor1", max_current=5.0)
+        monitor.add_temperature_limit("motor2", max_temp=80.0)
+
+        status = monitor.status()
+
+        assert len(status.limits) == 2
+        assert "motor1:current" in status.limits
+        assert "motor2:temperature" in status.limits
+
+
+class TestLimitStatusDataclass:
+    """Tests for LimitStatus dataclass."""
+
+    def test_limit_status_update_tracking(self) -> None:
+        """LimitStatus tracks current value and update time."""
+        config = LimitConfig(component="test", metric="current", max_value=5.0)
+        status = LimitStatus(config=config)
+
+        # Initial values
+        assert status.current_value == 0.0
+        assert status.last_update == 0.0
+
+        # Update values
+        status.current_value = 3.5
+        status.last_update = time.time()
+
+        assert status.current_value == 3.5
+        assert status.last_update > 0
+
+    def test_limit_status_violation_count(self) -> None:
+        """LimitStatus tracks violation count."""
+        config = LimitConfig(component="test", metric="current", max_value=5.0)
+        status = LimitStatus(config=config)
+
+        assert status.violation_count == 0
+
+        status.violation_count += 1
+        assert status.violation_count == 1
+
+
+class TestLimitConfigExtras:
+    """Tests for LimitConfig model extras."""
+
+    def test_config_allows_extra_fields(self) -> None:
+        """LimitConfig accepts extra fields due to extra='allow'."""
+        config = LimitConfig(
+            component="test",
+            metric="current",
+            custom_field="custom_value",  # type: ignore[call-arg]
+        )
+
+        assert config.component == "test"
+        assert config.custom_field == "custom_value"  # type: ignore[attr-defined]
+
+    def test_config_is_mutable(self) -> None:
+        """LimitConfig can be mutated due to frozen=False."""
+        config = LimitConfig(component="original", metric="current")
+
+        config.component = "modified"
+
+        assert config.component == "modified"
+
+
+class TestHysteresisExtended:
+    """Extended tests for hysteresis behavior."""
+
+    def test_hysteresis_on_min_value(self) -> None:
+        """Hysteresis works for min value violations."""
+        monitor = SafetyMonitor()
+        monitor.add_limit(
+            LimitConfig(
+                component="power",
+                metric="voltage",
+                min_value=10.0,
+                max_value=25.0,
+                hysteresis=2.0,
+            )
+        )
+
+        config = monitor._limits["power:voltage"]
+
+        # After violation at min, need to rise above 12.0 to clear
+        is_cleared = monitor._check_cleared(11.0, config)
+        assert is_cleared is False  # Still in hysteresis zone
+
+        is_cleared = monitor._check_cleared(13.0, config)
+        assert is_cleared is True  # Above min + hysteresis
+
+    def test_hysteresis_zero_clears_immediately(self) -> None:
+        """Zero hysteresis allows immediate clearing."""
+        monitor = SafetyMonitor()
+        monitor.add_limit(
+            LimitConfig(
+                component="motor1",
+                metric="current",
+                max_value=5.0,
+                hysteresis=0.0,
+            )
+        )
+
+        config = monitor._limits["motor1:current"]
+
+        # Exactly at limit should clear
+        is_cleared = monitor._check_cleared(5.0, config)
+        assert is_cleared is True
+
+    def test_hysteresis_large_value(self) -> None:
+        """Large hysteresis requires significant return within limits."""
+        monitor = SafetyMonitor()
+        monitor.add_limit(
+            LimitConfig(
+                component="motor1",
+                metric="temperature",
+                max_value=80.0,
+                hysteresis=20.0,  # Must drop to 60°C
+            )
+        )
+
+        config = monitor._limits["motor1:temperature"]
+
+        # At 70°C, still in hysteresis zone
+        is_cleared = monitor._check_cleared(70.0, config)
+        assert is_cleared is False
+
+        # At 55°C, cleared
+        is_cleared = monitor._check_cleared(55.0, config)
+        assert is_cleared is True
+
+
+class TestViolationTracking:
+    """Tests for detailed violation tracking."""
+
+    def test_per_limit_violation_count(self) -> None:
+        """Each limit tracks its own violation count."""
+        monitor = SafetyMonitor()
+        monitor.add_current_limit("motor1", max_current=5.0)
+        monitor.add_current_limit("motor2", max_current=5.0)
+
+        # Trigger violation on motor1 twice
+        status1 = monitor._statuses["motor1:current"]
+        config1 = monitor._limits["motor1:current"]
+        monitor._handle_violation("motor1:current", config1, 6.0, status1)
+        status1.is_violated = False  # Reset for second violation
+        monitor._handle_violation("motor1:current", config1, 7.0, status1)
+
+        # Trigger violation on motor2 once
+        status2 = monitor._statuses["motor2:current"]
+        config2 = monitor._limits["motor2:current"]
+        monitor._handle_violation("motor2:current", config2, 6.0, status2)
+
+        assert status1.violation_count == 2
+        assert status2.violation_count == 1
+        assert monitor._total_violations == 3
+
+    def test_last_violation_time_updated(self) -> None:
+        """Last violation time is updated on each violation."""
+        monitor = SafetyMonitor()
+        monitor.add_current_limit("motor1", max_current=5.0)
+
+        before = time.time()
+        status = monitor._statuses["motor1:current"]
+        config = monitor._limits["motor1:current"]
+        monitor._handle_violation("motor1:current", config, 6.0, status)
+        after = time.time()
+
+        assert monitor._last_violation_time is not None
+        assert before <= monitor._last_violation_time <= after
+
+
+class TestCollisionDetectorExtended:
+    """Extended tests for CollisionDetector."""
+
+    def test_detector_custom_thresholds(self) -> None:
+        """CollisionDetector accepts custom thresholds."""
+        detector = CollisionDetector(
+            force_threshold=5.0,
+            torque_threshold=0.5,
+            current_spike_threshold=3.0,
+            check_interval=0.002,
+        )
+
+        assert detector._force_threshold == 5.0
+        assert detector._torque_threshold == 0.5
+        assert detector._current_spike_threshold == 3.0
+        assert detector._check_interval == 0.002
+
+    def test_detector_multiple_sensors(self) -> None:
+        """CollisionDetector handles multiple sensors."""
+        detector = CollisionDetector()
+
+        sensor1 = MagicMock()
+        sensor2 = MagicMock()
+        sensor3 = MagicMock()
+
+        detector.register_force_sensor(sensor1)
+        detector.register_force_sensor(sensor2)
+        detector.register_force_sensor(sensor3)
+
+        assert len(detector._force_sensors) == 3
+
+    def test_detector_start_twice_no_duplicate_threads(self) -> None:
+        """Starting detector twice doesn't create duplicate threads."""
+        detector = CollisionDetector(check_interval=0.01)
+
+        detector.start()
+        thread1 = detector._thread
+
+        detector.start()
+        thread2 = detector._thread
+
+        assert thread1 is thread2
+
+        detector.stop()
+
+    def test_detector_stop_without_start(self) -> None:
+        """Stopping detector without starting doesn't crash."""
+        detector = CollisionDetector()
+
+        # Should not raise
+        detector.stop()
+
+        assert detector._running is False
+
+    def test_detector_sensor_reading_with_value_attribute(self) -> None:
+        """Detector handles sensor reading with .value attribute."""
+        detector = CollisionDetector(force_threshold=5.0, check_interval=0.01)
+        mock_estop = MagicMock()
+        detector._estop = mock_estop
+
+        # Sensor that returns object with .value
+        mock_sensor = MagicMock()
+        mock_reading = MagicMock()
+        mock_reading.value = 15.0  # Above threshold
+        mock_sensor.read.return_value = mock_reading
+
+        detector.register_force_sensor(mock_sensor)
+        detector.start()
+        time.sleep(0.03)
+        detector.stop()
+
+        # Should have triggered E-stop
+        assert mock_estop.trigger.called
+
+    def test_detector_sensor_reading_float(self) -> None:
+        """Detector handles sensor returning raw float."""
+        detector = CollisionDetector(force_threshold=5.0, check_interval=0.01)
+        mock_estop = MagicMock()
+        detector._estop = mock_estop
+
+        # Sensor that returns raw float
+        mock_sensor = MagicMock()
+        mock_sensor.read.return_value = 15.0  # Above threshold
+
+        detector.register_force_sensor(mock_sensor)
+        detector.start()
+        time.sleep(0.03)
+        detector.stop()
+
+        # Should have triggered E-stop
+        assert mock_estop.trigger.called
+
+    def test_detector_sensor_exception_handled(self) -> None:
+        """Detector handles sensor read exceptions gracefully."""
+        detector = CollisionDetector(check_interval=0.01)
+
+        # Sensor that raises exception
+        mock_sensor = MagicMock()
+        mock_sensor.read.side_effect = RuntimeError("Sensor failure")
+
+        detector.register_force_sensor(mock_sensor)
+        detector.start()
+        time.sleep(0.03)
+        detector.stop()
+
+        # Should not crash, just log error
+
+
+class TestValueUpdateMethods:
+    """Tests for value update convenience methods."""
+
+    def test_update_current_stores_value(self) -> None:
+        """update_current stores value in _values."""
+        monitor = SafetyMonitor()
+        monitor.add_current_limit("motor1", max_current=5.0)
+
+        before = time.time()
+        monitor.update_current("motor1", 3.5)
+        after = time.time()
+
+        value, timestamp = monitor._values["motor1:current"]
+        assert value == 3.5
+        assert before <= timestamp <= after
+
+    def test_update_temperature_stores_value(self) -> None:
+        """update_temperature stores value in _values."""
+        monitor = SafetyMonitor()
+        monitor.add_temperature_limit("motor1", max_temp=80.0)
+
+        monitor.update_temperature("motor1", 65.0)
+
+        value, _ = monitor._values["motor1:temperature"]
+        assert value == 65.0
+
+    def test_update_voltage_stores_value(self) -> None:
+        """update_voltage stores value in _values."""
+        monitor = SafetyMonitor()
+        monitor.add_voltage_limit("power", max_voltage=25.0)
+
+        monitor.update_voltage("power", 12.5)
+
+        value, _ = monitor._values["power:voltage"]
+        assert value == 12.5
+
+    def test_update_value_generic(self) -> None:
+        """update_value works with any metric."""
+        monitor = SafetyMonitor()
+        monitor.add_limit(
+            LimitConfig(
+                component="joint1",
+                metric="torque",
+                max_value=5.0,
+                unit="Nm",
+            )
+        )
+
+        monitor.update_value("joint1", "torque", 2.5)
+
+        value, _ = monitor._values["joint1:torque"]
+        assert value == 2.5
+
+
+class TestMonitoringLoopDetails:
+    """Detailed tests for monitoring loop behavior."""
+
+    def test_monitoring_updates_status_values(self) -> None:
+        """Monitoring loop updates status current_value."""
+        monitor = SafetyMonitor(check_interval=0.01)
+        monitor.add_current_limit("motor1", max_current=5.0)
+
+        monitor.update_current("motor1", 3.5)
+        monitor.start()
+        time.sleep(0.03)
+        monitor.stop()
+
+        status = monitor._statuses["motor1:current"]
+        assert status.current_value == 3.5
+
+    def test_monitoring_clears_violations_with_good_values(self) -> None:
+        """Monitoring clears violations when values return to normal."""
+        monitor = SafetyMonitor(check_interval=0.01)
+        monitor.add_limit(
+            LimitConfig(
+                component="motor1",
+                metric="current",
+                max_value=5.0,
+                hysteresis=0.5,
+            )
+        )
+
+        monitor.start()
+
+        # Trigger violation
+        monitor.update_current("motor1", 6.0)
+        time.sleep(0.03)
+
+        status = monitor._statuses["motor1:current"]
+        assert status.is_violated is True
+
+        # Return to safe value (below max - hysteresis)
+        monitor.update_current("motor1", 4.0)
+        time.sleep(0.03)
+
+        # Should be cleared
+        assert status.is_violated is False
+
+        monitor.stop()
+
+
+class TestSafetyLevelBehavior:
+    """Tests for different safety level behaviors."""
+
+    def test_notice_level_no_estop(self) -> None:
+        """NOTICE level does not trigger E-stop."""
+        mock_estop = MagicMock()
+        monitor = SafetyMonitor(estop=mock_estop)
+        monitor.add_current_limit("motor1", max_current=5.0, level=SafetyLevel.NOTICE)
+
+        status = monitor._statuses["motor1:current"]
+        config = monitor._limits["motor1:current"]
+
+        monitor._handle_violation("motor1:current", config, 6.0, status)
+
+        mock_estop.trigger.assert_not_called()
+
+    def test_warning_level_no_estop(self) -> None:
+        """WARNING level does not trigger E-stop."""
+        mock_estop = MagicMock()
+        monitor = SafetyMonitor(estop=mock_estop)
+        monitor.add_current_limit("motor1", max_current=5.0, level=SafetyLevel.WARNING)
+
+        status = monitor._statuses["motor1:current"]
+        config = monitor._limits["motor1:current"]
+
+        monitor._handle_violation("motor1:current", config, 6.0, status)
+
+        mock_estop.trigger.assert_not_called()
+
+    def test_critical_level_triggers_estop(self) -> None:
+        """CRITICAL level triggers E-stop."""
+        mock_estop = MagicMock()
+        monitor = SafetyMonitor(estop=mock_estop)
+        monitor.add_current_limit("motor1", max_current=5.0, level=SafetyLevel.CRITICAL)
+
+        status = monitor._statuses["motor1:current"]
+        config = monitor._limits["motor1:current"]
+
+        monitor._handle_violation("motor1:current", config, 6.0, status)
+
+        mock_estop.trigger.assert_called_once()
+
+
+class TestWarningConditions:
+    """Tests for warning condition detection."""
+
+    def test_no_warning_in_safe_zone(self) -> None:
+        """No warning when value is well within limits."""
+        monitor = SafetyMonitor()
+        monitor.add_limit(
+            LimitConfig(
+                component="motor1",
+                metric="current",
+                max_value=10.0,
+                warning_max=8.0,
+            )
+        )
+
+        config = monitor._limits["motor1:current"]
+        is_warning = monitor._check_warning(5.0, config)
+        assert is_warning is False
+
+    def test_warning_above_warning_max(self) -> None:
+        """Warning when value exceeds warning_max."""
+        monitor = SafetyMonitor()
+        monitor.add_limit(
+            LimitConfig(
+                component="motor1",
+                metric="current",
+                max_value=10.0,
+                warning_max=8.0,
+            )
+        )
+
+        config = monitor._limits["motor1:current"]
+        is_warning = monitor._check_warning(9.0, config)
+        assert is_warning is True
+
+    def test_warning_below_warning_min(self) -> None:
+        """Warning when value falls below warning_min."""
+        monitor = SafetyMonitor()
+        monitor.add_limit(
+            LimitConfig(
+                component="power",
+                metric="voltage",
+                min_value=10.0,
+                max_value=25.0,
+                warning_min=12.0,
+            )
+        )
+
+        config = monitor._limits["power:voltage"]
+        is_warning = monitor._check_warning(11.0, config)
+        assert is_warning is True
+
+    def test_no_warning_when_not_configured(self) -> None:
+        """No warning when warning thresholds not set."""
+        monitor = SafetyMonitor()
+        monitor.add_limit(
+            LimitConfig(
+                component="motor1",
+                metric="current",
+                max_value=10.0,
+                # No warning_max set
+            )
+        )
+
+        config = monitor._limits["motor1:current"]
+        is_warning = monitor._check_warning(9.0, config)
+        assert is_warning is False
+
+
+class TestLimitRemoval:
+    """Tests for limit removal behavior."""
+
+    def test_remove_limit_clears_status(self) -> None:
+        """Removing limit also removes status."""
+        monitor = SafetyMonitor()
+        monitor.add_current_limit("motor1", max_current=5.0)
+
+        assert "motor1:current" in monitor._statuses
+        assert "motor1:current" in monitor._limits
+
+        monitor.remove_limit("motor1", "current")
+
+        assert "motor1:current" not in monitor._statuses
+        assert "motor1:current" not in monitor._limits
+
+    def test_remove_limit_clears_values(self) -> None:
+        """Removing limit also removes stored values."""
+        monitor = SafetyMonitor()
+        monitor.add_current_limit("motor1", max_current=5.0)
+        monitor.update_current("motor1", 3.0)
+
+        assert "motor1:current" in monitor._values
+
+        monitor.remove_limit("motor1", "current")
+
+        assert "motor1:current" not in monitor._values
