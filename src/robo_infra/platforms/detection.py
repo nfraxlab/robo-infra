@@ -441,6 +441,104 @@ def detect_windows() -> bool:
 
 
 # =============================================================================
+# Convenience Functions
+# =============================================================================
+
+
+def is_simulation_mode() -> bool:
+    """Check if running in simulation mode.
+
+    Simulation mode is activated when:
+    - ROBO_SIMULATION env var is set to "1", "true", or "yes"
+    - ROBO_PLATFORM env var is set to "sim" or "simulation"
+    - Platform is detected as macOS or Windows (no native GPIO)
+
+    Returns:
+        True if in simulation mode.
+
+    Example:
+        >>> if is_simulation_mode():
+        ...     print("Using simulated hardware")
+        ... else:
+        ...     print("Using real hardware")
+    """
+    # Check explicit simulation env var
+    if os.environ.get("ROBO_SIMULATION", "").lower() in ("1", "true", "yes"):
+        return True
+
+    # Check platform env override
+    env_platform = os.environ.get("ROBO_PLATFORM", "").lower()
+    if env_platform in ("sim", "simulation"):
+        return True
+
+    # macOS and Windows are always simulation mode for GPIO
+    if detect_macos() or detect_windows():
+        return True
+
+    return False
+
+
+def is_raspberry_pi() -> bool:
+    """Check if running on a Raspberry Pi.
+
+    Returns:
+        True if running on any Raspberry Pi model.
+
+    Example:
+        >>> if is_raspberry_pi():
+        ...     from robo_infra.platforms.raspberry_pi import RaspberryPiGPIO
+        ...     gpio = RaspberryPiGPIO()
+    """
+    is_detected, _ = detect_raspberry_pi()
+    return is_detected
+
+
+def is_jetson() -> bool:
+    """Check if running on an NVIDIA Jetson.
+
+    Returns:
+        True if running on any Jetson model.
+
+    Example:
+        >>> if is_jetson():
+        ...     from robo_infra.platforms.jetson import JetsonGPIO
+        ...     gpio = JetsonGPIO()
+    """
+    is_detected, _ = detect_jetson()
+    return is_detected
+
+
+def is_beaglebone() -> bool:
+    """Check if running on a BeagleBone.
+
+    Returns:
+        True if running on any BeagleBone model.
+    """
+    is_detected, _ = detect_beaglebone()
+    return is_detected
+
+
+def is_arduino_connected() -> bool:
+    """Check if an Arduino is connected via USB.
+
+    Returns:
+        True if an Arduino is detected on USB.
+    """
+    is_detected, _ = detect_arduino()
+    return is_detected
+
+
+def is_esp32_connected() -> bool:
+    """Check if an ESP32/ESP8266 is connected via USB.
+
+    Returns:
+        True if an ESP32/ESP8266 is detected on USB.
+    """
+    is_detected, _ = detect_esp32()
+    return is_detected
+
+
+# =============================================================================
 # Platform Info Detection
 # =============================================================================
 
@@ -791,4 +889,11 @@ __all__ = [
     "detect_rock_pi",
     "detect_windows",
     "get_platform_info",
+    # Convenience functions
+    "is_arduino_connected",
+    "is_beaglebone",
+    "is_esp32_connected",
+    "is_jetson",
+    "is_raspberry_pi",
+    "is_simulation_mode",
 ]

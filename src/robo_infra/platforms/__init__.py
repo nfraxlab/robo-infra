@@ -131,6 +131,16 @@ from robo_infra.platforms.raspberry_pi import (
     RaspberryPiPlatform,
     RaspberryPiPWMPin,
 )
+from robo_infra.platforms.factory import (
+    get_gpio,
+    get_i2c,
+    get_spi,
+    get_uart,
+    list_available_gpio,
+    list_available_i2c,
+    list_available_spi,
+    list_available_uart,
+)
 
 
 __all__ = [
@@ -236,4 +246,13 @@ __all__ = [
     "get_platform_info",
     "register_platform",
     "reset_platform",
+    # Factory functions
+    "get_gpio",
+    "get_i2c",
+    "get_spi",
+    "get_uart",
+    "list_available_gpio",
+    "list_available_i2c",
+    "list_available_spi",
+    "list_available_uart",
 ]
