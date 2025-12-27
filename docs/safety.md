@@ -623,6 +623,194 @@ finally:
 
 ---
 
+## Testing Safety Systems
+
+Safety systems require thorough testing. This section covers testing patterns, fixtures, and coverage recommendations.
+
+### Test Coverage Targets
+
+The safety module maintains high test coverage to ensure reliability:
+
+| Module | Coverage Target | Current |
+|--------|-----------------|---------|
+| estop.py | ≥90% | 98% |
+| limits.py | ≥90% | 100% |
+| monitor.py | ≥80% | 99% |
+| watchdog.py | ≥85% | 100% |
+| **Overall** | ≥80% | **99%** |
+
+Run coverage reports with:
+
+```bash
+pytest --cov=src/robo_infra/safety tests/unit/test_safety_*.py --cov-report=term-missing
+```
+
+### Test Fixture Patterns
+
+#### Mock Actuator Fixture
+
+```python
+from unittest.mock import MagicMock
+import pytest
+
+@pytest.fixture
+def mock_actuator():
+    """Create a mock actuator for E-stop testing."""
+    actuator = MagicMock()
+    actuator.name = "test_actuator"
+    actuator.is_enabled = True
+    return actuator
+
+def test_estop_disables_actuator(mock_actuator):
+    estop = EStop()
+    estop.register_actuator(mock_actuator)
+    
+    estop.trigger("test")
+    
+    mock_actuator.disable.assert_called_once()
+```
+
+#### Watchdog Test Fixture
+
+```python
+@pytest.fixture
+def watchdog():
+    """Create a watchdog with short timeout for testing."""
+    wd = Watchdog(timeout=0.05)  # 50ms for fast tests
+    yield wd
+    wd.stop()  # Cleanup
+
+def test_watchdog_timeout(watchdog):
+    watchdog.start()
+    time.sleep(0.15)  # Wait for timeout
+    assert watchdog.state == WatchdogState.TRIGGERED
+```
+
+#### Monitor Test Fixture
+
+```python
+@pytest.fixture
+def monitor():
+    """Create a safety monitor for testing."""
+    m = SafetyMonitor(check_interval=0.01)
+    m.add_limit(LimitConfig(
+        component="test",
+        metric="value",
+        unit="units",
+        max_value=100.0,
+        warning_max=80.0,
+    ))
+    yield m
+    m.stop()
+
+def test_monitor_detects_violation(monitor):
+    monitor.update("test", "value", 150.0)
+    status = monitor.get_status("test", "value")
+    assert status.is_violated
+```
+
+### Testing Patterns
+
+#### Testing State Transitions
+
+```python
+def test_estop_state_transitions():
+    """Verify E-stop state machine."""
+    estop = EStop()
+    
+    # Initial state
+    assert estop.state == EStopState.ARMED
+    
+    # Trigger
+    estop.trigger("test")
+    assert estop.state == EStopState.TRIGGERED
+    
+    # Reset
+    estop.reset()
+    assert estop.state == EStopState.ARMED
+```
+
+#### Testing Callbacks
+
+```python
+def test_callback_receives_correct_data():
+    """Verify callback receives proper event data."""
+    received_events = []
+    
+    def capture_callback(event):
+        received_events.append(event)
+    
+    estop = EStop()
+    estop.add_callback(capture_callback)
+    estop.trigger("test reason")
+    
+    assert len(received_events) == 1
+    assert received_events[0].reason == "test reason"
+```
+
+#### Testing Error Handling
+
+```python
+def test_callback_failure_doesnt_break_estop():
+    """E-stop works even if callback fails."""
+    def bad_callback(event):
+        raise RuntimeError("Callback error")
+    
+    estop = EStop()
+    estop.add_callback(bad_callback)
+    
+    # Should not raise, E-stop is safety-critical
+    estop.trigger("test")
+    
+    assert estop.is_triggered
+```
+
+#### Testing Thread Safety
+
+```python
+def test_concurrent_feeds():
+    """Watchdog handles concurrent feeds safely."""
+    watchdog = Watchdog(timeout=1.0)
+    watchdog.start()
+    
+    try:
+        def feed_loop():
+            for _ in range(100):
+                watchdog.feed()
+                time.sleep(0.001)
+        
+        threads = [threading.Thread(target=feed_loop) for _ in range(5)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+        
+        assert watchdog.status().feed_count == 500
+    finally:
+        watchdog.stop()
+```
+
+### Running Specific Test Categories
+
+```bash
+# E-stop tests only
+pytest tests/unit/test_safety_estop.py -v
+
+# Limits tests only
+pytest tests/unit/test_safety_limits.py -v
+
+# Monitor tests only
+pytest tests/unit/test_safety_monitor.py -v
+
+# Watchdog tests only
+pytest tests/unit/test_safety_watchdog.py -v
+
+# All safety tests with coverage
+pytest tests/unit/test_safety_*.py --cov=src/robo_infra/safety
+```
+
+---
+
 ## Next Steps
 
 - [Vision](vision.md) - Computer vision for safety sensing
