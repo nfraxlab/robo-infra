@@ -15,6 +15,15 @@ from robo_infra.core.controller import SimulatedController
 from robo_infra.core.types import Limits
 
 
+# Check for optional svc-infra dependency
+try:
+    import svc_infra  # noqa: F401
+
+    HAS_SVC_INFRA = True
+except ImportError:
+    HAS_SVC_INFRA = False
+
+
 # --- Fixtures ---
 
 
@@ -385,6 +394,7 @@ class TestTrackCommandDecorator:
 # --- Health Check Tests ---
 
 
+@pytest.mark.skipif(not HAS_SVC_INFRA, reason="svc-infra not installed")
 class TestCreateControllerHealthCheck:
     """Tests for create_controller_health_check function."""
 
@@ -468,6 +478,7 @@ class TestCreateControllerHealthCheck:
         assert "failed" in result.message.lower()
 
 
+@pytest.mark.skipif(not HAS_SVC_INFRA, reason="svc-infra not installed")
 class TestCreateActuatorHealthCheck:
     """Tests for create_actuator_health_check function."""
 
@@ -517,6 +528,7 @@ class TestCreateActuatorHealthCheck:
 # --- Structured Logging Tests ---
 
 
+@pytest.mark.skipif(not HAS_SVC_INFRA, reason="svc-infra not installed")
 class TestSetupRoboticsLogging:
     """Tests for setup_robotics_logging function."""
 
@@ -543,6 +555,7 @@ class TestSetupRoboticsLogging:
 # --- Integration Tests ---
 
 
+@pytest.mark.skipif(not HAS_SVC_INFRA, reason="svc-infra not installed")
 class TestMetricsInitialization:
     """Tests for metrics initialization."""
 
@@ -704,6 +717,7 @@ class TestRegisterControllerHealthChecks:
         assert call_args[1]["timeout"] == 10.0
 
 
+@pytest.mark.skipif(not HAS_SVC_INFRA, reason="svc-infra not installed")
 class TestAddRoboticsHealthRoutes:
     """Tests for add_robotics_health_routes function."""
 

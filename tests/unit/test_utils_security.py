@@ -470,10 +470,14 @@ class TestPrivilegeChecking:
 
     @pytest.mark.skipif(sys.platform != "linux", reason="Linux-only test")
     def test_check_gpio_access_linux_no_device(self) -> None:
-        """Test GPIO check when no device exists."""
+        """Test GPIO check when no device exists raises PrivilegeError."""
         with patch.object(os.path, "exists", return_value=False):
-            # Should not raise when device doesn't exist
-            check_gpio_access()
+            # Should raise when device doesn't exist (no accessible GPIO)
+            with pytest.raises(PrivilegeError) as exc_info:
+                check_gpio_access()
+
+            assert exc_info.value.required_group == "gpio"
+            assert exc_info.value.fix_command is not None
 
     @pytest.mark.skipif(sys.platform != "linux", reason="Linux-only test")
     def test_check_i2c_access_linux_permission_denied(self) -> None:

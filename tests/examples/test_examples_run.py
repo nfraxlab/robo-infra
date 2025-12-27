@@ -4,6 +4,24 @@ These tests verify that example scripts can be imported and their
 main functions can be called without raising exceptions.
 """
 
+import pytest
+
+
+# Check for optional dependencies
+try:
+    import uvicorn  # noqa: F401
+
+    HAS_UVICORN = True
+except ImportError:
+    HAS_UVICORN = False
+
+try:
+    import ai_infra  # noqa: F401
+
+    HAS_AI_INFRA = True
+except ImportError:
+    HAS_AI_INFRA = False
+
 
 class TestArmExamples:
     """Test arm example scripts."""
@@ -21,10 +39,12 @@ class TestArmExamples:
         assert arm.name == "robot_arm"
         assert len(arm.actuators) == 4
 
+    @pytest.mark.skipif(not HAS_UVICORN, reason="uvicorn not installed")
     def test_arm_with_api_import(self) -> None:
         """Test that arm_with_api.py can be imported."""
         from examples.arm.arm_with_api import create_app, create_arm  # noqa: F401
 
+    @pytest.mark.skipif(not HAS_UVICORN, reason="uvicorn not installed")
     def test_arm_with_api_create_app(self) -> None:
         """Test that create_app() creates a valid FastAPI app."""
         from examples.arm.arm_with_api import create_app
@@ -32,6 +52,7 @@ class TestArmExamples:
         app = create_app()
         assert app is not None
 
+    @pytest.mark.skipif(not HAS_AI_INFRA, reason="ai-infra not installed")
     def test_arm_with_ai_import(self) -> None:
         """Test that arm_with_ai.py can be imported."""
         from examples.arm.arm_with_ai import create_arm  # noqa: F401
@@ -86,10 +107,12 @@ class TestLockExamples:
         assert lock.name == "door_lock"
         assert lock.actuator is not None
 
+    @pytest.mark.skipif(not HAS_UVICORN, reason="uvicorn not installed")
     def test_lock_with_api_import(self) -> None:
         """Test that lock_with_api.py can be imported."""
         from examples.lock.lock_with_api import create_app, create_lock  # noqa: F401
 
+    @pytest.mark.skipif(not HAS_UVICORN, reason="uvicorn not installed")
     def test_lock_with_api_create_app(self) -> None:
         """Test that create_app() creates a valid FastAPI app."""
         from examples.lock.lock_with_api import create_app

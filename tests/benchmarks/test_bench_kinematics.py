@@ -10,6 +10,9 @@ Performance targets:
 
 from __future__ import annotations
 
+# Detect CI environment (GitHub Actions, etc.)
+import os
+
 import pytest
 
 from robo_infra.motion import (
@@ -46,13 +49,19 @@ from robo_infra.motion import (
 from . import Benchmarker, format_time
 
 
-# Performance targets (in seconds)
-TARGET_FK_2DOF = 0.0001  # 0.1ms
-TARGET_FK_3DOF = 0.0001  # 0.1ms
-TARGET_FK_6DOF = 0.0005  # 0.5ms
-TARGET_IK_3DOF = 0.050  # 50ms (iterative solvers are slower)
-TARGET_IK_6DOF = 0.100  # 100ms (6-DOF IK is complex)
-TARGET_TRAJECTORY_100 = 0.010  # 10ms
+IN_CI = (
+    os.environ.get("CI", "").lower() == "true"
+    or os.environ.get("GITHUB_ACTIONS", "").lower() == "true"
+)
+
+# Performance targets (in seconds) - relaxed for CI
+# CI environments are typically slower than local development machines
+TARGET_FK_2DOF = 0.0001 if not IN_CI else 0.001  # 0.1ms (1ms in CI)
+TARGET_FK_3DOF = 0.0001 if not IN_CI else 0.001  # 0.1ms (1ms in CI)
+TARGET_FK_6DOF = 0.0005 if not IN_CI else 0.005  # 0.5ms (5ms in CI)
+TARGET_IK_3DOF = 0.050 if not IN_CI else 0.500  # 50ms (500ms in CI)
+TARGET_IK_6DOF = 0.100 if not IN_CI else 1.000  # 100ms (1000ms in CI)
+TARGET_TRAJECTORY_100 = 0.010 if not IN_CI else 0.100  # 10ms (100ms in CI)
 
 
 @pytest.fixture

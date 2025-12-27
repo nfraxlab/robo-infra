@@ -12,6 +12,16 @@ import pytest
 
 from robo_infra.core.exceptions import CommunicationError
 from robo_infra.core.exceptions import TimeoutError as RoboTimeoutError
+
+
+# Check for optional svc-infra dependency
+try:
+    import svc_infra  # noqa: F401
+
+    HAS_SVC_INFRA = True
+except ImportError:
+    HAS_SVC_INFRA = False
+
 from robo_infra.utils.resilience import (
     CircuitBreaker,
     CircuitBreakerError,
@@ -31,6 +41,7 @@ from robo_infra.utils.resilience import (
 # =============================================================================
 
 
+@pytest.mark.skipif(not HAS_SVC_INFRA, reason="svc-infra not installed")
 class TestRetryConfig:
     """Tests for RetryConfig."""
 
@@ -59,6 +70,7 @@ class TestRetryConfig:
         assert config.calculate_delay(10) == 5.0  # Would be 512, capped at 5
 
 
+@pytest.mark.skipif(not HAS_SVC_INFRA, reason="svc-infra not installed")
 class TestWithRetry:
     """Tests for with_retry decorator."""
 
@@ -151,6 +163,7 @@ class TestWithRetry:
 # =============================================================================
 
 
+@pytest.mark.skipif(not HAS_SVC_INFRA, reason="svc-infra not installed")
 class TestCircuitBreaker:
     """Tests for CircuitBreaker."""
 
@@ -246,6 +259,7 @@ class TestCircuitBreaker:
         assert breaker._failure_count == 0
 
 
+@pytest.mark.skipif(not HAS_SVC_INFRA, reason="svc-infra not installed")
 class TestDriverCircuitBreaker:
     """Tests for create_driver_circuit_breaker."""
 
@@ -259,6 +273,7 @@ class TestDriverCircuitBreaker:
         assert CommunicationError in breaker.failure_exceptions
 
 
+@pytest.mark.skipif(not HAS_SVC_INFRA, reason="svc-infra not installed")
 class TestSensorCircuitBreaker:
     """Tests for create_sensor_circuit_breaker."""
 
@@ -327,6 +342,7 @@ class TestRunWithTimeout:
 # =============================================================================
 
 
+@pytest.mark.skipif(not HAS_SVC_INFRA, reason="svc-infra not installed")
 class TestExports:
     """Tests for module exports."""
 
