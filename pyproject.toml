@@ -89,6 +89,7 @@ pytest-asyncio = ">=0.24"
 ruff = ">=0.8"
 mypy = ">=1.10"
 pre-commit = ">=4.0"
+python-semantic-release = ">=9.0.0"
 # Documentation
 mkdocs = ">=1.6.0"
 mkdocs-material = ">=9.5.0"
@@ -98,6 +99,20 @@ types-pyserial = "^3.5.0.20251001"
 
 [tool.poetry.scripts]
 robo-infra = "robo_infra.cli:main"
+
+# Semantic Release configuration
+[tool.semantic_release]
+version_toml = ["pyproject.toml:tool.poetry.version"]
+branch = "main"
+tag_format = "v{version}"
+changelog_file = "CHANGELOG.md"
+upload_to_pypi = false
+upload_to_release = false
+
+[tool.semantic_release.commit_parser_options]
+allowed_tags = ["feat", "fix", "perf", "refactor", "docs", "chore", "test", "build", "ci"]
+minor_tags = ["feat"]
+patch_tags = ["fix", "perf"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
