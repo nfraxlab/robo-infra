@@ -1,388 +1,352 @@
-# Changelog
+# CHANGELOG
 
-All notable changes to this project will be documented in this file.
 
-This file is auto-generated from conventional commits using [git-cliff](https://git-cliff.org/).
-
-## [0.2.6] - 2025-12-28
-
+## v0.3.0 (2025-12-30)
 
 ### Bug Fixes
 
-- Detect x.y.0 releases and skip auto-bump to create GitHub Release
-- Only release x.y.0 versions, no auto-bump
+- Add PR title enforcement workflow ([#5](https://github.com/nfraxlab/robo-infra/pull/5),
+  [`6104172`](https://github.com/nfraxlab/robo-infra/commit/610417296fffda9c3b03d3df69d26ffd7c7231e2))
 
-## [0.2.3] - 2025-12-27
+- Semantic-release push tags before publish ([#6](https://github.com/nfraxlab/robo-infra/pull/6),
+  [`f061915`](https://github.com/nfraxlab/robo-infra/commit/f061915156968813ee92040c25c03bf7eb7e6376))
 
+### Continuous Integration
+
+- Switch to semantic-release for clean versioning
+  ([`4e574c0`](https://github.com/nfraxlab/robo-infra/commit/4e574c0867ac86bc39a5a598fda6dc886edceeb3))
+
+### Documentation
+
+- Update CONTRIBUTING.md with make pr workflow ([#4](https://github.com/nfraxlab/robo-infra/pull/4),
+  [`fddfc7e`](https://github.com/nfraxlab/robo-infra/commit/fddfc7e1bcc603d65ecc940a7813b039530a9986))
+
+### Features
+
+- Add robust make pr automation with contributor-safe workflow
+  ([#1](https://github.com/nfraxlab/robo-infra/pull/1),
+  [`b72e2c4`](https://github.com/nfraxlab/robo-infra/commit/b72e2c4f1e34f6059d1082baa9962a7ec2332e63))
+
+* chore: regenerate poetry.lock after adding semantic-release
+
+* feat: add robust make pr automation with contributor-safe workflow
+
+
+## v0.2.6 (2025-12-28)
+
+### Bug Fixes
+
+- **ci**: Detect x.y.0 releases and skip auto-bump to create GitHub Release
+  ([`048887a`](https://github.com/nfraxlab/robo-infra/commit/048887a6ceb36898a21d241ed6de007f3b760183))
+
+- **ci**: Only release x.y.0 versions, no auto-bump
+  ([`5696c92`](https://github.com/nfraxlab/robo-infra/commit/5696c921041946c964a3f7ab014c668ea0d041e1))
+
+Changed the workflow to: - Only publish when version is x.y.0 (deliberate release) - Skip all
+  publish steps for non x.y.0 versions - No more auto-bumping patch version on every commit - GitHub
+  Release created automatically for x.y.0 versions
+
+### Continuous Integration
+
+- Create GitHub Release for every version
+  ([`34f2d1b`](https://github.com/nfraxlab/robo-infra/commit/34f2d1be2af4fb1c8e320f85374acfbdd1aaf3c3))
+
+- Release v0.2.5
+  ([`fa65d14`](https://github.com/nfraxlab/robo-infra/commit/fa65d1401e6193d4d0bd8a087267146f36a7b4ef))
+
+- Release v0.2.6
+  ([`cbc6817`](https://github.com/nfraxlab/robo-infra/commit/cbc68175ffebced794ca3026238213695533220a))
+
+
+## v0.2.4 (2025-12-27)
+
+### Continuous Integration
+
+- Add GitHub Release creation to publish workflow
+  ([`abe6208`](https://github.com/nfraxlab/robo-infra/commit/abe6208986506c9b21baaa4b61b4fb4adcf9cfdc))
+
+- Only create GitHub Releases for minor/major versions
+  ([`5db17da`](https://github.com/nfraxlab/robo-infra/commit/5db17daec9aa2bea3895a1c0c0dffb9c548db953))
+
+- Release v0.2.4
+  ([`b27c80a`](https://github.com/nfraxlab/robo-infra/commit/b27c80a8e87a2c10ba57d34afd6cf75b5b3d7b00))
+
+
+## v0.2.3 (2025-12-27)
+
+### Continuous Integration
+
+- Release v0.2.3
+  ([`6c2e7e4`](https://github.com/nfraxlab/robo-infra/commit/6c2e7e42735a5debaa1df2fa1abc3a5625d66795))
 
 ### Documentation
 
 - Add testing guidelines for safety systems
+  ([`f818a6d`](https://github.com/nfraxlab/robo-infra/commit/f818a6d54cdeead607e64dd458474a1077e2c620))
 
 
-### Other Changes
+## v0.2.2 (2025-12-27)
 
-- Simplify patch statements and improve readability in unit tests
-- Clean up imports and simplify boolean checks in platform detection
-- Remove deprecated functions and update bus access methods
-- Add unit tests for platform detection and factory functions
+### Continuous Integration
 
-- Implemented comprehensive unit tests for the `robo_infra.platforms.detection` module, covering platform detection functions, simulation mode detection, environment variable overrides, and platform info retrieval.
-- Added tests for individual platform detectors including Raspberry Pi, Jetson, Beaglebone, Arduino, ESP32, and others.
-- Created tests for factory functions in the `robo_infra.platforms.factory` module, including `get_gpio`, `get_i2c`, `get_spi`, and `get_uart`.
-- Included tests for error handling and integration scenarios to ensure robustness of platform factory functions.
-- Established fixtures for resetting platform state and simulating environments to enhance test reliability.
-- Enhance unit tests for SafetyMonitor and Watchdog
-
-- Updated test suite for SafetyMonitor to improve coverage from 28% to over 80%.
-- Added new test classes for state transitions, status dataclasses, limit configurations, hysteresis behavior, and violation tracking.
-- Extended tests for CollisionDetector to cover custom thresholds and multiple sensors.
-- Introduced additional tests for WatchdogError, WatchdogConfig, and WatchdogStatus to ensure robustness.
-- Enhanced tests for Watchdog initialization, heartbeat, timeout handling, and lifecycle management.
-- Improved logging and callback behavior tests for Watchdog.
-
-## [0.2.2] - 2025-12-27
+- Release v0.2.2
+  ([`b33ac70`](https://github.com/nfraxlab/robo-infra/commit/b33ac70bd313cf0d7a272736146352fd4c518de0))
 
 
-### Other Changes
-
-- Add comprehensive utilities and vision documentation
-
-- Introduced a new utilities module covering resilience, graceful degradation, hardware utilities, resource management, and security.
-- Documented features such as retry mechanisms, circuit breakers, degraded mode controllers, and input validation.
-- Added vision module documentation detailing color detection, marker tracking, image processing, camera calibration, and coordinate transforms.
-- Included examples for practical usage of utilities and vision functionalities.
-
-## [0.2.1] - 2025-12-27
-
+## v0.2.1 (2025-12-27)
 
 ### Bug Fixes
 
 - Update numpy dependency version in pyproject.toml
-- Prevent docs-changelog race condition with publish workflow
+  ([`5e687fe`](https://github.com/nfraxlab/robo-infra/commit/5e687fe772e8dd55b9aace1430342c5dbd2c058f))
 
+- **ci**: Prevent docs-changelog race condition with publish workflow
+  ([`5eb47e5`](https://github.com/nfraxlab/robo-infra/commit/5eb47e5a00e1fa6f6bc8276f52ddf5ba7c3372ec))
+
+### Chores
+
+- Update package versions for ai-infra and svc-infra to 0.1.166 and 0.1.716 respectively
+  ([`3725467`](https://github.com/nfraxlab/robo-infra/commit/37254676a91b537cbc25bad7b05781f1cf6d20c0))
+
+### Continuous Integration
+
+- Lower coverage threshold to 72% for optional dependencies
+  ([`0559796`](https://github.com/nfraxlab/robo-infra/commit/055979652fd481bae6d525ae52bbd6a66e0ad86e))
+
+The following modules have low coverage because they require optional dependencies not installed in
+  CI: - integrations/ai_infra.py (11%) - requires ai-infra - integrations/svc_infra.py (7%) -
+  requires svc-infra - vision/*.py (15-41%) - requires opencv - sensors/cameras/*.py (37-51%) -
+  requires camera SDKs
+
+Core functionality remains well-tested at >90% coverage.
+
+- Release v0.2.1
+  ([`20bcdc9`](https://github.com/nfraxlab/robo-infra/commit/20bcdc9fa2d224ccaee8875b1e1f6a9cccae9721))
 
 ### Documentation
 
 - Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
+  ([`a7527e0`](https://github.com/nfraxlab/robo-infra/commit/a7527e0bca389a216ae58c128b1d3b69cbb4a086))
 
+- Update changelog [skip ci]
+  ([`fec0641`](https://github.com/nfraxlab/robo-infra/commit/fec064190f994678e064fc460581f4c1f00cd8a0))
+
+- Update changelog [skip ci]
+  ([`269e307`](https://github.com/nfraxlab/robo-infra/commit/269e307143c413f3c0ef7b58b8af31b048dc81bc))
 
 ### Features
 
-- Update test configurations and improve test coverage with simulation mode
-- Enhance optional dependencies and installation instructions for ai-infra, svc-infra, and hardware support
 - Add real hardware bus implementations for I2C, SPI, and Serial with tests
+  ([`73c7cae`](https://github.com/nfraxlab/robo-infra/commit/73c7cae7ffc1bd5531a2ff1bd9baca093490ec9d))
+
 - Enhance observability integration with Prometheus metrics and health checks
+  ([`0ac692c`](https://github.com/nfraxlab/robo-infra/commit/0ac692ca82877ec8e574f5ca29482898a69a830c))
 
+- Added observability module for tracking metrics and health checks in robotics controllers. -
+  Implemented metrics for command execution, actuator positions, and safety triggers. - Introduced
+  health check functions for controllers and actuators to monitor their status. - Created decorators
+  for tracking command execution with metrics. - Updated utility functions to provide structured
+  logging setup. - Added unit tests for observability features, ensuring metrics recording and
+  health checks function correctly. - Included security policy documentation for reporting
+  vulnerabilities and best practices. - Refactored existing code to improve type handling and ensure
+  compatibility with FastAPI.
 
-### Miscellaneous
+- Enhance optional dependencies and installation instructions for ai-infra, svc-infra, and hardware
+  support
+  ([`b852ff1`](https://github.com/nfraxlab/robo-infra/commit/b852ff1d1786a61dac6f9105ae9a2cd1e1a269fd))
 
-- Update package versions for ai-infra and svc-infra to 0.1.166 and 0.1.716 respectively
-
-
-### Other Changes
-
-- Refactor test code for improved readability and consistency
-
-- Adjusted formatting in various test files to enhance clarity, including consistent parameter alignment and spacing.
-- Simplified list comprehensions and function calls for better readability.
-- Ensured consistent use of line breaks and indentation across test cases.
-- Updated comments for clarity where necessary.
-- Implement feature X to enhance user experience and optimize performance
-- Enhance type checking and linting configurations
-
-- Updated mypy.ini to disable additional error codes related to type checking for hardware-interfacing code.
-- Modified ruff.toml to ignore more linting rules for tests and specific files, improving flexibility in test cases.
-- Added missing imports and restructured __all__ exports in various modules for better clarity and compliance with linting rules.
-- Cleaned up imports and ensured consistent formatting across test files, enhancing readability and maintainability.
-- Adjusted assertions in unit tests for better clarity and accuracy, ensuring tests remain robust against future changes.
-- Add integration tests for API, safety system, and sensor fusion
-
-- Implemented comprehensive integration tests for the API, covering controller to FastAPI router conversion, endpoint functionality, state synchronization, and error handling.
-- Developed integration tests for the safety system, including E-stop triggering, limit checking, watchdog monitoring, and safety monitor integration with controllers.
-- Created integration tests for sensor fusion, validating IMU data collection, filter processing, orientation estimation, and integration with controllers for feedback control.
-- Add comprehensive unit tests for resource management and security utilities
-
-- Implemented unit tests for resource management utilities including AsyncContextManager, ConnectionPool, ManagedResource, and ResourceManager.
-- Added tests for LimitedBuffer functionality.
-- Created tests for security utilities covering input validation for joint angles, speeds, addresses, and names.
-- Included privilege checking tests for GPIO, I2C, SPI, serial, and CAN access.
-- Validated sanitization functions for names and serial commands.
-- Ensured thorough coverage of validation errors and edge cases.
-- Add resilience utilities and tests for robust robotics applications
-
-- Implemented resilience utilities in `robo_infra.utils.resilience` including retry, circuit breaker, and timeout functionalities.
-- Created `with_timeout` and `run_with_timeout` for managing operation timeouts.
-- Added robotics-specific circuit breaker configurations for drivers and sensors.
-- Developed comprehensive unit tests for resilience utilities covering retry logic, circuit breaker behavior, and timeout handling.
-- Introduced tests for `DegradedModeController` and exception hierarchy to ensure graceful degradation and error management.
-- Ensured all new functionalities are covered with appropriate unit tests in `tests/unit/test_utils_resilience.py`, `tests/unit/test_degraded.py`, and `tests/unit/test_exceptions.py`.
-- Add unit tests for watchdog module to improve coverage
-
-- Implement tests for WatchdogError exception, WatchdogState enum,
-  WatchdogConfig model, and WatchdogStatus dataclass.
-- Cover initialization, lifecycle, heartbeat operations, timeout handling,
-  and recovery after timeout.
-- Validate start, stop, pause, and resume functionalities.
-- Ensure thread safety and handle edge cases effectively.
-- Target coverage increased from 59% to over 85%.
-- Add examples for Gripper, Lock, and Rover with comprehensive documentation
-
-- Implemented Gripper example with basic control, configuration, and state tracking.
-- Created Lock example demonstrating basic lock control and REST API integration.
-- Developed Rover example showcasing differential drive control and obstacle avoidance with sensors.
-- Added README files for each example detailing usage, requirements, and configurations.
-- Included test cases to ensure all examples run without exceptions and have necessary files.
-- Add integration guides for AI and API, enhance test coverage, and register error handlers
-
-- Introduced `ai-integration.md` to document integration with ai-infra for LLM-controlled robotics.
-- Added `api-integration.md` to outline integration with svc-infra for REST API robotics control.
-- Enhanced unit tests in `test_integrations_svc_infra.py` to cover new router functionalities and error handling.
-- Registered error handlers in FastAPI applications to ensure consistent error responses.
-- Add unit tests for Turntable and ROS2 integration
-
-- Implement comprehensive unit tests for the Turntable controller, covering configuration, initialization, lifecycle, rotation operations, index positions, status checks, and tool generation.
-- Introduce unit tests for ROS2 integration, including mock message types, mock ROS2 node functionality, service callbacks, launch file generation, and error handling.
-- Ensure tests validate expected behaviors and edge cases for both Turntable and ROS2 components.
-- Add unit tests for Leg controller and related components
-
-- Implement tests for LegState, LegPosition, JointType enums.
-- Add tests for FootPosition, JointAngles, LegDimensions, and LegStatus data classes.
-- Create tests for LegConfig model, including default and custom configurations.
-- Develop inverse kinematics and forward kinematics tests to validate calculations.
-- Introduce tests for Leg controller methods, including enable/disable, homing, and joint angle settings.
-- Validate leg creation with custom actuators and position attributes.
-- Ensure comprehensive coverage of Leg.move_to() functionality.
-- Attitude, Velocity, Position3D, MotorOutputs
-  - QuadcopterConfig validation and properties
-  - Motor mixing functions and normalization
-  - Quadcopter initialization, enabling/disabling, arming, and flight commands
-  - Emergency stop functionality and status reporting
-  - Integration with AI tools and factory function for quadcopter creation
-- Add unit tests for power distribution and drivers modules
-
-- Implemented comprehensive unit tests for the power distribution module, covering PowerRailState, ShutdownPriority, PowerRailConfig, PowerRailReading, PowerRail, PowerDistributionConfig, and PowerDistributionBoard classes.
-- Added unit tests for the power drivers module, including tests for PowerReading, INA219 and INA226 configurations, and their respective driver classes.
-- Included integration tests to validate the interaction between components in both modules.
-- Ensured all tests validate expected behavior, including edge cases and error handling.
-- Add battery monitoring module with support for various chemistries and state tracking
-- Add unit tests for Modbus, GPS, and LIDAR sensor implementations
-
-- Implement comprehensive unit tests for Modbus protocol including function codes, exception codes, CRC calculations, and ModbusRTU/TCP client functionalities.
-- Create unit tests for GPS sensor functionalities covering GPSReading, NMEA parsing, simulated GPS driver, and related configurations.
-- Develop unit tests for LIDAR sensor implementations focusing on LIDARScan dataclass, simulated LIDAR driver, and configuration settings.
-- Add optional name parameter to StepDirConfig and update unit tests for configuration
-- Add unit tests for VESC brushless motor controller driver
-- Add unit tests for vision marker detection and processing utilities
-
-- Implemented comprehensive tests for fiducial marker detection in `test_vision_markers.py`, covering MarkerPose, ArUcoMarker, AprilTag, and their respective detectors.
-- Added tests for various image processing functions in `test_vision_processing.py`, including resizing, cropping, rotating, thresholding, blurring, edge detection, morphological operations, and histogram equalization.
-- Created utility functions for generating test frames with different patterns and formats to facilitate testing.
-- Ensured compatibility with grayscale and color frames across all tests.
-- Add unit tests for SCARA and Stewart platform kinematics
-
-- Implement comprehensive unit tests for SCARA arm kinematics, covering:
-  - Creation and validation of SCARAArm, SCARAConfiguration, SCARAJoints, and SCARALimits
-  - Forward and inverse kinematics, including joint limits and workspace detection
-  - Jacobian computation and factory functions
-
-- Introduce unit tests for Stewart platform kinematics, including:
-  - Creation and validation of StewartPlatform, StewartJoints, and StewartLimits
-  - Forward and inverse kinematics, workspace validation, and singularity detection
-  - Jacobian computation and factory functions
-- Add unit tests for IK solvers and motion transforms
-
-- Implemented comprehensive unit tests for various inverse kinematics solvers including JacobianIKSolver, DampedLeastSquaresIK, CCDIKSolver, and GradientDescentIK.
-- Added tests for IKSolverConfig and IKResult dataclasses to ensure proper configuration and result handling.
-- Developed tests for motion transforms, covering rotation and transformation functionalities such as Euler angles, quaternions, and axis-angle conversions.
-- Included edge case tests to validate behavior under unusual conditions, ensuring robustness of the implementations.
-- Add unit tests for ESP32 and Jetson platform implementations
-
-- Implement comprehensive unit tests for the ESP32 platform, covering chip enums, capabilities, digital, PWM, analog, DAC, touch, and hall sensor pins.
-- Include integration-style tests for ESP32 platform functionalities such as LED control, PWM motor control, DAC audio output, and touch button reading.
-- Create unit tests for the Jetson platform, including tests for pin numbering enums, digital and PWM pin functionalities, platform-specific features, and model detection.
-- Ensure simulation mode is properly handled in both platform tests.
-- Add unit tests for platform abstraction layer and Raspberry Pi platform
-
-- Implement comprehensive unit tests for the platform abstraction layer, covering:
-  - Platform protocol and base class
-  - PlatformRegistry with auto-detection
-  - SimulationPlatform functionality
-  - Detection functions with mocking for various platforms
-
-- Introduce unit tests for the Raspberry Pi platform, including:
-  - GPIO backend detection
-  - RaspberryPiDigitalPin and RaspberryPiPWMPin functionality
-  - Model detection and bus creation
-  - Edge cases and error handling for pin and bus operations
-- Add unit tests for PID controller and trajectory generation
-
-- Implement comprehensive unit tests for the PID controller in `test_motion_pid.py`, covering initialization, term calculations, output limiting, anti-windup, derivative filtering, control methods, step response, and configuration validation.
-- Create unit tests for trajectory generation classes in `test_motion_trajectory.py`, including tests for `TrajectoryPoint`, `MultiAxisTrajectoryPoint`, `LinearInterpolator`, `TrapezoidalProfile`, and `Trajectory`.
-- Ensure all tests validate expected behaviors and edge cases, enhancing code reliability and maintainability.
-
-
-### Styling
-
-- Fix import sorting in integration tests
-
+- Update test configurations and improve test coverage with simulation mode
+  ([`6540b96`](https://github.com/nfraxlab/robo-infra/commit/6540b9699762f6eefeae5ae68a3722cce93825d2))
 
 ### Testing
 
 - Fix CI failures for optional dependencies
+  ([`57be178`](https://github.com/nfraxlab/robo-infra/commit/57be17806d9c37a105db241e2bc13af343d82984))
+
+- Add skip markers to resilience tests when svc-infra not installed - Add skip markers to
+  observability tests for health checks/metrics - Add skip markers to example tests for
+  uvicorn/ai-infra - Relax benchmark targets in CI environment (10x slower) - Fix security test GPIO
+  check to expect PrivilegeError
+
 - Skip integration tests when optional deps not installed
+  ([`0c173c1`](https://github.com/nfraxlab/robo-infra/commit/0c173c1ce6be0c9f40c25ab809c604af2c756235))
 
-## [0.1.11] - 2025-12-19
+Add pytest.mark.skipif markers to test classes that require: - ai-infra (TestArmWithAITools,
+  TestLockWithAITools, TestRoverWithAITools) - fastapi (TestArmWithAPI, TestLockWithAPI,
+  TestRoverWithAPI) - both (TestFullE2EFlow classes)
 
+This allows tests to pass in CI where optional dependencies are not installed.
+
+
+## v0.1.12 (2025-12-19)
+
+### Continuous Integration
+
+- Enhance release process with changelog generation and version tagging
+  ([`75e832b`](https://github.com/nfraxlab/robo-infra/commit/75e832b7968cf118c12d38d64c713cfeb6e4bc3f))
+
+- Release v0.1.12
+  ([`8ade79a`](https://github.com/nfraxlab/robo-infra/commit/8ade79ab51c2870db64ac5ef234c7a1ede20e782))
+
+
+## v0.1.11 (2025-12-19)
 
 ### Bug Fixes
 
-- Streamline code formatting and improve readability in controllers and drivers
-- Update __all__ exports in controllers and improve test comments
 - Improve error handling when stopping motors in L298N and TB6612 drivers
+  ([`18e9b2b`](https://github.com/nfraxlab/robo-infra/commit/18e9b2bcd41e8954bc53e506516dad5b1e6dc1b1))
+
+- Streamline code formatting and improve readability in controllers and drivers
+  ([`5759993`](https://github.com/nfraxlab/robo-infra/commit/57599932fc71ce802d7589ec4124dcd885fb249a))
+
+- Update __all__ exports in controllers and improve test comments
+  ([`415dbfd`](https://github.com/nfraxlab/robo-infra/commit/415dbfdcc05160616a632c829ab96440e1bf56b2))
+
+### Continuous Integration
+
+- Release v0.1.11
+  ([`2acf666`](https://github.com/nfraxlab/robo-infra/commit/2acf666becfe1e8f8a67545dcdd25aecffb79ec8))
 
 
-### Other Changes
-
-- Add unit tests for gripper, joint group, and lock controllers
-
-- Implement comprehensive tests for the Gripper controller, covering initialization, open/close operations, state management, enable/disable functionality, configuration, and additional methods.
-- Create unit tests for the JointGroup controller, including initialization, movement, state management, named positions, interpolation, and configuration.
-- Develop tests for the Lock controller, focusing on initialization, lock/unlock operations, state management, async operations, enable/disable functionality, and configuration.
-- Ensure all tests validate expected behaviors and raise appropriate exceptions when necessary.
-
-## [0.1.10] - 2025-12-18
-
+## v0.1.10 (2025-12-18)
 
 ### Bug Fixes
 
 - Update pre-commit hooks and improve code formatting in stepper and arduino drivers
+  ([`38298c8`](https://github.com/nfraxlab/robo-infra/commit/38298c8e8ec71fe9ac6f3b778bd235190d6fe27a))
 
-## [0.1.9] - 2025-12-18
+### Continuous Integration
 
+- Release v0.1.10
+  ([`d2c8c2c`](https://github.com/nfraxlab/robo-infra/commit/d2c8c2cea1acd594dc0979abb0c4119910a22942))
+
+
+## v0.1.9 (2025-12-18)
 
 ### Bug Fixes
 
 - Update workflow trigger to run after CI completion
+  ([`9584d07`](https://github.com/nfraxlab/robo-infra/commit/9584d0736a2db8889ba460adc9c65df02db33126))
 
-## [0.1.8] - 2025-12-18
+### Continuous Integration
 
+- Release v0.1.9
+  ([`4d74d06`](https://github.com/nfraxlab/robo-infra/commit/4d74d06af670298d9c6108524ab2bfc094252639))
+
+
+## v0.1.8 (2025-12-18)
 
 ### Bug Fixes
 
 - Restrict Python version and improve type hinting in router integrations
+  ([`44dc313`](https://github.com/nfraxlab/robo-infra/commit/44dc313a942fb4e71406cffd3a41d22d4f30ebcd))
+
+- Updated Python version constraint in pyproject.toml to be less than 4.0. - Enhanced type hinting
+  for tags in svc_infra.py by explicitly defining _tags as a list of strings before passing it to
+  APIRouter.
+
 - Update repository links and improve documentation clarity
+  ([`8b14538`](https://github.com/nfraxlab/robo-infra/commit/8b14538135080e2d841c4f74ca63443a6cd1e0b7))
 
+### Continuous Integration
 
-### Other Changes
+- Release v0.1.8
+  ([`b71edf7`](https://github.com/nfraxlab/robo-infra/commit/b71edf7fed984722f35831ea597799e57b10264a))
 
-- Add documentation and improve type hints across the project
+### Refactoring
 
-- Created API reference documentation in `docs/reference/api.md` for core modules including Actuators, Sensors, Controllers, Drivers, Safety, Core, and Motion.
-- Added `mkdocs.yml` configuration for documentation generation using MkDocs and Material theme.
-- Updated `mypy.ini` to ignore missing imports for various modules and adjusted type checking settings for specific driver modules.
-- Enhanced type hints in `src/robo_infra/drivers/arduino.py`, `gpio.py`, `limits.py`, and `switches.py` for better clarity and type safety.
-- Refactored timeout parameters in `LimitSwitch` methods to have a default value of 30 seconds.
-- Cleaned up imports in `svc_infra.py` and removed unnecessary comments.
-- Improved test cases in `test_drivers_arduino.py`, `test_drivers_gpio.py`, `test_drivers_l298n.py`, `test_drivers_pca9685.py`, and `test_drivers_tb6612.py` for better readability and maintainability.
-- Removed unused imports and fixed formatting issues in various test files.
-- Update dependency version constraints in pyproject.toml for better compatibility
-- Add unit tests for TB6612FNG dual motor driver
-
-- Implement comprehensive test suite for TB6612 driver including:
-  - Enum and constant tests for direction, channel, and brake mode
-  - Configuration and motor state validation
-  - Initialization and lifecycle management tests
-  - Standby mode functionality
-  - Motor control methods and speed limits
-  - Direction inversion handling
-  - Stop methods and enable/disable functionality
-  - Channel interface compatibility
-  - Validation of input parameters
-  - Driver registration and property tests
-  - Edge case scenarios for motor operations
-
-
-### Refactor
+- Enhance Makefile help commands and improve formatting checks
+  ([`9ab246e`](https://github.com/nfraxlab/robo-infra/commit/9ab246e8fb7313faae3d33bfe550479eaa136a49))
 
 - Streamline code formatting and improve readability across multiple files
-- Enhance Makefile help commands and improve formatting checks
-
-## [0.1.7] - 2025-12-13
+  ([`b3a79c3`](https://github.com/nfraxlab/robo-infra/commit/b3a79c39f359f1af389ced0028fd95b0f1db889e))
 
 
-### Other Changes
+## v0.1.7 (2025-12-13)
 
-- Add SimulationDriver implementation and unit tests
+### Continuous Integration
 
-## [0.1.6] - 2025-12-13
-
-
-### Other Changes
-
-- Add unit tests for environmental and switch sensors
-
-- Implemented comprehensive unit tests for environmental sensors including Temperature, Humidity, Pressure, and Light sensors.
-- Added tests for configuration classes, reading methods, calibration, and status tracking.
-- Created unit tests for switch sensors including Limit Switch, Button, and Hall Effect sensors.
-- Included tests for configuration, state detection, trigger counting, and asynchronous wait methods.
-
-## [0.1.5] - 2025-12-12
+- Release v0.1.7
+  ([`746522f`](https://github.com/nfraxlab/robo-infra/commit/746522f7d66f2fffe94469662722bb82d349cbe0))
 
 
-### Other Changes
+## v0.1.6 (2025-12-13)
 
-- Add unit tests for distance and IMU sensors
+### Continuous Integration
 
-- Implemented tests for Ultrasonic, ToF, and IRDistance sensors in `test_sensors_distance.py`.
-- Added comprehensive tests for IMU components including Accelerometer, Gyroscope, and Magnetometer in `test_sensors_imu.py`.
-- Ensured coverage for various functionalities such as reading values, calibration, and error handling.
-
-## [0.1.4] - 2025-12-12
+- Release v0.1.6
+  ([`3be0807`](https://github.com/nfraxlab/robo-infra/commit/3be0807709f31a2977aea9a2f10b0cf02e48d7a2))
 
 
-### Other Changes
+## v0.1.5 (2025-12-12)
 
-- Add unit tests for various actuators in robo_infra
+### Continuous Integration
 
-- Implement tests for Brushless actuators, including basic functionality, driver interactions, and factory creation.
-- Add comprehensive tests for DC Motors, covering configuration, status, pin interactions, and error handling.
-- Create tests for Linear Actuators, validating motor and solenoid-based operations, including movement and feedback mechanisms.
-- Introduce extensive tests for Servo actuators, focusing on initialization, angle/pulse conversion, operations, and calibration.
-- Develop tests for Solenoids, ensuring activation, deactivation, and driver channel updates are functioning correctly.
-- Implement tests for Stepper motors, validating movement, error handling, and driver channel interactions.
+- Release v0.1.5
+  ([`6a7392d`](https://github.com/nfraxlab/robo-infra/commit/6a7392d66203a1c0b6bbef5ab9f9fca967133d14))
 
-## [0.1.3] - 2025-12-12
 
+## v0.1.4 (2025-12-12)
+
+### Continuous Integration
+
+- Release v0.1.4
+  ([`25810a7`](https://github.com/nfraxlab/robo-infra/commit/25810a79de31f5dcc79c1c1830a6846b939c28b6))
+
+
+## v0.1.3 (2025-12-12)
+
+### Continuous Integration
+
+- Release v0.1.3
+  ([`d97af2a`](https://github.com/nfraxlab/robo-infra/commit/d97af2a4b20457aacf82ad64ce9f99b8053ac194))
 
 ### Documentation
 
 - Add PyPI badge to README
+  ([`f72ac11`](https://github.com/nfraxlab/robo-infra/commit/f72ac1151c0ab05b7b6d05a6891ba4f21085e1ee))
 
-## [0.1.1] - 2025-12-12
 
+## v0.1.2 (2025-12-12)
+
+### Continuous Integration
+
+- Release v0.1.2
+  ([`eae5cf8`](https://github.com/nfraxlab/robo-infra/commit/eae5cf8df55e1286aaa9aed79ef50b20931d0406))
+
+- Trigger release
+  ([`19a94c0`](https://github.com/nfraxlab/robo-infra/commit/19a94c00456df3fd62805dd08dad9d5b81448452))
+
+
+## v0.1.1 (2025-12-12)
 
 ### Bug Fixes
 
 - Remove poetry.lock from .gitignore for CI
+  ([`9bc433e`](https://github.com/nfraxlab/robo-infra/commit/9bc433e4dd8067afa964c0bbe8aa9a4f35237d58))
 
+### Continuous Integration
+
+- Add PyPI publish workflow (OIDC trusted publisher)
+  ([`7186250`](https://github.com/nfraxlab/robo-infra/commit/718625052b3939aa51f3c26c492bdd4a8087acb1))
+
+- Auto version bump on push to main - Build and publish via pypa/gh-action-pypi-publish - Update CI
+  to support feature branches
+
+- Release v0.1.1
+  ([`5bf3b5d`](https://github.com/nfraxlab/robo-infra/commit/5bf3b5d7aaebb1c4f8473839e4de89d3deef1744))
 
 ### Features
 
 - Add Makefile for project setup and development commands
+  ([`2ecb090`](https://github.com/nfraxlab/robo-infra/commit/2ecb090b83b5ffabe5c4b1cde89952ccf2c72bae))
+
 - Phase 1 - Project Foundation
+  ([`193ff48`](https://github.com/nfraxlab/robo-infra/commit/193ff4852542a0e2f4e7da7df3f3d9b6764c70bb))
 
-
-### Other Changes
-
-- Add unit tests for pin and sensor abstractions
-
-- Implemented comprehensive unit tests for pin abstractions including SimulatedDigitalPin, SimulatedPWMPin, and SimulatedAnalogPin.
-- Added tests for PinMode and PinState enums to ensure all modes and states are defined.
-- Created unit tests for the sensor module, covering SensorState, SensorType, SensorConfig, and various sensor functionalities.
-- Included tests for filtering mechanisms, sensor calibration, and sensor group management.
-- Established factory functions for creating different types of sensors with associated tests.
-
-<!-- Generated by git-cliff -->
+- pyproject.toml with Poetry config, dependencies, optional groups - Tool configs: ruff.toml,
+  mypy.ini, pytest.ini, .pre-commit-config.yaml - Core types: Limits, Position, Vector3, Direction,
+  Unit, Reading - Exception hierarchy: RoboInfraError and specialized exceptions - CLI entrypoint
+  (robo-infra) - Module structure: actuators, sensors, drivers, controllers, motion, platforms,
+  safety, integrations, utils - GitHub Actions CI workflow - README with architecture overview - 40
+  passing unit tests
