@@ -1,7 +1,11 @@
 SHELL := /bin/bash
 
-# Default for make pr sync flag
-sync ?= 0
+# Defaults for make pr flags
+sync  ?= 0
+new   ?= 0
+draft ?= 0
+b     ?=
+base  ?=
 
 .PHONY: help install lint format format-check type typecheck test unit unitv cov clean clean-pycache sim hw ci check docs docs-serve docs-build
 
