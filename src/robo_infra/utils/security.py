@@ -990,7 +990,7 @@ def check_all_hardware_access() -> dict[HardwareAccess, bool]:
     Example:
         >>> access = check_all_hardware_access()
         >>> for hw, ok in access.items():
-        ...     print(f"{hw.value}: {'✓' if ok else '✗'}")
+        ...     print(f"{hw.value}: {'[OK]' if ok else '[X]'}")
     """
     results: dict[HardwareAccess, bool] = {}
 

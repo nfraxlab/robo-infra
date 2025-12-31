@@ -11,7 +11,7 @@ Controllers are the primary way to build robots in robo-infra. A controller coor
 Without controllers, you'd manage each component individually:
 
 ```python
-# ❌ Manual coordination - error-prone
+# [X] Manual coordination - error-prone
 servo1.set(90)
 servo2.set(45)
 servo3.set(120)
@@ -21,7 +21,7 @@ servo3.set(120)
 With controllers, you get coordinated behavior:
 
 ```python
-# ✅ Controller handles coordination
+# [OK] Controller handles coordination
 arm = JointGroup([servo1, servo2, servo3])
 arm.enable_all()
 arm.home()  # All joints move to home position
@@ -94,7 +94,7 @@ Drivers provide hardware independence. The same actuator code works with differe
 Without drivers, actuator code is tied to specific hardware:
 
 ```python
-# ❌ Hardware-specific code
+# [X] Hardware-specific code
 import smbus2
 bus = smbus2.SMBus(1)
 bus.write_byte_data(0x40, 0x06, pwm_low)  # PCA9685-specific
@@ -104,7 +104,7 @@ bus.write_byte_data(0x40, 0x07, pwm_high)
 With drivers, hardware details are encapsulated:
 
 ```python
-# ✅ Hardware-independent code
+# [OK] Hardware-independent code
 servo = Servo(name="gripper", driver=driver, channel=0)
 servo.set(90)  # Works with any driver
 ```

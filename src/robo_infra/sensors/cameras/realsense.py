@@ -296,7 +296,7 @@ class RealSenseCamera(Camera):
             import pyrealsense2 as rs
         except ImportError as e:
             if os.getenv("ROBO_SIMULATION"):
-                logger.warning("⚠️ SIMULATION MODE - pyrealsense2 not available")
+                logger.warning("[!] SIMULATION MODE - pyrealsense2 not available")
                 self._init_simulation()
                 return
             raise ImportError(

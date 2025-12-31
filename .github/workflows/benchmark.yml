@@ -66,11 +66,11 @@ jobs:
       - name: Check benchmark failures
         run: |
           if grep -q "FAILED" benchmark_output.txt; then
-            echo "❌ Some benchmarks failed to meet performance targets"
+            echo "[X] Some benchmarks failed to meet performance targets"
             grep "FAILED" benchmark_output.txt
             exit 1
           else
-            echo "✅ All benchmarks passed performance targets"
+            echo "[OK] All benchmarks passed performance targets"
           fi
 
   memory-profile:
@@ -132,8 +132,8 @@ jobs:
           
           # Set threshold at 1MB
           if peak > 1024 * 1024:
-              print('❌ Memory usage exceeds 1MB threshold')
+              print('[X] Memory usage exceeds 1MB threshold')
               exit(1)
           else:
-              print('✅ Memory usage within acceptable limits')
+              print('[OK] Memory usage within acceptable limits')
           "

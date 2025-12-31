@@ -658,57 +658,57 @@ if __name__ == "__main__":
 ### 1. Always Validate External Input
 
 ```python
-# ✅ Validate before using
+# [OK] Validate before using
 positions = request.json()
 for name, angle in positions.items():
     sanitize_name(name)
     validate_joint_angle(angle, min_angle=limits[name].min, max_angle=limits[name].max)
 
-# ❌ Trust external input
+# [X] Trust external input
 await controller.move(request.json())  # DANGEROUS
 ```
 
 ### 2. Use Circuit Breakers for Hardware
 
 ```python
-# ✅ Protect hardware communication
+# [OK] Protect hardware communication
 circuit = create_driver_circuit_breaker("motor")
 async with circuit:
     await motor.move(target)
 
-# ❌ No protection
+# [X] No protection
 await motor.move(target)  # Can cause cascading failures
 ```
 
 ### 3. Set Timeouts on All Operations
 
 ```python
-# ✅ Always set timeouts
+# [OK] Always set timeouts
 async with with_timeout(5.0, "sensor_read"):
     value = await sensor.read()
 
-# ❌ No timeout
+# [X] No timeout
 value = await sensor.read()  # Can hang forever
 ```
 
 ### 4. Register Cleanup Handlers
 
 ```python
-# ✅ Register cleanup at startup
+# [OK] Register cleanup at startup
 register_cleanup(controller.emergency_stop)
 register_cleanup(driver.disconnect)
 
-# ❌ Rely on try/finally everywhere
+# [X] Rely on try/finally everywhere
 ```
 
 ### 5. Use Degraded Mode for Non-Critical Components
 
 ```python
-# ✅ Continue operating with reduced capability
+# [OK] Continue operating with reduced capability
 degraded = DegradedModeController(controller)
 result = await degraded.move(targets)
 
-# ❌ Fail completely on any component failure
+# [X] Fail completely on any component failure
 await controller.move(targets)  # Fails if any joint fails
 ```
 

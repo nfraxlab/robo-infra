@@ -430,7 +430,7 @@ class SimulationPlatform(BasePlatform):
                 platform_type=PlatformType.SIMULATION,
             )
         super().__init__(config)
-        logger.info("⚠️ SIMULATION MODE - No real hardware")
+        logger.info("[!] SIMULATION MODE - No real hardware")
 
     @property
     def is_available(self) -> bool:

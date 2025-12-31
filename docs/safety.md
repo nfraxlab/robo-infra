@@ -12,7 +12,7 @@ Safety is the highest priority in robotics. This guide covers the safety systems
 4. **Watchdog** - Detect frozen or crashed control loops
 5. **Monitoring** - Watch for overcurrent, overtemperature, etc.
 
-> ⚠️ **Never trust software alone.** Always have a physical E-stop accessible.
+> [!] **Never trust software alone.** Always have a physical E-stop accessible.
 
 ```python
 from robo_infra.safety import (

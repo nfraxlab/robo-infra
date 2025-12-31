@@ -2,7 +2,7 @@
 
 Thank you for your interest in contributing to robo-infra! This document provides guidelines for contributing.
 
-## ⚠️ Robotics Safety Warning
+## [!] Robotics Safety Warning
 
 **robo-infra controls physical robots. Bugs here can cause PHYSICAL HARM, PROPERTY DAMAGE, or DEATH.**
 
@@ -46,14 +46,14 @@ mypy src
 **All actuators MUST have enforced limits:**
 
 ```python
-# ✅ Correct - Clamp to safe limits
+# [OK] Correct - Clamp to safe limits
 def set_angle(self, angle: float):
     clamped = max(self.limits.min, min(self.limits.max, angle))
     if angle != clamped:
         logger.warning(f"Angle {angle} clamped to {clamped}")
     self._driver.set_pwm(clamped)
 
-# ❌ WRONG - Could destroy mechanism
+# [X] WRONG - Could destroy mechanism
 def set_angle(self, angle: float):
     self._driver.set_pwm(angle)
 ```
@@ -63,7 +63,7 @@ def set_angle(self, angle: float):
 **E-stop MUST disable first, then log:**
 
 ```python
-# ✅ Correct - Disable IMMEDIATELY
+# [OK] Correct - Disable IMMEDIATELY
 def emergency_stop(self):
     self.disable_all()  # First priority, no exceptions
     try:
@@ -71,7 +71,7 @@ def emergency_stop(self):
     except Exception as e:
         logger.error(f"Post-estop logging failed: {e}")
 
-# ❌ WRONG - E-stop can be blocked
+# [X] WRONG - E-stop can be blocked
 def emergency_stop(self):
     try:
         self.save_state()  # Could hang
@@ -84,7 +84,7 @@ def emergency_stop(self):
 **All movements need timeout and distance limits:**
 
 ```python
-# ✅ Correct
+# [OK] Correct
 async def move_until_contact(self, max_distance: float, timeout: float):
     deadline = time.time() + timeout
     start_pos = self.encoder.read()
@@ -95,7 +95,7 @@ async def move_until_contact(self, max_distance: float, timeout: float):
             raise LimitsExceededError("Max distance exceeded")
         self.motor.forward()
 
-# ❌ WRONG - Runs forever if sensor fails
+# [X] WRONG - Runs forever if sensor fails
 async def move_until_contact(self):
     while not self.sensor.contact:
         self.motor.forward()
@@ -106,14 +106,14 @@ async def move_until_contact(self):
 **Never silently fall back to simulation:**
 
 ```python
-# ✅ Correct - Require explicit flag
+# [OK] Correct - Require explicit flag
 if not hardware_available:
     if not os.getenv("ROBO_SIMULATION"):
         raise HardwareNotFoundError("Set ROBO_SIMULATION=true to simulate")
-    logger.warning("⚠️ SIMULATION MODE")
+    logger.warning("[!] SIMULATION MODE")
     driver = SimulatedDriver()
 
-# ❌ WRONG - User thinks robot is real
+# [X] WRONG - User thinks robot is real
 if not hardware_available:
     driver = SimulatedDriver()
 ```

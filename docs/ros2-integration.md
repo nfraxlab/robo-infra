@@ -648,10 +648,10 @@ def generate_launch_description():
 Prefer standard message types for compatibility:
 
 ```python
-# ✅ Standard messages work with existing tools
+# [OK] Standard messages work with existing tools
 from sensor_msgs.msg import JointState  # rviz, moveit compatible
 
-# ⚠️ Custom messages require additional setup
+# [!] Custom messages require additional setup
 from my_robot_msgs.msg import CustomJointState
 ```
 

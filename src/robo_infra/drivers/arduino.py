@@ -370,7 +370,7 @@ class ArduinoDriver(Driver):
         self._state = DriverState.CONNECTING
 
         if self._simulation_mode:
-            logger.warning("⚠️ SIMULATION MODE - ArduinoDriver not connected to real hardware")
+            logger.warning("[!] SIMULATION MODE - ArduinoDriver not connected to real hardware")
             self._state = DriverState.CONNECTED
             return
 

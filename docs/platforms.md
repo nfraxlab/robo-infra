@@ -6,13 +6,13 @@ robo-infra provides hardware abstraction across multiple platforms, enabling cod
 
 | Platform | GPIO | PWM | I2C | SPI | UART | ADC | Status |
 |----------|------|-----|-----|-----|------|-----|--------|
-| **Raspberry Pi** (all models) | ✅ | ✅ | ✅ | ✅ | ✅ | — | Production |
-| **NVIDIA Jetson** (Nano, TX2, Xavier, Orin) | ✅ | ✅ | ✅ | ✅ | ✅ | — | Production |
-| **BeagleBone** (Black, Green, AI) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Production |
-| **Arduino** (Uno, Mega, Nano, Due) | ✅ | ✅ | — | — | — | ✅ | Production |
-| **ESP32** (all variants) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Production |
-| **Linux Generic** (Orange Pi, Rock Pi, etc.) | ✅ | ✅ | ✅ | ✅ | ✅ | — | Production |
-| **Simulation** (development) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Production |
+| **Raspberry Pi** (all models) | [OK] | [OK] | [OK] | [OK] | [OK] | — | Production |
+| **NVIDIA Jetson** (Nano, TX2, Xavier, Orin) | [OK] | [OK] | [OK] | [OK] | [OK] | — | Production |
+| **BeagleBone** (Black, Green, AI) | [OK] | [OK] | [OK] | [OK] | [OK] | [OK] | Production |
+| **Arduino** (Uno, Mega, Nano, Due) | [OK] | [OK] | — | — | — | [OK] | Production |
+| **ESP32** (all variants) | [OK] | [OK] | [OK] | [OK] | [OK] | [OK] | Production |
+| **Linux Generic** (Orange Pi, Rock Pi, etc.) | [OK] | [OK] | [OK] | [OK] | [OK] | — | Production |
+| **Simulation** (development) | [OK] | [OK] | [OK] | [OK] | [OK] | [OK] | Production |
 
 ## Quick Start
 
@@ -152,7 +152,7 @@ print(f"Is Pi 5: {pi.is_pi5}")
 |---------|---------------|----------------|
 | GPIO Chip | BCM2711 | RP1 (new) |
 | Recommended Backend | RPi.GPIO, lgpio | lgpio, gpiod |
-| RPi.GPIO Support | ✅ Full | ❌ Not supported |
+| RPi.GPIO Support | [OK] Full | [X] Not supported |
 | Hardware PWM Pins | 12, 13, 18, 19 | 12, 13, 14, 15, 18, 19 |
 | I2C Buses | 1 (user), 0 (reserved) | 1 (user), 0, 3 |
 | GPIO Speed | Up to 50MHz | Up to 100MHz |

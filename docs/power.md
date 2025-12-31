@@ -395,7 +395,7 @@ converter.disable()
 
 ### Battery Safety
 
-⚠️ **LiPo/Li-ion batteries are dangerous if mishandled!**
+[!] **LiPo/Li-ion batteries are dangerous if mishandled!**
 
 ```python
 from robo_infra.power import BatteryMonitor, BatteryChemistry

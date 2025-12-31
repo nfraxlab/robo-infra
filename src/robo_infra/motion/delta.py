@@ -631,7 +631,7 @@ def create_kossel_mini() -> DeltaRobot:
     - Lower arm (carbon fiber rod): ~300mm
 
     Geometry constraint: base + upper_arm - effector < lower_arm
-    140 + 120 - 35 = 225 < 300 ✓
+    140 + 120 - 35 = 225 < 300 [OK]
 
     Returns:
         DeltaRobot configured like Kossel Mini.
@@ -654,7 +654,7 @@ def create_flsun_q5() -> DeltaRobot:
     - Lower arm: ~215mm
 
     Geometry constraint: base + upper_arm - effector < lower_arm
-    100 + 100 - 35 = 165 < 215 ✓
+    100 + 100 - 35 = 165 < 215 [OK]
 
     Returns:
         DeltaRobot configured like FLSUN Q5.

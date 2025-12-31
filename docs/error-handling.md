@@ -2,7 +2,7 @@
 
 This guide documents exception hierarchies and error handling patterns in robo-infra.
 
-## ⚠️ Safety-Critical Error Handling
+## [!] Safety-Critical Error Handling
 
 **Robotics errors can cause physical harm. Error handling must prioritize STOPPING safely.**
 
@@ -63,7 +63,7 @@ try:
     driver = PCA9685Driver()
 except HardwareNotFoundError:
     if os.getenv("ROBO_SIMULATION"):
-        logger.warning("⚠️ SIMULATION MODE - No real hardware")
+        logger.warning("[!] SIMULATION MODE - No real hardware")
         driver = SimulatedDriver()
     else:
         # Don't silently simulate!
@@ -89,13 +89,13 @@ except SensorTimeoutError:
 **E-stop errors must NEVER be caught and ignored:**
 
 ```python
-# ❌ WRONG - E-stop failure is catastrophic
+# [X] WRONG - E-stop failure is catastrophic
 try:
     controller.emergency_stop()
 except Exception:
     pass  # Robot is now uncontrolled!
 
-# ✅ CORRECT - E-stop must always work
+# [OK] CORRECT - E-stop must always work
 def emergency_stop(self):
     # Disable IMMEDIATELY - no exceptions can block this
     for actuator in self.actuators:

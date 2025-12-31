@@ -1006,7 +1006,7 @@ class SerialGPS(GPS):
     def connect(self) -> None:
         """Connect to GPS via serial port."""
         if os.environ.get("ROBO_SIMULATION", "").lower() in ("true", "1", "yes"):
-            logger.warning("⚠️ SIMULATION MODE - %s not connected to real hardware", self.name)
+            logger.warning("[!] SIMULATION MODE - %s not connected to real hardware", self.name)
             self._gps_state = GPSState.TRACKING
             return
 
