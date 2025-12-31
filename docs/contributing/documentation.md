@@ -127,10 +127,10 @@ servo.angle = 45
 Include comments explaining non-obvious code:
 
 ```python
-# ✅ Good - explains why
+# [OK] Good - explains why
 servo.set_speed(0.5)  # Reduce speed for precision gripping
 
-# ❌ Bad - just restates the code
+# [X] Bad - just restates the code
 servo.set_speed(0.5)  # Set speed to 0.5
 ```
 
@@ -165,9 +165,9 @@ except CommunicationError as e:
 
 | Feature | Servo | DCMotor | Stepper |
 |---------|-------|---------|---------|
-| Position control | ✅ | ❌ | ✅ |
-| Continuous rotation | ❌ | ✅ | ✅ |
-| Holding torque | ❌ | ❌ | ✅ |
+| Position control | [OK] | [X] | [OK] |
+| Continuous rotation | [X] | [OK] | [OK] |
+| Holding torque | [X] | [X] | [OK] |
 
 **API summary:**
 
@@ -282,10 +282,10 @@ Use MkDocs admonitions for callouts:
 ### Examples
 
 ```markdown
-# ✅ Good
+# [OK] Good
 You can create a servo using the Servo class.
 
-# ❌ Bad
+# [X] Bad
 A servo can be created by the user using the Servo class.
 ```
 
@@ -323,10 +323,10 @@ def move_to(self, position: float, speed: float = 1.0) -> None:
 
 | Section | Required | Description |
 |---------|----------|-------------|
-| Summary | ✅ | One-line description |
-| Args | ✅ if args | Parameter descriptions |
-| Returns | ✅ if returns | Return value description |
-| Raises | ✅ if raises | Exceptions that may be raised |
+| Summary | [OK] | One-line description |
+| Args | [OK] if args | Parameter descriptions |
+| Returns | [OK] if returns | Return value description |
+| Raises | [OK] if raises | Exceptions that may be raised |
 | Example | Recommended | Usage example |
 | Note | Optional | Additional information |
 

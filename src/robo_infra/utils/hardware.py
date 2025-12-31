@@ -970,7 +970,7 @@ def check_hardware_access(
         ...     require_gpio=True,
         ... )
         >>> for name, result in results.items():
-        ...     status = "✓" if result.found else "✗"
+        ...     status = "[OK]" if result.found else "[X]"
         ...     print(f"{status} {name}: {result.error or 'OK'}")
     """
     probe = HardwareProbe()

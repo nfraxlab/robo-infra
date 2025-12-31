@@ -897,7 +897,7 @@ class SerialLIDAR(LIDAR):
     def connect(self) -> None:
         """Connect to LIDAR via serial port."""
         if os.environ.get("ROBO_SIMULATION", "").lower() in ("true", "1", "yes"):
-            logger.warning("⚠️ SIMULATION MODE - %s not connected to real hardware", self.name)
+            logger.warning("[!] SIMULATION MODE - %s not connected to real hardware", self.name)
             return
 
         try:

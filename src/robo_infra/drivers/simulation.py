@@ -257,7 +257,7 @@ class SimulationDriver(Driver):
         # Warn about simulation mode unless explicitly enabled
         if not os.getenv("ROBO_SIMULATION"):
             logger.warning(
-                "⚠️ SIMULATION MODE — SimulationDriver '%s' has no real hardware. "
+                "[!] SIMULATION MODE — SimulationDriver '%s' has no real hardware. "
                 "Set ROBO_SIMULATION=true to suppress this warning.",
                 self._name,
             )

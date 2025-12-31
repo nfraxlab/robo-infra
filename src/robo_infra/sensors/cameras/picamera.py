@@ -267,7 +267,7 @@ class PiCamera(Camera):
 
         if self._library is None:
             if os.getenv("ROBO_SIMULATION"):
-                logger.warning("⚠️ SIMULATION MODE - No Pi camera library available")
+                logger.warning("[!] SIMULATION MODE - No Pi camera library available")
                 self._init_simulation()
                 return
             raise ImportError(

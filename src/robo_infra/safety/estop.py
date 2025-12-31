@@ -292,7 +292,7 @@ class EStop:
                 )
             else:
                 logger.info(
-                    "✅ E-STOP COMPLETE: All %d actuators disabled",
+                    "[OK] E-STOP COMPLETE: All %d actuators disabled",
                     len(successful),
                 )
 
@@ -337,25 +337,25 @@ class EStop:
 
             self._reset_confirmation_pending = False
             self._state = EStopState.ARMED
-            logger.info("✅ E-STOP RESET - System armed (actuators still disabled)")
+            logger.info("[OK] E-STOP RESET - System armed (actuators still disabled)")
 
             return True
 
     def force_arm(self) -> None:
         """Force E-stop to armed state without normal reset.
 
-        ⚠️ DANGEROUS: Only use when you are certain the system is safe.
+        [!] DANGEROUS: Only use when you are certain the system is safe.
         This bypasses reset confirmation and all safety checks.
         """
         with self._lock:
-            logger.warning("⚠️ E-STOP FORCE ARMED - Safety checks bypassed!")
+            logger.warning("[!] E-STOP FORCE ARMED - Safety checks bypassed!")
             self._state = EStopState.ARMED
             self._reset_confirmation_pending = False
 
     def disable_system(self) -> None:
         """Disable the E-stop system itself.
 
-        ⚠️ EXTREMELY DANGEROUS: Only use for maintenance.
+        [!] EXTREMELY DANGEROUS: Only use for maintenance.
         E-stop will not function while disabled.
         """
         with self._lock:

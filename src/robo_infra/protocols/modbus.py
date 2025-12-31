@@ -669,7 +669,7 @@ class ModbusRTU(ModbusClient):
             return
 
         if self._simulation:
-            logger.warning("⚠️ SIMULATION MODE - Modbus RTU simulated")
+            logger.warning("[!] SIMULATION MODE - Modbus RTU simulated")
             self._is_open = True
             return
 
@@ -1110,7 +1110,7 @@ class ModbusTCP(ModbusClient):
             return
 
         if self._simulation:
-            logger.warning("⚠️ SIMULATION MODE - Modbus TCP simulated")
+            logger.warning("[!] SIMULATION MODE - Modbus TCP simulated")
             self._is_open = True
             return
 

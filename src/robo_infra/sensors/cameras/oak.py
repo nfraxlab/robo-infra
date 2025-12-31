@@ -367,7 +367,7 @@ class OAKCamera(Camera):
             import depthai as dai
         except ImportError as e:
             if os.getenv("ROBO_SIMULATION"):
-                logger.warning("⚠️ SIMULATION MODE - depthai not available")
+                logger.warning("[!] SIMULATION MODE - depthai not available")
                 self._init_simulation()
                 return
             raise ImportError(

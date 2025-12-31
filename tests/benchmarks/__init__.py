@@ -77,7 +77,7 @@ class BenchmarkResult:
         return 1.0 / self.mean_time if self.mean_time > 0 else float("inf")
 
     def __str__(self) -> str:
-        status = "✓" if self.passed else "✗"
+        status = "[OK]" if self.passed else "[X]"
         target_str = f" (target: {format_time(self.target)})" if self.target else ""
         return (
             f"{status} {self.name}: {format_time(self.mean_time)} "

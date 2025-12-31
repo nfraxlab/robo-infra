@@ -102,7 +102,7 @@ def obstacle_avoidance_demo(
         # Decision logic
         if distance < MIN_DISTANCE_MM:
             # Obstacle detected - stop and turn
-            print(f"  ⚠️  Obstacle detected! Distance < {MIN_DISTANCE_MM}mm")
+            print(f"  [!]  Obstacle detected! Distance < {MIN_DISTANCE_MM}mm")
             rover.stop()
             print("  Action: STOP, then spin right to avoid")
             rover.spin(speed=0.5, clockwise=True)
@@ -110,13 +110,13 @@ def obstacle_avoidance_demo(
             print(f"  Motor speeds - L: {left_speed:.2f}, R: {right_speed:.2f}")
         elif distance < MIN_DISTANCE_MM * 2:
             # Getting close - slow down
-            print(f"  ⚡ Getting close, slowing down")
+            print(f"   Getting close, slowing down")
             rover.forward(speed=0.3)
             left_speed, right_speed = rover.current_speed
             print(f"  Motor speeds - L: {left_speed:.2f}, R: {right_speed:.2f}")
         else:
             # Clear ahead - full speed
-            print(f"  ✅ Clear ahead, full speed")
+            print(f"  [OK] Clear ahead, full speed")
             rover.forward(speed=0.7)
             left_speed, right_speed = rover.current_speed
             print(f"  Motor speeds - L: {left_speed:.2f}, R: {right_speed:.2f}")

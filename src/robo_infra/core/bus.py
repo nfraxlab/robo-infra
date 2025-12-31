@@ -1565,7 +1565,7 @@ def get_i2c(
                 "No I2C hardware detected (smbus2 not available). "
                 "Set ROBO_SIMULATION=true to use simulated hardware."
             )
-        logger.warning("⚠️ SIMULATION MODE — Using simulated I2C bus %d", bus_number)
+        logger.warning("[!] SIMULATION MODE — Using simulated I2C bus %d", bus_number)
         return SimulatedI2CBus(config)
 
     # Use real hardware implementation
@@ -1621,7 +1621,7 @@ def get_spi(
                 "No SPI hardware detected (spidev not available). "
                 "Set ROBO_SIMULATION=true to use simulated hardware."
             )
-        logger.warning("⚠️ SIMULATION MODE — Using simulated SPI bus %d:%d", bus, device)
+        logger.warning("[!] SIMULATION MODE — Using simulated SPI bus %d:%d", bus, device)
         return SimulatedSPIBus(config)
 
     # Use real hardware implementation
@@ -1676,7 +1676,7 @@ def get_serial(
                 f"No serial hardware detected (pyserial not available for {port}). "
                 "Set ROBO_SIMULATION=true to use simulated hardware."
             )
-        logger.warning("⚠️ SIMULATION MODE — Using simulated serial port %s", port)
+        logger.warning("[!] SIMULATION MODE — Using simulated serial port %s", port)
         return SimulatedSerialBus(config)
 
     # Use real hardware implementation

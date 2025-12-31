@@ -484,7 +484,7 @@ class SafetyMonitor:
         status.is_warning = True
 
         logger.warning(
-            "⚠️ SAFETY WARNING: %s %s = %.3f%s approaching limit",
+            "[!] SAFETY WARNING: %s %s = %.3f%s approaching limit",
             config.component,
             config.metric,
             value,

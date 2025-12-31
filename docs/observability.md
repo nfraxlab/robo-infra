@@ -640,25 +640,25 @@ robo_actuator_position{controller="arm"}
 ### 1. Instrument All Commands
 
 ```python
-# ✅ Track all user-facing commands
+# [OK] Track all user-facing commands
 @track_command("move")
 async def move_to(self, target): ...
 
 @track_command("grip")
 async def grip(self, force): ...
 
-# ❌ Don't track internal helper methods
+# [X] Don't track internal helper methods
 def _calculate_trajectory(self, ...): ...
 ```
 
 ### 2. Use Consistent Labels
 
 ```python
-# ✅ Consistent naming
+# [OK] Consistent naming
 record_position("arm", "joint1", 45.0)
 record_position("arm", "joint2", 30.0)
 
-# ❌ Inconsistent naming
+# [X] Inconsistent naming
 record_position("Arm", "Joint1", 45.0)
 record_position("robot_arm", "j2", 30.0)
 ```
@@ -666,20 +666,20 @@ record_position("robot_arm", "j2", 30.0)
 ### 3. Don't Log Sensitive Data
 
 ```python
-# ✅ Log safe information
+# [OK] Log safe information
 log_with_context("info", "Auth successful", user_id=user.id)
 
-# ❌ Never log credentials
+# [X] Never log credentials
 log_with_context("info", "Auth", password=user.password)  # NEVER!
 ```
 
 ### 4. Set Appropriate Timeouts
 
 ```python
-# ✅ Use appropriate timeouts for hardware
+# [OK] Use appropriate timeouts for hardware
 create_controller_health_check(arm, timeout=5.0)
 
-# ❌ Too short for hardware communication
+# [X] Too short for hardware communication
 create_controller_health_check(arm, timeout=0.1)
 ```
 
