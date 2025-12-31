@@ -2,8 +2,8 @@
 
 This module provides kinematic calculations for multi-link mechanisms:
 
-- Forward kinematics: Joint angles → End effector position
-- Inverse kinematics: End effector position → Joint angles
+- Forward kinematics: Joint angles -> End effector position
+- Inverse kinematics: End effector position -> Joint angles
 
 Supports 2-DOF and 3-DOF planar arms with geometric solutions.
 

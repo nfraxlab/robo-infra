@@ -34,13 +34,13 @@ Install Raspberry Pi OS (64-bit recommended):
 sudo raspi-config
 
 # Enable I2C (for PCA9685, MPU6050, sensors)
-# Navigate: Interface Options → I2C → Enable
+# Navigate: Interface Options -> I2C -> Enable
 
 # Enable SPI (for high-speed devices)
-# Navigate: Interface Options → SPI → Enable
+# Navigate: Interface Options -> SPI -> Enable
 
 # Enable Serial/UART (for GPS, LiDAR)
-# Navigate: Interface Options → Serial Port → Enable
+# Navigate: Interface Options -> Serial Port -> Enable
 
 # Reboot to apply changes
 sudo reboot
@@ -174,8 +174,8 @@ The MPU6050 provides 6-axis motion sensing (accelerometer + gyroscope).
 | Pin 6 (GND) | AD0 | Address select (0x68) |
 
 **Address Configuration:**
-- AD0 → GND: Address 0x68 (default)
-- AD0 → VCC: Address 0x69
+- AD0 -> GND: Address 0x68 (default)
+- AD0 -> VCC: Address 0x69
 
 **Verify Connection:**
 

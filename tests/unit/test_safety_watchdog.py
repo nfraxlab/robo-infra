@@ -1,7 +1,7 @@
 """Unit tests for robo_infra.safety.watchdog module.
 
 Phase 5.6.2: Watchdog Tests
-Target coverage: 59% → 85%+
+Target coverage: 59% -> 85%+
 
 Tests cover:
 - WatchdogError exception

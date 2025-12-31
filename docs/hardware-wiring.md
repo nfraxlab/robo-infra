@@ -210,12 +210,12 @@ Key:
 ```
 
 **LED Circuit (Active High):**
-- GPIO17 → 220Ω resistor → LED anode
-- LED cathode → GND
+- GPIO17 -> 220Ω resistor -> LED anode
+- LED cathode -> GND
 
 **Button Circuit (Pull-down):**
-- GPIO27 → 10kΩ resistor → GND (pull-down)
-- GPIO27 → Button → 3.3V
+- GPIO27 -> 10kΩ resistor -> GND (pull-down)
+- GPIO27 -> Button -> 3.3V
 - Reads LOW when not pressed, HIGH when pressed
 
 ---

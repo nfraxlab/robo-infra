@@ -633,11 +633,11 @@ The safety module maintains high test coverage to ensure reliability:
 
 | Module | Coverage Target | Current |
 |--------|-----------------|---------|
-| estop.py | ≥90% | 98% |
-| limits.py | ≥90% | 100% |
-| monitor.py | ≥80% | 99% |
-| watchdog.py | ≥85% | 100% |
-| **Overall** | ≥80% | **99%** |
+| estop.py | >=90% | 98% |
+| limits.py | >=90% | 100% |
+| monitor.py | >=80% | 99% |
+| watchdog.py | >=85% | 100% |
+| **Overall** | >=80% | **99%** |
 
 Run coverage reports with:
 

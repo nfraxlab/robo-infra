@@ -37,10 +37,10 @@ Example - Pydantic schema tools:
 Tool Format:
     This module generates plain Python functions as tools. ai-infra
     automatically extracts tool schemas from:
-    - Function name → tool name
-    - Docstring → tool description (LLM sees this!)
-    - Type hints → parameter types
-    - Default values → optional parameters
+    - Function name -> tool name
+    - Docstring -> tool description (LLM sees this!)
+    - Type hints -> parameter types
+    - Default values -> optional parameters
 
 Note:
     We intentionally do NOT use `from __future__ import annotations` here

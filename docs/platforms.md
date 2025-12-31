@@ -823,7 +823,7 @@ echo 17 > /sys/class/gpio/unexport
 ```bash
 # Enable I2C
 sudo raspi-config
-# Interface Options → I2C → Enable
+# Interface Options -> I2C -> Enable
 
 # Verify I2C is enabled
 ls /dev/i2c*
@@ -860,7 +860,7 @@ sudo python my_robot.py
 ```bash
 # Enable SPI
 sudo raspi-config
-# Interface Options → SPI → Enable
+# Interface Options -> SPI -> Enable
 
 # Verify
 ls /dev/spidev*

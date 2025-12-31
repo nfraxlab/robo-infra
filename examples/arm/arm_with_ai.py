@@ -164,7 +164,7 @@ def demo_provider_fallbacks(agent: Agent) -> None:
         agent: The AI agent with arm tools.
     """
     print("\n--- Provider Fallbacks ---")
-    print("Trying multiple providers in order: OpenAI → Anthropic → Google")
+    print("Trying multiple providers in order: OpenAI -> Anthropic -> Google")
 
     try:
         result = agent.run_with_fallbacks(

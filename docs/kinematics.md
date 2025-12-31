@@ -4,8 +4,8 @@ Kinematics deals with the geometry of robot motion—converting between joint an
 
 ## Overview
 
-- **Forward Kinematics (FK)**: Joint angles → End-effector position
-- **Inverse Kinematics (IK)**: End-effector position → Joint angles
+- **Forward Kinematics (FK)**: Joint angles -> End-effector position
+- **Inverse Kinematics (IK)**: End-effector position -> Joint angles
 
 ```python
 from robo_infra.motion import (
@@ -173,11 +173,11 @@ delta = DeltaRobot(
     lower_arm_length=0.4,  # Lower arm (parallelogram)
 )
 
-# Forward kinematics: motor angles → effector position
+# Forward kinematics: motor angles -> effector position
 x, y, z = delta.forward(theta1=0.0, theta2=0.0, theta3=0.0)
 print(f"Effector at: ({x:.3f}, {y:.3f}, {z:.3f})")
 
-# Inverse kinematics: position → motor angles
+# Inverse kinematics: position -> motor angles
 joints = delta.inverse(x=0.0, y=0.0, z=-0.3)
 print(f"Motor angles: θ1={math.degrees(joints.theta1):.1f}°")
 
@@ -204,12 +204,12 @@ stewart = StewartPlatform.create_symmetric(
     leg_length_range=(0.4, 0.6),
 )
 
-# Inverse kinematics: pose → leg lengths (closed-form)
+# Inverse kinematics: pose -> leg lengths (closed-form)
 pose = Transform.from_translation(0, 0, 0.5)
 leg_lengths = stewart.inverse(pose)
 print(f"Leg lengths: {leg_lengths}")
 
-# Forward kinematics: leg lengths → pose (iterative)
+# Forward kinematics: leg lengths -> pose (iterative)
 pose = stewart.forward(leg_lengths)
 print(f"Platform position: {pose.position}")
 print(f"Platform orientation: {pose.euler_angles}")

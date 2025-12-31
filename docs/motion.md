@@ -161,7 +161,7 @@ print(f"Velocity: {point.velocity}")  # 50.0 (constant)
 
 ### Trapezoidal Velocity Profile
 
-Accelerate → constant velocity → decelerate:
+Accelerate -> constant velocity -> decelerate:
 
 ```python
 from robo_infra.motion.trajectory import TrapezoidalProfile

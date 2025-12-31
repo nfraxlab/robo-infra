@@ -7,8 +7,8 @@ protocol and the Firmata protocol for more advanced control.
 Simple Protocol:
     The default protocol uses simple ASCII commands:
     - Set PWM: P<channel><value> (e.g., "P0127" sets channel 0 to 127)
-    - Read analog: A<channel> → returns value (e.g., "A0" reads analog 0)
-    - Read digital: D<pin> → returns 0/1 (e.g., "D13" reads digital pin 13)
+    - Read analog: A<channel> -> returns value (e.g., "A0" reads analog 0)
+    - Read digital: D<pin> -> returns 0/1 (e.g., "D13" reads digital pin 13)
     - Write digital: W<pin><state> (e.g., "W131" sets pin 13 HIGH)
     - Set servo: S<channel><angle> (e.g., "S090" sets servo 0 to 90 degrees)
 
