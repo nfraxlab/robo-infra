@@ -1,6 +1,16 @@
 # CHANGELOG
 
 
+## v0.3.1 (2025-12-31)
+
+### Bug Fixes
+
+- Sync formatting and docs updates ([#7](https://github.com/nfraxlab/robo-infra/pull/7),
+  [`e2f7a76`](https://github.com/nfraxlab/robo-infra/commit/e2f7a7618371943935ca74e18e4af5e9f5becb9d))
+
+Co-authored-by: nfrax <alixkhatami@gmail.com>
+
+
 ## v0.3.0 (2025-12-30)
 
 ### Bug Fixes
