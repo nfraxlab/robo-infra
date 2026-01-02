@@ -31,8 +31,8 @@ Hardware tests validate that robo-infra works correctly with physical hardware:
 ```bash
 # Enable I2C and SPI on Raspberry Pi
 sudo raspi-config
-# Navigate to: Interface Options → I2C → Enable
-# Navigate to: Interface Options → SPI → Enable
+# Navigate to: Interface Options -> I2C -> Enable
+# Navigate to: Interface Options -> SPI -> Enable
 
 # Install system dependencies
 sudo apt-get update

@@ -1,7 +1,7 @@
 """Unit tests for safety monitoring system (Phase 7.3).
 
 Tests for SafetyMonitor, LimitConfig, CollisionDetector and related safety infrastructure.
-Target coverage: 28% → 80%+
+Target coverage: 28% -> 80%+
 """
 
 from __future__ import annotations
