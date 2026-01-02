@@ -4,7 +4,7 @@
 
 repository:
   name: robo-infra
-  description: Production-ready robotics infrastructure SDK for Python
+  description: Robotics SDK for prototyping and development (Beta)
   default_branch: main
   allow_squash_merge: true
   allow_merge_commit: false
@@ -22,8 +22,8 @@ branches:
       required_status_checks:
         strict: true
         contexts:
-          - "test"
-          - "lint"
+          - "CI / Test (Python 3.11) (pull_request)"
+          - "CI / Lint (pull_request)"
       enforce_admins: false
       required_linear_history: false
       restrictions: null

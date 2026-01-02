@@ -1,8 +1,10 @@
 # robo-infra
 
-**Universal robotics infrastructure package for any robotics project**
+**Robotics SDK for prototyping and development**
 
-robo-infra is a hardware-agnostic robotics SDK that works with any servo, motor, or sensor. From a $5 servo to industrial PLCs - same code works everywhere.
+> **Beta Software**: APIs may change. Real hardware validation is ongoing.
+
+robo-infra is a hardware-agnostic robotics SDK designed for prototyping, development, and educational projects. It provides a simulation-first development experience with drivers for common robotics hardware.
 
 ## Features
 
@@ -28,7 +30,7 @@ robo-infra is a hardware-agnostic robotics SDK that works with any servo, motor,
 
     ---
 
-    PCA9685, L298N, MPU6050, and plugin system for any hardware.
+    PCA9685, L298N, MPU6050, and plugin system for custom hardware.
 
     [:octicons-arrow-right-24: Drivers docs](drivers.md)
 

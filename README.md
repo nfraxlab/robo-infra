@@ -1,19 +1,22 @@
 # robo-infra
 
-**Universal robotics infrastructure for any hardware, any project.**
+**Robotics infrastructure SDK for prototyping and development.**
+
+> **Beta Software**: This library is under active development. APIs may change. Not yet validated on real hardware in production environments.
 
 [![PyPI](https://img.shields.io/pypi/v/robo-infra)](https://pypi.org/project/robo-infra/)
 [![CI](https://github.com/nfraxlab/robo-infra/workflows/CI/badge.svg)](https://github.com/nfraxlab/robo-infra/actions)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Status](https://img.shields.io/badge/status-beta-orange)](ROADMAP.md)
 
 ## Overview
 
-`robo-infra` is a hardware-agnostic robotics infrastructure library designed to work with **any** robotics project—from hobby servos to industrial robots, from quadcopters to autonomous vehicles.
+`robo-infra` is a hardware-agnostic robotics SDK designed for prototyping, development, and educational projects. It provides simulation-first development with optional real hardware support.
 
 ### Key Features
 
-- ** Universal Hardware Abstraction** - Works with any servo, motor, sensor, or controller
+- **Hardware Abstraction** - Common interface for servos, motors, sensors, and controllers
 - **Simulation-First** - Everything works without hardware by default
 - **AI-Native** - Built-in integration with `ai-infra` for LLM-controlled robots
 - **API-Ready** - Seamless integration with `svc-infra` for REST/WebSocket APIs

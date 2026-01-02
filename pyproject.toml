@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "robo-infra"
 version = "0.3.2"
-description = "Universal robotics infrastructure - control any robot from servo to rocket"
+description = "Robotics SDK for prototyping and development (Beta)"
 authors = ["nfraxlab <dev@nfrax.io>"]
 license = "MIT"
 readme = "README.md"
