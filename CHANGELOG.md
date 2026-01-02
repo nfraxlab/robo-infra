@@ -1,6 +1,16 @@
 # CHANGELOG
 
 
+## v0.3.2 (2026-01-02)
+
+### Bug Fixes
+
+- Normalize unicode arrows to ascii ([#8](https://github.com/nfraxlab/robo-infra/pull/8),
+  [`175ccf5`](https://github.com/nfraxlab/robo-infra/commit/175ccf50e3cb2545656c1331586310970fee53b0))
+
+Co-authored-by: nfrax <alixkhatami@gmail.com>
+
+
 ## v0.3.1 (2025-12-31)
 
 ### Bug Fixes
