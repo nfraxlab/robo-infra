@@ -1,7 +1,7 @@
 """Unit tests for robo_infra.safety.estop module.
 
 Phase 7.1: E-Stop Tests
-Target coverage: 61% → 90%+
+Target coverage: 61% -> 90%+
 
 Tests cover:
 - EStopError exception

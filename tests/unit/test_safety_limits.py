@@ -1,7 +1,7 @@
 """Unit tests for robo_infra.safety.limits module.
 
 Phase 7.2: Limits Tests
-Target coverage: 65% → 90%+
+Target coverage: 65% -> 90%+
 
 Tests cover:
 - LimitViolationType enum
