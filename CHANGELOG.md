@@ -1,6 +1,22 @@
 # CHANGELOG
 
 
+## v0.3.3 (2026-01-02)
+
+### Bug Fixes
+
+- Update messaging to reflect beta status ([#10](https://github.com/nfraxlab/robo-infra/pull/10),
+  [`61ae4d3`](https://github.com/nfraxlab/robo-infra/commit/61ae4d3860d3ed895a60a9d203f7e1dc4eb5e44b))
+
+### Continuous Integration
+
+- Add branch protection settings to dismiss stale reviews
+  ([#9](https://github.com/nfraxlab/robo-infra/pull/9),
+  [`e9b7e83`](https://github.com/nfraxlab/robo-infra/commit/e9b7e8319d53650540ca92a5907c48d5f2cb9525))
+
+Co-authored-by: nfrax <alixkhatami@gmail.com>
+
+
 ## v0.3.2 (2026-01-02)
 
 ### Bug Fixes
