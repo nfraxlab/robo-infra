@@ -14,10 +14,10 @@
 ### Key Features
 
 - ** Universal Hardware Abstraction** - Works with any servo, motor, sensor, or controller
-- ** Simulation-First** - Everything works without hardware by default
-- ** AI-Native** - Built-in integration with `ai-infra` for LLM-controlled robots
-- ** API-Ready** - Seamless integration with `svc-infra` for REST/WebSocket APIs
-- **🛡 Safety-First** - Comprehensive limits, emergency stops, and collision detection
+- **Simulation-First** - Everything works without hardware by default
+- **AI-Native** - Built-in integration with `ai-infra` for LLM-controlled robots
+- **API-Ready** - Seamless integration with `svc-infra` for REST/WebSocket APIs
+- **Safety-First** - Comprehensive limits, emergency stops, and collision detection
 - ** Observable** - Full telemetry, logging, and monitoring built-in
 
 ## Architecture
