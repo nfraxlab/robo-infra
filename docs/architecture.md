@@ -327,3 +327,274 @@ async for reading in sensor.stream(rate_hz=100):
 - [Getting Started](getting-started.md) - Build your first robot
 - [Controllers](controllers.md) - Coordinate multiple actuators
 - [Safety](safety.md) - Implement safety systems
+
+---
+
+## Control Loop Architecture
+
+### Real-Time Control Loop
+
+The control loop is the heart of any robotics system:
+
+```mermaid
+flowchart TB
+    subgraph Control Loop
+        A[Read Sensors] --> B[Compute Control]
+        B --> C[Apply Safety Limits]
+        C --> D[Write Actuators]
+        D --> E[Feed Watchdog]
+        E --> F{Loop Rate OK?}
+        F -->|Yes| A
+        F -->|No| G[Log Warning]
+        G --> A
+    end
+```
+
+### PID Control Integration
+
+```python
+from robo_infra.motion import PID
+from robo_infra.safety import Watchdog, ControlLoopTimer
+
+pid = PID(kp=1.0, ki=0.1, kd=0.05)
+watchdog = Watchdog(timeout=0.1)  # 100ms timeout
+timer = ControlLoopTimer(target_hz=100)  # 100 Hz loop
+
+watchdog.start()
+
+try:
+    while running:
+        with timer:
+            # Read sensor
+            position = encoder.read()
+            
+            # Compute control
+            output = pid.update(setpoint=target, measurement=position)
+            
+            # Apply to actuator
+            motor.set_speed(output)
+            
+            # Feed watchdog
+            watchdog.feed()
+finally:
+    watchdog.stop()
+    motor.stop()
+```
+
+### Loop Timing
+
+```
+Target: 1000 Hz (1ms period)
+┌────────────────────────────────────────────────────────────────┐
+│ Read     │ Compute  │ Safety   │ Write    │ Wait              │
+│ ~0.001ms │ ~0.001ms │ ~0.001ms │ ~0.001ms │ ~0.996ms          │
+└────────────────────────────────────────────────────────────────┘
+│<──────────────────── 1ms ─────────────────────────────────────>│
+```
+
+---
+
+## Safety System Integration
+
+### Safety Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         Safety Monitor                              │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                 │
+│  │ Limit Check │  │ Watchdog    │  │ Collision   │                 │
+│  │ Enforcer    │  │ Timer       │  │ Detector    │                 │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘                 │
+│         │                │                │                         │
+│         └────────────────┼────────────────┘                         │
+│                          ▼                                          │
+│                    ┌──────────┐                                     │
+│                    │  E-Stop  │◄─── Hardware E-Stop Button          │
+│                    └────┬─────┘                                     │
+│                         │                                           │
+├─────────────────────────┼───────────────────────────────────────────┤
+│                         ▼                                           │
+│              All Registered Actuators                               │
+│         (Disabled when E-Stop triggered)                            │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Safety Integration Flow
+
+```mermaid
+sequenceDiagram
+    participant App
+    participant Controller
+    participant SafetyMonitor
+    participant EStop
+    participant Actuators
+
+    App->>Controller: move_to(position)
+    Controller->>SafetyMonitor: check_limits(position)
+    
+    alt Within limits
+        SafetyMonitor-->>Controller: OK
+        Controller->>Actuators: set(position)
+    else Limit exceeded
+        SafetyMonitor->>EStop: trigger(reason)
+        EStop->>Actuators: disable_all()
+        EStop-->>App: SafetyError
+    end
+```
+
+### E-Stop Recovery
+
+```python
+from robo_infra.safety import EStop, EStopConfig
+
+estop = EStop(config=EStopConfig(
+    name="main",
+    require_manual_reset=True,
+))
+
+# Register actuators
+estop.register(motor1)
+estop.register(motor2)
+estop.register(servo1)
+
+# Handle E-stop events
+@estop.on_trigger
+def on_estop(event):
+    logger.critical(f"E-STOP: {event.reason}")
+    notify_operator()
+
+# Recovery procedure
+def recover():
+    if not estop.is_triggered:
+        return
+    
+    # 1. Verify safe conditions
+    verify_safe_conditions()
+    
+    # 2. Reset E-stop
+    estop.reset()
+    
+    # 3. Re-enable actuators
+    for actuator in actuators:
+        actuator.enable()
+```
+
+---
+
+## Platform Abstraction Layer
+
+### Platform Detection
+
+```mermaid
+flowchart TB
+    A[Start] --> B{Check /proc/device-tree}
+    B -->|Raspberry Pi| C[RaspberryPiPlatform]
+    B -->|Jetson| D[JetsonPlatform]
+    B -->|BeagleBone| E[BeagleBonePlatform]
+    B -->|Not found| F{Check /etc/os-release}
+    F -->|Linux| G[LinuxGenericPlatform]
+    F -->|Other| H[SimulatedPlatform]
+```
+
+### Platform Interface
+
+```python
+from abc import ABC, abstractmethod
+
+class Platform(ABC):
+    @abstractmethod
+    def get_gpio(self, pin: int) -> GPIOPin:
+        """Get a GPIO pin interface."""
+        ...
+    
+    @abstractmethod
+    def get_i2c(self, bus: int) -> I2CBus:
+        """Get an I2C bus interface."""
+        ...
+    
+    @abstractmethod
+    def get_spi(self, bus: int, device: int) -> SPIDevice:
+        """Get an SPI device interface."""
+        ...
+    
+    @abstractmethod
+    def get_pwm(self, pin: int) -> PWMChannel:
+        """Get a PWM channel interface."""
+        ...
+    
+    @property
+    @abstractmethod
+    def capabilities(self) -> set[PlatformCapability]:
+        """Return platform capabilities."""
+        ...
+```
+
+### Platform-Specific Implementations
+
+```
+Platform Interface
+        │
+        ├── RaspberryPiPlatform
+        │   ├── RPi.GPIO for digital I/O
+        │   ├── pigpio for hardware PWM
+        │   ├── smbus2 for I2C
+        │   └── spidev for SPI
+        │
+        ├── JetsonPlatform
+        │   ├── Jetson.GPIO for digital I/O
+        │   ├── jetson-stats for monitoring
+        │   └── nvpmodel for power modes
+        │
+        ├── BeagleBonePlatform
+        │   ├── Adafruit_BBIO for GPIO/PWM
+        │   ├── PRU support for real-time
+        │   └── Device tree overlays
+        │
+        ├── LinuxGenericPlatform
+        │   ├── sysfs GPIO interface
+        │   ├── /dev/i2c-* for I2C
+        │   └── /dev/spidev* for SPI
+        │
+        └── SimulatedPlatform
+            ├── In-memory GPIO state
+            ├── Simulated bus responses
+            └── Configurable behavior
+```
+
+### Automatic Platform Selection
+
+```python
+from robo_infra.platforms import get_platform, detect_platform
+
+# Auto-detect current platform
+platform = get_platform()
+print(f"Running on: {platform.name}")
+print(f"Capabilities: {platform.capabilities}")
+
+# Get hardware interfaces
+gpio = platform.get_gpio(17)
+i2c = platform.get_i2c(1)
+pwm = platform.get_pwm(18)
+
+# Platform-agnostic code
+gpio.set_mode("output")
+gpio.write(True)
+```
+
+### Simulation Fallback
+
+```python
+import os
+os.environ["ROBO_SIMULATION"] = "1"
+
+from robo_infra.platforms import get_platform
+
+# Returns SimulatedPlatform even on real hardware
+platform = get_platform()
+assert platform.is_simulated
+
+# All operations work but don't touch hardware
+gpio = platform.get_gpio(17)
+gpio.set_mode("output")
+gpio.write(True)  # No-op, just logs
+```

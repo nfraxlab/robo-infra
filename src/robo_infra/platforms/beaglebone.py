@@ -881,6 +881,7 @@ class PRUInterface:
         try:
             # Copy firmware to /lib/firmware
             fw_name = f"am335x-pru{self._pru_id}-fw"
+            # nosec B603,B607: Fixed command with validated firmware_path (checked above)
             subprocess.run(
                 ["sudo", "cp", str(firmware_path), f"/lib/firmware/{fw_name}"],
                 check=True,

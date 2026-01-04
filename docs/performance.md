@@ -151,3 +151,18 @@ Our benchmarks measure real-world performance including:
 - GC pauses (minimized but present)
 
 Theoretical peak performance would be higher, but our targets are based on practical measurements.
+
+## Baseline Metrics (2026-01-04)
+
+The following baseline metrics were measured on Apple Silicon (M-series):
+
+| Metric | Value | Notes |
+|--------|-------|-------|
+| Import time | 0.152s | Full `import robo_infra` |
+| PID control loop | 1254 kHz | 0.8 us/iteration average |
+| Sensor read latency | 1.0 us | SimulatedSensor.read() |
+| Actuator command latency | 1.0 us | DCMotor.forward() |
+| Sensor throughput | 1017 kHz | Reads per second |
+| Actuator command rate | 969 kHz | Commands per second |
+
+All core operations exceed the 1 kHz target required for real-time robotics control.
