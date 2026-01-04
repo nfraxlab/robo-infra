@@ -616,6 +616,7 @@ class JetsonPlatform(BasePlatform):
 
         try:
             # Use nvpmodel to get current mode
+            # nosec B603,B607: Fixed command, no user input
             result = subprocess.run(
                 ["nvpmodel", "-q"],
                 capture_output=True,
@@ -662,6 +663,7 @@ class JetsonPlatform(BasePlatform):
             else:
                 mode_id = str(mode)
 
+            # nosec B603,B607: Fixed command, mode_id from internal enum mapping
             result = subprocess.run(
                 ["sudo", "nvpmodel", "-m", mode_id],
                 capture_output=True,
@@ -731,6 +733,7 @@ class JetsonPlatform(BasePlatform):
 
         # Try using nvcc
         try:
+            # nosec B603,B607: Fixed command, no user input
             result = subprocess.run(
                 ["nvcc", "--version"],
                 capture_output=True,
@@ -768,6 +771,7 @@ class JetsonPlatform(BasePlatform):
             if device.exists():
                 try:
                     # Get device info using v4l2-ctl
+                    # nosec B603,B607: Fixed command, device path from enumerated /dev/videoN
                     result = subprocess.run(
                         ["v4l2-ctl", "--device", str(device), "--info"],
                         capture_output=True,
