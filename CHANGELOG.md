@@ -1,6 +1,17 @@
 # CHANGELOG
 
 
+## v0.5.0 (2026-01-05)
+
+### Features
+
+- Auto-discover classes in API extraction script
+  ([#14](https://github.com/nfraxlab/robo-infra/pull/14),
+  [`172a2f4`](https://github.com/nfraxlab/robo-infra/commit/172a2f4e66d00df44f0c4dfe2e5bdcd1b1bb7d56))
+
+Co-authored-by: nfrax <alixkhatami@gmail.com>
+
+
 ## v0.4.0 (2026-01-05)
 
 ### Chores

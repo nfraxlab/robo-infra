@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "robo-infra"
-version = "0.4.0"
+version = "0.5.0"
 description = "Robotics SDK for prototyping and development (Beta)"
 authors = ["nfraxlab <dev@nfrax.io>"]
 license = "MIT"
