@@ -1,6 +1,6 @@
 {
   "name": "CANOpenNode",
-  "module": "robo_infra.protocols.canopen",
+  "module": "robo_infra.protocols",
   "docstring": "CANopen node abstraction.\n\nRepresents a single CANopen device on the network.\nProvides methods for NMT control, SDO read/write, and PDO access.",
   "parameters": [
     {

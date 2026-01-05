@@ -1,6 +1,6 @@
 {
   "name": "ModbusTCP",
-  "module": "robo_infra.protocols.modbus",
+  "module": "robo_infra.protocols",
   "docstring": "Modbus TCP client over TCP/IP connection.",
   "parameters": [
     {

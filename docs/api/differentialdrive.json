@@ -1,6 +1,6 @@
 {
   "name": "DifferentialDrive",
-  "module": "robo_infra.controllers.differential",
+  "module": "robo_infra.controllers",
   "docstring": "Controller for differential drive (two-wheel) robots.\n\nDifferential drive robots use two independently controlled wheels\nfor locomotion. By varying the relative speeds of the left and right\nwheels, the robot can move forward, backward, turn, or spin in place.\n\nThis is the most common drive system for:\n- Mobile robots and rovers\n- Tank-drive robots\n- Warehouse AGVs\n- Educational robots\n\nMovement Methods:\n    - forward(speed): Drive forward\n    - reverse(speed): Drive backward\n    - turn_left(speed): Turn left while moving\n    - turn_right(speed): Turn right while moving\n    - spin(speed, clockwise): Spin in place\n    - arc(speed, radius): Follow a curved path\n    - tank(left, right): Direct wheel control\n    - stop(): Stop both motors\n    - brake(): Apply braking\n\nExample:\n    >>> from robo_infra.controllers.differential import DifferentialDrive\n    >>> from robo_infra.actuators.dc_motor import DCMotor\n    >>>\n    >>> left = DCMotor(name=\"left_wheel\")\n    >>> right = DCMotor(name=\"right_wheel\")\n    >>> rover = DifferentialDrive(\"my_rover\", left, right)\n    >>> rover.enable()\n    >>> rover.forward(0.5)\n    >>> rover.turn_left(0.3)\n    >>> rover.stop()",
   "parameters": [
     {

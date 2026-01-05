@@ -1,6 +1,6 @@
 {
   "name": "Lock",
-  "module": "robo_infra.controllers.lock",
+  "module": "robo_infra.controllers",
   "docstring": "Controller for robotic locks and latches.\n\nLock provides high-level control for locking mechanisms,\nwith state tracking and optional security features.\n\nFeatures:\n- Lock/unlock control\n- State tracking (locked/unlocked/transitioning)\n- Async support for transition timing\n- Optional auto-lock timeout\n- Toggle convenience method\n\nExample:\n    >>> lock = Lock(\"door\", servo, config=LockConfig(name=\"door\"))\n    >>> lock.enable()\n    >>> lock.unlock()\n    >>> assert lock.is_unlocked\n    >>> lock.lock()\n    >>> assert lock.is_locked",
   "parameters": [
     {
