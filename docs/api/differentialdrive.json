@@ -7,28 +7,28 @@
       "name": "name",
       "type": "str",
       "default": null,
-      "description": null,
+      "description": "Controller name",
       "required": true
     },
     {
       "name": "left",
       "type": "DCMotor",
       "default": null,
-      "description": null,
+      "description": "Left wheel motor",
       "required": true
     },
     {
       "name": "right",
       "type": "DCMotor",
       "default": null,
-      "description": null,
+      "description": "Right wheel motor",
       "required": true
     },
     {
       "name": "config",
       "type": "DifferentialDriveConfig | None",
       "default": "None",
-      "description": null,
+      "description": "Optional configuration",
       "required": false
     }
   ],
@@ -49,33 +49,42 @@
           "name": "name",
           "type": "str",
           "default": null,
-          "description": null,
+          "description": "Controller name",
           "required": true
         },
         {
           "name": "left",
           "type": "DCMotor",
           "default": null,
-          "description": null,
+          "description": "Left wheel motor",
           "required": true
         },
         {
           "name": "right",
           "type": "DCMotor",
           "default": null,
-          "description": null,
+          "description": "Right wheel motor",
           "required": true
         },
         {
           "name": "config",
           "type": "DifferentialDriveConfig | None",
           "default": "None",
-          "description": null,
+          "description": "Optional configuration",
           "required": false
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": [
+        {
+          "type": "ValueError",
+          "description": "If motors are None"
+        }
+      ]
     },
     {
       "name": "arc",
@@ -93,19 +102,23 @@
           "name": "speed",
           "type": "float",
           "default": null,
-          "description": null,
+          "description": "Linear speed (-1.0 to 1.0)",
           "required": true
         },
         {
           "name": "radius",
           "type": "float",
           "default": null,
-          "description": null,
+          "description": "Arc radius in meters (positive = turn left, negative = turn right)",
           "required": true
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "brake",
@@ -121,7 +134,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "disable",
@@ -137,7 +154,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "enable",
@@ -153,7 +174,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "forward",
@@ -171,12 +196,16 @@
           "name": "speed",
           "type": "float",
           "default": "1.0",
-          "description": null,
+          "description": "Speed value (0.0 to 1.0, default 1.0)",
           "required": false
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "reverse",
@@ -194,12 +223,16 @@
           "name": "speed",
           "type": "float",
           "default": "1.0",
-          "description": null,
+          "description": "Speed value (0.0 to 1.0, default 1.0)",
           "required": false
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "spin",
@@ -217,19 +250,23 @@
           "name": "speed",
           "type": "float",
           "default": "0.5",
-          "description": null,
+          "description": "Rotation speed (0.0 to 1.0, default 0.5)",
           "required": false
         },
         {
           "name": "clockwise",
           "type": "bool",
           "default": "True",
-          "description": null,
+          "description": "If True, spin clockwise; if False, counter-clockwise",
           "required": false
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "stop",
@@ -245,7 +282,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "tank",
@@ -263,19 +304,23 @@
           "name": "left_speed",
           "type": "float",
           "default": null,
-          "description": null,
+          "description": "Left wheel speed (-1.0 to 1.0)",
           "required": true
         },
         {
           "name": "right_speed",
           "type": "float",
           "default": null,
-          "description": null,
+          "description": "Right wheel speed (-1.0 to 1.0)",
           "required": true
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "turn_left",
@@ -293,12 +338,16 @@
           "name": "speed",
           "type": "float",
           "default": "0.5",
-          "description": null,
+          "description": "Turn intensity (0.0 to 1.0, default 0.5)",
           "required": false
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "turn_right",
@@ -316,15 +365,21 @@
           "name": "speed",
           "type": "float",
           "default": "0.5",
-          "description": null,
+          "description": "Turn intensity (0.0 to 1.0, default 0.5)",
           "required": false
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     }
   ],
   "bases": [
     "Controller"
-  ]
+  ],
+  "source_file": "src/robo_infra/controllers/differential.py",
+  "source_line": 165
 }

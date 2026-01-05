@@ -7,28 +7,28 @@
       "name": "name",
       "type": "str",
       "default": null,
-      "description": null,
+      "description": "Controller name",
       "required": true
     },
     {
       "name": "actuator",
       "type": "Actuator",
       "default": null,
-      "description": null,
+      "description": "Gripper actuator (servo, motor, etc.)",
       "required": true
     },
     {
       "name": "config",
       "type": "GripperConfig | None",
       "default": "None",
-      "description": null,
+      "description": "Optional configuration",
       "required": false
     },
     {
       "name": "force_sensor",
       "type": "Sensor | None",
       "default": "None",
-      "description": null,
+      "description": "Optional force sensor for grip detection",
       "required": false
     }
   ],
@@ -49,33 +49,42 @@
           "name": "name",
           "type": "str",
           "default": null,
-          "description": null,
+          "description": "Controller name",
           "required": true
         },
         {
           "name": "actuator",
           "type": "Actuator",
           "default": null,
-          "description": null,
+          "description": "Gripper actuator (servo, motor, etc.)",
           "required": true
         },
         {
           "name": "config",
           "type": "GripperConfig | None",
           "default": "None",
-          "description": null,
+          "description": "Optional configuration",
           "required": false
         },
         {
           "name": "force_sensor",
           "type": "Sensor | None",
           "default": "None",
-          "description": null,
+          "description": "Optional force sensor for grip detection",
           "required": false
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": [
+        {
+          "type": "ValueError",
+          "description": "If actuator is None"
+        }
+      ]
     },
     {
       "name": "close",
@@ -93,12 +102,25 @@
           "name": "speed",
           "type": "float",
           "default": "1.0",
-          "description": null,
+          "description": "Movement speed (0.0 to 1.0). Defaults to 1.0. Uses config.default_speed if not specified.",
           "required": false
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": [
+        {
+          "type": "RuntimeError",
+          "description": "If gripper is not enabled."
+        },
+        {
+          "type": "RuntimeError",
+          "description": "If gripper is not enabled."
+        }
+      ]
     },
     {
       "name": "disable",
@@ -114,7 +136,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "enable",
@@ -130,7 +156,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "grip",
@@ -146,7 +176,20 @@
         }
       ],
       "returns": "bool",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": [
+        {
+          "type": "RuntimeError",
+          "description": "If gripper is not enabled."
+        },
+        {
+          "type": "RuntimeError",
+          "description": "If gripper is not enabled."
+        }
+      ]
     },
     {
       "name": "open",
@@ -164,12 +207,25 @@
           "name": "speed",
           "type": "float",
           "default": "1.0",
-          "description": null,
+          "description": "Movement speed (0.0 to 1.0). Defaults to 1.0. Uses config.default_speed if not specified.",
           "required": false
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": [
+        {
+          "type": "RuntimeError",
+          "description": "If gripper is not enabled."
+        },
+        {
+          "type": "RuntimeError",
+          "description": "If gripper is not enabled."
+        }
+      ]
     },
     {
       "name": "release",
@@ -185,7 +241,20 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": [
+        {
+          "type": "RuntimeError",
+          "description": "If gripper is not enabled."
+        },
+        {
+          "type": "RuntimeError",
+          "description": "If gripper is not enabled."
+        }
+      ]
     },
     {
       "name": "set",
@@ -203,12 +272,29 @@
           "name": "position",
           "type": "float",
           "default": null,
-          "description": null,
+          "description": "Target position (between open and closed).",
           "required": true
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": [
+        {
+          "type": "RuntimeError",
+          "description": "If gripper is not enabled."
+        },
+        {
+          "type": "ValueError",
+          "description": "If position is out of range."
+        },
+        {
+          "type": "ValueError",
+          "description": "If position is out of range."
+        }
+      ]
     },
     {
       "name": "stop",
@@ -224,10 +310,16 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     }
   ],
   "bases": [
     "Controller"
-  ]
+  ],
+  "source_file": "src/robo_infra/controllers/gripper.py",
+  "source_line": 172
 }

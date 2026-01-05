@@ -7,14 +7,14 @@
       "name": "config",
       "type": "CANConfig | None",
       "default": "None",
-      "description": null,
+      "description": "CAN configuration. Uses defaults if not provided.",
       "required": false
     },
     {
       "name": "name",
       "type": "str | None",
       "default": "None",
-      "description": null,
+      "description": "Optional human-readable name.",
       "required": false
     }
   ],
@@ -35,19 +35,23 @@
           "name": "config",
           "type": "CANConfig | None",
           "default": "None",
-          "description": null,
+          "description": "CAN configuration. Uses defaults if not provided.",
           "required": false
         },
         {
           "name": "name",
           "type": "str | None",
           "default": "None",
-          "description": null,
+          "description": "Optional human-readable name.",
           "required": false
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "clear_filters",
@@ -63,7 +67,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "flush_rx",
@@ -79,7 +87,11 @@
         }
       ],
       "returns": "int",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "get_state",
@@ -95,7 +107,11 @@
         }
       ],
       "returns": "CANState",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "recv",
@@ -113,12 +129,21 @@
           "name": "timeout",
           "type": "float | None",
           "default": "None",
-          "description": null,
+          "description": "Receive timeout in seconds (None for default, 0 for non-blocking).",
           "required": false
         }
       ],
       "returns": "CANMessage | None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": [
+        {
+          "type": "CommunicationError",
+          "description": "If receive fails."
+        }
+      ]
     },
     {
       "name": "recv_all",
@@ -136,19 +161,23 @@
           "name": "timeout",
           "type": "float",
           "default": "0.0",
-          "description": null,
+          "description": "Timeout for each receive attempt.",
           "required": false
         },
         {
           "name": "max_messages",
           "type": "int",
           "default": "100",
-          "description": null,
+          "description": "Maximum messages to receive.",
           "required": false
         }
       ],
       "returns": "list[CANMessage]",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "recv_async",
@@ -166,12 +195,16 @@
           "name": "timeout",
           "type": "float | None",
           "default": "None",
-          "description": null,
+          "description": "Receive timeout in seconds.",
           "required": false
         }
       ],
       "returns": "CANMessage | None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "reset_statistics",
@@ -187,7 +220,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "send",
@@ -205,40 +242,49 @@
           "name": "arbitration_id",
           "type": "int",
           "default": null,
-          "description": null,
+          "description": "CAN message ID.",
           "required": true
         },
         {
           "name": "data",
           "type": "bytes | list[int]",
           "default": null,
-          "description": null,
+          "description": "Message data (0-8 bytes).",
           "required": true
         },
         {
           "name": "is_extended_id",
           "type": "bool",
           "default": "False",
-          "description": null,
+          "description": "Use 29-bit extended ID.",
           "required": false
         },
         {
           "name": "is_remote_frame",
           "type": "bool",
           "default": "False",
-          "description": null,
+          "description": "Send as remote transmission request.",
           "required": false
         },
         {
           "name": "timeout",
           "type": "float | None",
           "default": "None",
-          "description": null,
+          "description": "Send timeout in seconds (None for default).",
           "required": false
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": [
+        {
+          "type": "CommunicationError",
+          "description": "If send fails."
+        }
+      ]
     },
     {
       "name": "send_message",
@@ -256,19 +302,23 @@
           "name": "message",
           "type": "CANMessage",
           "default": null,
-          "description": null,
+          "description": "CAN message to send.",
           "required": true
         },
         {
           "name": "timeout",
           "type": "float | None",
           "default": "None",
-          "description": null,
+          "description": "Send timeout in seconds.",
           "required": false
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "set_filters",
@@ -286,12 +336,16 @@
           "name": "filters",
           "type": "list[CANFilter]",
           "default": null,
-          "description": null,
+          "description": "List of filters to apply.",
           "required": true
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "stream",
@@ -309,15 +363,21 @@
           "name": "timeout",
           "type": "float",
           "default": "1.0",
-          "description": null,
+          "description": "Receive timeout per message.",
           "required": false
         }
       ],
       "returns": "AsyncIterator[CANMessage]",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     }
   ],
   "bases": [
     "Bus"
-  ]
+  ],
+  "source_file": "src/robo_infra/core/can_bus.py",
+  "source_line": 259
 }

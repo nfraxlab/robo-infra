@@ -7,28 +7,28 @@
       "name": "host",
       "type": "str",
       "default": null,
-      "description": null,
+      "description": "Server hostname or IP.",
       "required": true
     },
     {
       "name": "port",
       "type": "int",
       "default": "502",
-      "description": null,
+      "description": "TCP port.",
       "required": false
     },
     {
       "name": "timeout",
       "type": "float",
       "default": "1.0",
-      "description": null,
+      "description": "Connection and read timeout.",
       "required": false
     },
     {
       "name": "name",
       "type": "str",
       "default": "'modbus-tcp'",
-      "description": null,
+      "description": "Client name.",
       "required": false
     }
   ],
@@ -49,33 +49,37 @@
           "name": "host",
           "type": "str",
           "default": null,
-          "description": null,
+          "description": "Server hostname or IP.",
           "required": true
         },
         {
           "name": "port",
           "type": "int",
           "default": "502",
-          "description": null,
+          "description": "TCP port.",
           "required": false
         },
         {
           "name": "timeout",
           "type": "float",
           "default": "1.0",
-          "description": null,
+          "description": "Connection and read timeout.",
           "required": false
         },
         {
           "name": "name",
           "type": "str",
           "default": "'modbus-tcp'",
-          "description": null,
+          "description": "Client name.",
           "required": false
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "close",
@@ -91,7 +95,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "open",
@@ -107,7 +115,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "read_coils",
@@ -144,7 +156,11 @@
         }
       ],
       "returns": "list[bool]",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "read_discrete_inputs",
@@ -181,7 +197,11 @@
         }
       ],
       "returns": "list[bool]",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "read_holding_registers",
@@ -218,7 +238,11 @@
         }
       ],
       "returns": "list[int]",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "read_input_registers",
@@ -255,7 +279,11 @@
         }
       ],
       "returns": "list[int]",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "write_coil",
@@ -292,7 +320,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "write_coils",
@@ -329,7 +361,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "write_register",
@@ -366,7 +402,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "write_registers",
@@ -403,10 +443,16 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     }
   ],
   "bases": [
     "ModbusClient"
-  ]
+  ],
+  "source_file": "src/robo_infra/protocols/modbus.py",
+  "source_line": 1074
 }
