@@ -7,14 +7,14 @@
       "name": "config",
       "type": "CANConfig | None",
       "default": "None",
-      "description": null,
+      "description": "CAN configuration.",
       "required": false
     },
     {
       "name": "name",
       "type": "str | None",
       "default": "None",
-      "description": null,
+      "description": "Optional name.",
       "required": false
     }
   ],
@@ -35,19 +35,23 @@
           "name": "config",
           "type": "CANConfig | None",
           "default": "None",
-          "description": null,
+          "description": "CAN configuration.",
           "required": false
         },
         {
           "name": "name",
           "type": "str | None",
           "default": "None",
-          "description": null,
+          "description": "Optional name.",
           "required": false
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "clear_buffers",
@@ -63,7 +67,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "close",
@@ -79,7 +87,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "enable_loopback",
@@ -97,12 +109,16 @@
           "name": "enable",
           "type": "bool",
           "default": "True",
-          "description": null,
+          "description": "If True, sent messages appear in receive buffer.",
           "required": false
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "get_sent_messages",
@@ -118,7 +134,11 @@
         }
       ],
       "returns": "list[CANMessage]",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "get_state",
@@ -134,7 +154,11 @@
         }
       ],
       "returns": "CANState",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "inject_message",
@@ -152,12 +176,16 @@
           "name": "message",
           "type": "CANMessage",
           "default": null,
-          "description": null,
+          "description": "Message to inject.",
           "required": true
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "inject_messages",
@@ -175,12 +203,16 @@
           "name": "messages",
           "type": "list[CANMessage]",
           "default": null,
-          "description": null,
+          "description": "Messages to inject.",
           "required": true
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "open",
@@ -196,7 +228,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "recv",
@@ -219,7 +255,11 @@
         }
       ],
       "returns": "CANMessage | None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "send",
@@ -270,7 +310,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "set_filters",
@@ -293,10 +337,16 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     }
   ],
   "bases": [
     "CANBus"
-  ]
+  ],
+  "source_file": "src/robo_infra/core/can_bus.py",
+  "source_line": 443
 }

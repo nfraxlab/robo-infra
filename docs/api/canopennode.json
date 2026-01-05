@@ -7,28 +7,28 @@
       "name": "bus",
       "type": "CANBus",
       "default": null,
-      "description": null,
+      "description": "CAN bus instance.",
       "required": true
     },
     {
       "name": "node_id",
       "type": "int",
       "default": null,
-      "description": null,
+      "description": "Node ID (1-127).",
       "required": true
     },
     {
       "name": "sdo_timeout",
       "type": "float",
       "default": "1.0",
-      "description": null,
+      "description": "SDO transfer timeout in seconds.",
       "required": false
     },
     {
       "name": "name",
       "type": "str | None",
       "default": "None",
-      "description": null,
+      "description": "Optional node name.",
       "required": false
     }
   ],
@@ -49,33 +49,42 @@
           "name": "bus",
           "type": "CANBus",
           "default": null,
-          "description": null,
+          "description": "CAN bus instance.",
           "required": true
         },
         {
           "name": "node_id",
           "type": "int",
           "default": null,
-          "description": null,
+          "description": "Node ID (1-127).",
           "required": true
         },
         {
           "name": "sdo_timeout",
           "type": "float",
           "default": "1.0",
-          "description": null,
+          "description": "SDO transfer timeout in seconds.",
           "required": false
         },
         {
           "name": "name",
           "type": "str | None",
           "default": "None",
-          "description": null,
+          "description": "Optional node name.",
           "required": false
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": [
+        {
+          "type": "ValueError",
+          "description": "If node_id is out of range."
+        }
+      ]
     },
     {
       "name": "is_alive",
@@ -93,12 +102,16 @@
           "name": "timeout",
           "type": "float",
           "default": "2.0",
-          "description": null,
+          "description": "Maximum time since last heartbeat.",
           "required": false
         }
       ],
       "returns": "bool",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "nmt_pre_operational",
@@ -114,7 +127,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "nmt_reset",
@@ -130,7 +147,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "nmt_reset_communication",
@@ -146,7 +167,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "nmt_send",
@@ -164,12 +189,16 @@
           "name": "command",
           "type": "NMTCommand",
           "default": null,
-          "description": null,
+          "description": "NMT command to send.",
           "required": true
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "nmt_start",
@@ -185,7 +214,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "nmt_stop",
@@ -201,7 +234,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "pdo_configure",
@@ -219,33 +256,37 @@
           "name": "pdo_number",
           "type": "int",
           "default": null,
-          "description": null,
+          "description": "PDO number (1-4).",
           "required": true
         },
         {
           "name": "is_transmit",
           "type": "bool",
           "default": null,
-          "description": null,
+          "description": "True for TPDO, False for RPDO.",
           "required": true
         },
         {
           "name": "mappings",
           "type": "list[PDOMapping]",
           "default": null,
-          "description": null,
+          "description": "List of PDO mappings.",
           "required": true
         },
         {
           "name": "transmission_type",
           "type": "int",
           "default": "255",
-          "description": null,
+          "description": "PDO transmission type (255=async).",
           "required": false
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "pdo_read",
@@ -263,12 +304,16 @@
           "name": "pdo_number",
           "type": "int",
           "default": null,
-          "description": null,
+          "description": "PDO number (1-4).",
           "required": true
         }
       ],
       "returns": "bytes | None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "pdo_write",
@@ -286,19 +331,23 @@
           "name": "pdo_number",
           "type": "int",
           "default": null,
-          "description": null,
+          "description": "PDO number (1-4).",
           "required": true
         },
         {
           "name": "data",
           "type": "bytes",
           "default": null,
-          "description": null,
+          "description": "PDO data (0-8 bytes).",
           "required": true
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "process_heartbeat",
@@ -316,12 +365,16 @@
           "name": "data",
           "type": "bytes",
           "default": null,
-          "description": null,
+          "description": "Heartbeat message data (1 byte = NMT state).",
           "required": true
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "sdo_read",
@@ -339,19 +392,32 @@
           "name": "index",
           "type": "int",
           "default": null,
-          "description": null,
+          "description": "Object dictionary index (0x0000-0xFFFF).",
           "required": true
         },
         {
           "name": "subindex",
           "type": "int",
           "default": "0",
-          "description": null,
+          "description": "Object dictionary subindex (0x00-0xFF).",
           "required": false
         }
       ],
       "returns": "bytes",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": [
+        {
+          "type": "SDOError",
+          "description": "If transfer fails."
+        },
+        {
+          "type": "TimeoutError",
+          "description": "If no response received."
+        }
+      ]
     },
     {
       "name": "sdo_read_i16",
@@ -381,7 +447,11 @@
         }
       ],
       "returns": "int",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "sdo_read_i32",
@@ -411,7 +481,11 @@
         }
       ],
       "returns": "int",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "sdo_read_i8",
@@ -441,7 +515,11 @@
         }
       ],
       "returns": "int",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "sdo_read_string",
@@ -471,7 +549,11 @@
         }
       ],
       "returns": "str",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "sdo_read_u16",
@@ -501,7 +583,11 @@
         }
       ],
       "returns": "int",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "sdo_read_u32",
@@ -531,7 +617,11 @@
         }
       ],
       "returns": "int",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "sdo_read_u8",
@@ -561,7 +651,11 @@
         }
       ],
       "returns": "int",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "sdo_write",
@@ -579,26 +673,39 @@
           "name": "index",
           "type": "int",
           "default": null,
-          "description": null,
+          "description": "Object dictionary index.",
           "required": true
         },
         {
           "name": "subindex",
           "type": "int",
           "default": null,
-          "description": null,
+          "description": "Object dictionary subindex.",
           "required": true
         },
         {
           "name": "data",
           "type": "bytes",
           "default": null,
-          "description": null,
+          "description": "Data to write.",
           "required": true
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": [
+        {
+          "type": "SDOError",
+          "description": "If transfer fails."
+        },
+        {
+          "type": "TimeoutError",
+          "description": "If no response received."
+        }
+      ]
     },
     {
       "name": "sdo_write_i16",
@@ -635,7 +742,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "sdo_write_i32",
@@ -672,7 +783,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "sdo_write_i8",
@@ -709,7 +824,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "sdo_write_u16",
@@ -746,7 +865,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "sdo_write_u32",
@@ -783,7 +906,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "sdo_write_u8",
@@ -820,8 +947,14 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     }
   ],
-  "bases": []
+  "bases": [],
+  "source_file": "src/robo_infra/protocols/canopen.py",
+  "source_line": 262
 }

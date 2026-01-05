@@ -103,7 +103,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "distance_to",
@@ -126,7 +130,11 @@
         }
       ],
       "returns": "float",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "from_tuple",
@@ -149,7 +157,11 @@
         }
       ],
       "returns": "Position",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": true,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "from_xyz",
@@ -186,7 +198,11 @@
         }
       ],
       "returns": "Position",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": true,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "to_tuple",
@@ -209,8 +225,14 @@
         }
       ],
       "returns": "tuple[float, ...]",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     }
   ],
-  "bases": []
+  "bases": [],
+  "source_file": "src/robo_infra/core/types.py",
+  "source_line": 123
 }

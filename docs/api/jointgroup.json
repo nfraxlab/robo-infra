@@ -7,21 +7,21 @@
       "name": "name",
       "type": "str",
       "default": null,
-      "description": null,
+      "description": "Controller name",
       "required": true
     },
     {
       "name": "joints",
       "type": "dict[str, Actuator]",
       "default": null,
-      "description": null,
+      "description": "Dictionary of joint name to Actuator",
       "required": true
     },
     {
       "name": "config",
       "type": "JointGroupConfig | None",
       "default": "None",
-      "description": null,
+      "description": "Optional configuration",
       "required": false
     }
   ],
@@ -42,26 +42,35 @@
           "name": "name",
           "type": "str",
           "default": null,
-          "description": null,
+          "description": "Controller name",
           "required": true
         },
         {
           "name": "joints",
           "type": "dict[str, Actuator]",
           "default": null,
-          "description": null,
+          "description": "Dictionary of joint name to Actuator",
           "required": true
         },
         {
           "name": "config",
           "type": "JointGroupConfig | None",
           "default": "None",
-          "description": null,
+          "description": "Optional configuration",
           "required": false
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": [
+        {
+          "type": "ValueError",
+          "description": "If joints dict is empty"
+        }
+      ]
     },
     {
       "name": "ago_to_named",
@@ -79,19 +88,28 @@
           "name": "name",
           "type": "str",
           "default": null,
-          "description": null,
+          "description": "Name of the saved position",
           "required": true
         },
         {
           "name": "speed",
           "type": "float",
           "default": "1.0",
-          "description": null,
+          "description": "Movement speed factor",
           "required": false
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": [
+        {
+          "type": "KeyError",
+          "description": "If position name doesn't exist"
+        }
+      ]
     },
     {
       "name": "amove_joints",
@@ -109,26 +127,47 @@
           "name": "positions",
           "type": "dict[str, float]",
           "default": null,
-          "description": null,
+          "description": "Dictionary mapping joint names to target positions",
           "required": true
         },
         {
           "name": "speed",
           "type": "float",
           "default": "1.0",
-          "description": null,
+          "description": "Movement speed factor (0.0 to 1.0)",
           "required": false
         },
         {
           "name": "interpolate",
           "type": "bool",
           "default": "True",
-          "description": null,
+          "description": "Whether to use motion interpolation",
           "required": false
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": [
+        {
+          "type": "DisabledError",
+          "description": "If controller is not enabled"
+        },
+        {
+          "type": "KeyError",
+          "description": "If unknown joint name provided"
+        },
+        {
+          "type": "LimitsExceededError",
+          "description": "If position exceeds limits (when clamp disabled)"
+        },
+        {
+          "type": "LimitsExceededError",
+          "description": "If position exceeds limits (when clamp disabled)"
+        }
+      ]
     },
     {
       "name": "disable",
@@ -144,7 +183,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "enable",
@@ -160,7 +203,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "get_joint_position",
@@ -178,12 +225,21 @@
           "name": "name",
           "type": "str",
           "default": null,
-          "description": null,
+          "description": "Joint name",
           "required": true
         }
       ],
       "returns": "float",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": [
+        {
+          "type": "KeyError",
+          "description": "If joint name doesn't exist"
+        }
+      ]
     },
     {
       "name": "get_named_positions",
@@ -199,7 +255,11 @@
         }
       ],
       "returns": "dict[str, dict[str, float]]",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "get_positions",
@@ -215,7 +275,11 @@
         }
       ],
       "returns": "dict[str, float]",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "go_to_named",
@@ -233,19 +297,32 @@
           "name": "name",
           "type": "str",
           "default": null,
-          "description": null,
+          "description": "Name of the saved position",
           "required": true
         },
         {
           "name": "speed",
           "type": "float",
           "default": "1.0",
-          "description": null,
+          "description": "Movement speed factor",
           "required": false
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": [
+        {
+          "type": "KeyError",
+          "description": "If position name doesn't exist"
+        },
+        {
+          "type": "KeyError",
+          "description": "If position name doesn't exist"
+        }
+      ]
     },
     {
       "name": "home",
@@ -261,7 +338,16 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": [
+        {
+          "type": "DisabledError",
+          "description": "If controller is not enabled"
+        }
+      ]
     },
     {
       "name": "move_joints",
@@ -279,26 +365,47 @@
           "name": "positions",
           "type": "dict[str, float]",
           "default": null,
-          "description": null,
+          "description": "Dictionary mapping joint names to target positions",
           "required": true
         },
         {
           "name": "speed",
           "type": "float",
           "default": "1.0",
-          "description": null,
+          "description": "Movement speed factor (0.0 to 1.0)",
           "required": false
         },
         {
           "name": "interpolate",
           "type": "bool",
           "default": "True",
-          "description": null,
+          "description": "Whether to use motion interpolation",
           "required": false
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": [
+        {
+          "type": "DisabledError",
+          "description": "If controller is not enabled"
+        },
+        {
+          "type": "KeyError",
+          "description": "If unknown joint name provided"
+        },
+        {
+          "type": "LimitsExceededError",
+          "description": "If position exceeds limits (when clamp disabled)"
+        },
+        {
+          "type": "LimitsExceededError",
+          "description": "If position exceeds limits (when clamp disabled)"
+        }
+      ]
     },
     {
       "name": "save_position",
@@ -316,19 +423,23 @@
           "name": "name",
           "type": "str",
           "default": null,
-          "description": null,
+          "description": "Name for the saved position",
           "required": true
         },
         {
           "name": "metadata",
           "type": "dict[str, Any] | None",
           "default": "None",
-          "description": null,
+          "description": "Optional metadata to attach",
           "required": false
         }
       ],
       "returns": "Position",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "stop",
@@ -344,10 +455,16 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     }
   ],
   "bases": [
     "Controller"
-  ]
+  ],
+  "source_file": "src/robo_infra/controllers/joint_group.py",
+  "source_line": 153
 }

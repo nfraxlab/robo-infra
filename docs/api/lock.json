@@ -7,21 +7,21 @@
       "name": "name",
       "type": "str",
       "default": null,
-      "description": null,
+      "description": "Controller name",
       "required": true
     },
     {
       "name": "actuator",
       "type": "Actuator",
       "default": null,
-      "description": null,
+      "description": "Lock actuator (servo, motor, solenoid, etc.)",
       "required": true
     },
     {
       "name": "config",
       "type": "LockConfig | None",
       "default": "None",
-      "description": null,
+      "description": "Optional configuration",
       "required": false
     }
   ],
@@ -42,26 +42,35 @@
           "name": "name",
           "type": "str",
           "default": null,
-          "description": null,
+          "description": "Controller name",
           "required": true
         },
         {
           "name": "actuator",
           "type": "Actuator",
           "default": null,
-          "description": null,
+          "description": "Lock actuator (servo, motor, solenoid, etc.)",
           "required": true
         },
         {
           "name": "config",
           "type": "LockConfig | None",
           "default": "None",
-          "description": null,
+          "description": "Optional configuration",
           "required": false
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": [
+        {
+          "type": "ValueError",
+          "description": "If actuator is None"
+        }
+      ]
     },
     {
       "name": "alock",
@@ -77,7 +86,20 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": [
+        {
+          "type": "RuntimeError",
+          "description": "If lock is not enabled."
+        },
+        {
+          "type": "RuntimeError",
+          "description": "If lock is not enabled."
+        }
+      ]
     },
     {
       "name": "aunlock",
@@ -93,7 +115,20 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": [
+        {
+          "type": "RuntimeError",
+          "description": "If lock is not enabled."
+        },
+        {
+          "type": "RuntimeError",
+          "description": "If lock is not enabled."
+        }
+      ]
     },
     {
       "name": "disable",
@@ -109,7 +144,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "enable",
@@ -125,7 +164,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "lock",
@@ -141,7 +184,20 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": [
+        {
+          "type": "RuntimeError",
+          "description": "If lock is not enabled."
+        },
+        {
+          "type": "RuntimeError",
+          "description": "If lock is not enabled."
+        }
+      ]
     },
     {
       "name": "stop",
@@ -157,7 +213,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "toggle",
@@ -173,7 +233,20 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": [
+        {
+          "type": "RuntimeError",
+          "description": "If lock is not enabled."
+        },
+        {
+          "type": "RuntimeError",
+          "description": "If lock is not enabled."
+        }
+      ]
     },
     {
       "name": "unlock",
@@ -189,10 +262,25 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": [
+        {
+          "type": "RuntimeError",
+          "description": "If lock is not enabled."
+        },
+        {
+          "type": "RuntimeError",
+          "description": "If lock is not enabled."
+        }
+      ]
     }
   ],
   "bases": [
     "Controller"
-  ]
+  ],
+  "source_file": "src/robo_infra/controllers/lock.py",
+  "source_line": 153
 }

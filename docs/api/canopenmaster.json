@@ -7,14 +7,14 @@
       "name": "bus",
       "type": "CANBus",
       "default": null,
-      "description": null,
+      "description": "CAN bus instance.",
       "required": true
     },
     {
       "name": "sdo_timeout",
       "type": "float",
       "default": "1.0",
-      "description": null,
+      "description": "Default SDO timeout for nodes.",
       "required": false
     }
   ],
@@ -35,19 +35,23 @@
           "name": "bus",
           "type": "CANBus",
           "default": null,
-          "description": null,
+          "description": "CAN bus instance.",
           "required": true
         },
         {
           "name": "sdo_timeout",
           "type": "float",
           "default": "1.0",
-          "description": null,
+          "description": "Default SDO timeout for nodes.",
           "required": false
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "get_node",
@@ -65,19 +69,23 @@
           "name": "node_id",
           "type": "int",
           "default": null,
-          "description": null,
+          "description": "Node ID (1-127).",
           "required": true
         },
         {
           "name": "name",
           "type": "str | None",
           "default": "None",
-          "description": null,
+          "description": "Optional node name.",
           "required": false
         }
       ],
       "returns": "CANOpenNode",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "nmt_broadcast",
@@ -95,12 +103,16 @@
           "name": "command",
           "type": "NMTCommand",
           "default": null,
-          "description": null,
+          "description": "NMT command to broadcast.",
           "required": true
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "nmt_reset_all",
@@ -116,7 +128,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "nmt_start_all",
@@ -132,7 +148,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "nmt_stop_all",
@@ -148,7 +168,11 @@
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "process_message",
@@ -166,12 +190,16 @@
           "name": "msg",
           "type": "CANMessage",
           "default": null,
-          "description": null,
+          "description": "Received CAN message.",
           "required": true
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "remove_node",
@@ -189,12 +217,16 @@
           "name": "node_id",
           "type": "int",
           "default": null,
-          "description": null,
+          "description": "Node ID to remove.",
           "required": true
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "scan_nodes",
@@ -212,12 +244,16 @@
           "name": "timeout",
           "type": "float",
           "default": "0.1",
-          "description": null,
+          "description": "Timeout per node scan.",
           "required": false
         }
       ],
       "returns": "list[int]",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "send_sync",
@@ -235,12 +271,16 @@
           "name": "counter",
           "type": "int",
           "default": "0",
-          "description": null,
+          "description": "Optional SYNC counter (0-240).",
           "required": false
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "set_emcy_callback",
@@ -258,12 +298,16 @@
           "name": "callback",
           "type": "Any",
           "default": null,
-          "description": null,
+          "description": "Function taking EMCYMessage parameter.",
           "required": true
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "sync_loop",
@@ -281,20 +325,26 @@
           "name": "interval",
           "type": "float",
           "default": "0.01",
-          "description": null,
+          "description": "SYNC interval in seconds.",
           "required": false
         },
         {
           "name": "with_counter",
           "type": "bool",
           "default": "False",
-          "description": null,
+          "description": "Include SYNC counter.",
           "required": false
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     }
   ],
-  "bases": []
+  "bases": [],
+  "source_file": "src/robo_infra/protocols/canopen.py",
+  "source_line": 765
 }
