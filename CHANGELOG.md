@@ -1,6 +1,23 @@
 # CHANGELOG
 
 
+## v0.5.1 (2026-01-05)
+
+### Bug Fixes
+
+- Use griffe labels for async method detection
+  ([#17](https://github.com/nfraxlab/robo-infra/pull/17),
+  [`6ea1d88`](https://github.com/nfraxlab/robo-infra/commit/6ea1d88899674efd0cd0d64f2bd30465f301f721))
+
+### Documentation
+
+- Enhance API extraction with auto-discovery ([#15](https://github.com/nfraxlab/robo-infra/pull/15),
+  [`db0305d`](https://github.com/nfraxlab/robo-infra/commit/db0305d1c46b7d190985804c93aab25cdbbaa056))
+
+- Remove stale dataclass JSON files ([#16](https://github.com/nfraxlab/robo-infra/pull/16),
+  [`edc6f41`](https://github.com/nfraxlab/robo-infra/commit/edc6f41a364f7b0d1f41f7c270bbe0cbde8fad3e))
+
+
 ## v0.5.0 (2026-01-05)
 
 ### Features
