@@ -1,6 +1,26 @@
 # CHANGELOG
 
 
+## v0.4.0 (2026-01-05)
+
+### Chores
+
+- Remove required status checks ([#11](https://github.com/nfraxlab/robo-infra/pull/11),
+  [`35a1f1e`](https://github.com/nfraxlab/robo-infra/commit/35a1f1e5f187d5c1678e88a703dc4a1ac00a2fba))
+
+### Documentation
+
+- Add quickstart, troubleshooting, security audit; update architecture and performance
+  ([#12](https://github.com/nfraxlab/robo-infra/pull/12),
+  [`3de816a`](https://github.com/nfraxlab/robo-infra/commit/3de816ada75c866b2af4aa4ab109daf7263bbab7))
+
+### Features
+
+- Add griffe-based API reference extraction system
+  ([#13](https://github.com/nfraxlab/robo-infra/pull/13),
+  [`118821b`](https://github.com/nfraxlab/robo-infra/commit/118821ba087b67843149afd5f630d387c6e18c5c))
+
+
 ## v0.3.3 (2026-01-02)
 
 ### Bug Fixes
