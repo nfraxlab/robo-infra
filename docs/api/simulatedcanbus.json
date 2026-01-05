@@ -1,0 +1,302 @@
+{
+  "name": "SimulatedCANBus",
+  "module": "robo_infra.core.can_bus",
+  "docstring": "Simulated CAN bus for testing without hardware.\n\nProvides a virtual CAN bus that stores sent messages and can\nhave messages injected for receive testing.",
+  "parameters": [
+    {
+      "name": "config",
+      "type": "CANConfig | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "name",
+      "type": "str | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(config: CANConfig | None = None, name: str | None = None) -> None",
+      "docstring": "Initialize simulated CAN bus.\n\nArgs:\n    config: CAN configuration.\n    name: Optional name.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "config",
+          "type": "CANConfig | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "str | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "clear_buffers",
+      "signature": "() -> None",
+      "docstring": "Clear all message buffers.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "close",
+      "signature": "() -> None",
+      "docstring": "Close the simulated CAN bus.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "enable_loopback",
+      "signature": "(enable: bool = True) -> None",
+      "docstring": "Enable/disable loopback mode.\n\nArgs:\n    enable: If True, sent messages appear in receive buffer.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "enable",
+          "type": "bool",
+          "default": "True",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "get_sent_messages",
+      "signature": "() -> list[CANMessage]",
+      "docstring": "Get all sent messages (for testing).\n\nReturns:\n    List of sent messages.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "list[CANMessage]",
+      "is_async": false
+    },
+    {
+      "name": "get_state",
+      "signature": "() -> CANState",
+      "docstring": "Get current bus state.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "CANState",
+      "is_async": false
+    },
+    {
+      "name": "inject_message",
+      "signature": "(message: CANMessage) -> None",
+      "docstring": "Inject a message into the receive buffer (for testing).\n\nArgs:\n    message: Message to inject.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "message",
+          "type": "CANMessage",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "inject_messages",
+      "signature": "(messages: list[CANMessage]) -> None",
+      "docstring": "Inject multiple messages into the receive buffer.\n\nArgs:\n    messages: Messages to inject.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "messages",
+          "type": "list[CANMessage]",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "open",
+      "signature": "() -> None",
+      "docstring": "Open the simulated CAN bus.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "recv",
+      "signature": "(timeout: float | None = None) -> CANMessage | None",
+      "docstring": "Receive a CAN message (simulated).",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "timeout",
+          "type": "float | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "CANMessage | None",
+      "is_async": false
+    },
+    {
+      "name": "send",
+      "signature": "(arbitration_id: int, data: bytes | list[int], is_extended_id: bool = False, is_remote_frame: bool = False, timeout: float | None = None) -> None",
+      "docstring": "Send a CAN message (simulated).",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "arbitration_id",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "data",
+          "type": "bytes | list[int]",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "is_extended_id",
+          "type": "bool",
+          "default": "False",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "is_remote_frame",
+          "type": "bool",
+          "default": "False",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "timeout",
+          "type": "float | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "set_filters",
+      "signature": "(filters: list[CANFilter]) -> None",
+      "docstring": "Set message filters (simulated).",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "filters",
+          "type": "list[CANFilter]",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    }
+  ],
+  "bases": [
+    "CANBus"
+  ]
+}

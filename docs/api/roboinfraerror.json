@@ -1,0 +1,56 @@
+{
+  "name": "RoboInfraError",
+  "module": "robo_infra.core.exceptions",
+  "docstring": "Base exception for all robo-infra errors.\n\nAll robo-infra exceptions can be caught with this single class.\nEach subclass has an error code for categorization and structured\ndetails for debugging.\n\nAttributes:\n    code: Error code for categorization (e.g., \"ROBO_SAFETY\").\n    message: Human-readable error description.\n    details: Additional context as key-value pairs.",
+  "parameters": [
+    {
+      "name": "message",
+      "type": "str",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "details",
+      "type": "dict[str, Any] | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(message: str, details: dict[str, Any] | None = None)",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "message",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "details",
+          "type": "dict[str, Any] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": null,
+      "is_async": false
+    }
+  ],
+  "bases": [
+    "Exception"
+  ]
+}

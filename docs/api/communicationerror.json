@@ -1,0 +1,70 @@
+{
+  "name": "CommunicationError",
+  "module": "robo_infra.core.exceptions",
+  "docstring": "Raised when communication with hardware fails.",
+  "parameters": [
+    {
+      "name": "bus",
+      "type": "str",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "address",
+      "type": "int | str | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "details",
+      "type": "str | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(bus: str, address: int | str | None = None, details: str | None = None) -> None",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "bus",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "address",
+          "type": "int | str | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "details",
+          "type": "str | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    }
+  ],
+  "bases": [
+    "RoboInfraError"
+  ]
+}

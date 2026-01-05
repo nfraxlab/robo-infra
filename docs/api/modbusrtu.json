@@ -1,0 +1,454 @@
+{
+  "name": "ModbusRTU",
+  "module": "robo_infra.protocols.modbus",
+  "docstring": "Modbus RTU client over serial connection.",
+  "parameters": [
+    {
+      "name": "port",
+      "type": "str",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "baudrate",
+      "type": "int",
+      "default": "9600",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "bytesize",
+      "type": "int",
+      "default": "8",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "parity",
+      "type": "str",
+      "default": "'N'",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "stopbits",
+      "type": "int",
+      "default": "1",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "timeout",
+      "type": "float",
+      "default": "1.0",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "name",
+      "type": "str",
+      "default": "'modbus-rtu'",
+      "description": null,
+      "required": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(port: str, baudrate: int = 9600, bytesize: int = 8, parity: str = 'N', stopbits: int = 1, timeout: float = 1.0, name: str = 'modbus-rtu') -> None",
+      "docstring": "Initialize Modbus RTU client.\n\nArgs:\n    port: Serial port path.\n    baudrate: Baud rate.\n    bytesize: Data bits.\n    parity: Parity.\n    stopbits: Stop bits.\n    timeout: Read timeout.\n    name: Client name.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "port",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "baudrate",
+          "type": "int",
+          "default": "9600",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "bytesize",
+          "type": "int",
+          "default": "8",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "parity",
+          "type": "str",
+          "default": "'N'",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "stopbits",
+          "type": "int",
+          "default": "1",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "timeout",
+          "type": "float",
+          "default": "1.0",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "str",
+          "default": "'modbus-rtu'",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "close",
+      "signature": "() -> None",
+      "docstring": "Close serial connection.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "open",
+      "signature": "() -> None",
+      "docstring": "Open serial connection.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "read_coils",
+      "signature": "(slave_id: int, address: int, count: int = 1) -> list[bool]",
+      "docstring": "Read coils (function 0x01).",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "slave_id",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "address",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "count",
+          "type": "int",
+          "default": "1",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "list[bool]",
+      "is_async": false
+    },
+    {
+      "name": "read_discrete_inputs",
+      "signature": "(slave_id: int, address: int, count: int = 1) -> list[bool]",
+      "docstring": "Read discrete inputs (function 0x02).",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "slave_id",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "address",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "count",
+          "type": "int",
+          "default": "1",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "list[bool]",
+      "is_async": false
+    },
+    {
+      "name": "read_holding_registers",
+      "signature": "(slave_id: int, address: int, count: int = 1) -> list[int]",
+      "docstring": "Read holding registers (function 0x03).",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "slave_id",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "address",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "count",
+          "type": "int",
+          "default": "1",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "list[int]",
+      "is_async": false
+    },
+    {
+      "name": "read_input_registers",
+      "signature": "(slave_id: int, address: int, count: int = 1) -> list[int]",
+      "docstring": "Read input registers (function 0x04).",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "slave_id",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "address",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "count",
+          "type": "int",
+          "default": "1",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "list[int]",
+      "is_async": false
+    },
+    {
+      "name": "write_coil",
+      "signature": "(slave_id: int, address: int, value: bool) -> None",
+      "docstring": "Write single coil (function 0x05).",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "slave_id",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "address",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "bool",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "write_coils",
+      "signature": "(slave_id: int, address: int, values: list[bool]) -> None",
+      "docstring": "Write multiple coils (function 0x0F).",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "slave_id",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "address",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "values",
+          "type": "list[bool]",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "write_register",
+      "signature": "(slave_id: int, address: int, value: int) -> None",
+      "docstring": "Write single register (function 0x06).",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "slave_id",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "address",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "write_registers",
+      "signature": "(slave_id: int, address: int, values: list[int]) -> None",
+      "docstring": "Write multiple registers (function 0x10).",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "slave_id",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "address",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "values",
+          "type": "list[int]",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    }
+  ],
+  "bases": [
+    "ModbusClient"
+  ]
+}

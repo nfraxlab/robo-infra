@@ -1,0 +1,323 @@
+{
+  "name": "CANBus",
+  "module": "robo_infra.core.can_bus",
+  "docstring": "Abstract base class for CAN bus communication.\n\nCAN (Controller Area Network) is a robust serial communication protocol\ndesigned for real-time distributed control systems.\n\nFeatures:\n    - Multi-master arbitration\n    - Message-based protocol\n    - Error detection and handling\n    - Configurable bitrates up to 1 Mbps (8 Mbps for CAN FD)",
+  "parameters": [
+    {
+      "name": "config",
+      "type": "CANConfig | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "name",
+      "type": "str | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(config: CANConfig | None = None, name: str | None = None) -> None",
+      "docstring": "Initialize CAN bus.\n\nArgs:\n    config: CAN configuration. Uses defaults if not provided.\n    name: Optional human-readable name.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "config",
+          "type": "CANConfig | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "str | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "clear_filters",
+      "signature": "() -> None",
+      "docstring": "Clear all message filters.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "flush_rx",
+      "signature": "() -> int",
+      "docstring": "Flush receive buffer.\n\nReturns:\n    Number of messages flushed.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "int",
+      "is_async": false
+    },
+    {
+      "name": "get_state",
+      "signature": "() -> CANState",
+      "docstring": "Get current bus state.\n\nReturns:\n    Current CAN bus state.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "CANState",
+      "is_async": false
+    },
+    {
+      "name": "recv",
+      "signature": "(timeout: float | None = None) -> CANMessage | None",
+      "docstring": "Receive a CAN message.\n\nArgs:\n    timeout: Receive timeout in seconds (None for default, 0 for non-blocking).\n\nReturns:\n    Received message, or None if timeout.\n\nRaises:\n    CommunicationError: If receive fails.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "timeout",
+          "type": "float | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "CANMessage | None",
+      "is_async": false
+    },
+    {
+      "name": "recv_all",
+      "signature": "(timeout: float = 0.0, max_messages: int = 100) -> list[CANMessage]",
+      "docstring": "Receive all pending messages.\n\nArgs:\n    timeout: Timeout for each receive attempt.\n    max_messages: Maximum messages to receive.\n\nReturns:\n    List of received messages.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "timeout",
+          "type": "float",
+          "default": "0.0",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "max_messages",
+          "type": "int",
+          "default": "100",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "list[CANMessage]",
+      "is_async": false
+    },
+    {
+      "name": "recv_async",
+      "signature": "(timeout: float | None = None) -> CANMessage | None",
+      "docstring": "Receive a CAN message asynchronously.\n\nArgs:\n    timeout: Receive timeout in seconds.\n\nReturns:\n    Received message, or None if timeout.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "timeout",
+          "type": "float | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "CANMessage | None",
+      "is_async": false
+    },
+    {
+      "name": "reset_statistics",
+      "signature": "() -> None",
+      "docstring": "Reset bus statistics.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "send",
+      "signature": "(arbitration_id: int, data: bytes | list[int], is_extended_id: bool = False, is_remote_frame: bool = False, timeout: float | None = None) -> None",
+      "docstring": "Send a CAN message.\n\nArgs:\n    arbitration_id: CAN message ID.\n    data: Message data (0-8 bytes).\n    is_extended_id: Use 29-bit extended ID.\n    is_remote_frame: Send as remote transmission request.\n    timeout: Send timeout in seconds (None for default).\n\nRaises:\n    CommunicationError: If send fails.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "arbitration_id",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "data",
+          "type": "bytes | list[int]",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "is_extended_id",
+          "type": "bool",
+          "default": "False",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "is_remote_frame",
+          "type": "bool",
+          "default": "False",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "timeout",
+          "type": "float | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "send_message",
+      "signature": "(message: CANMessage, timeout: float | None = None) -> None",
+      "docstring": "Send a CANMessage object.\n\nArgs:\n    message: CAN message to send.\n    timeout: Send timeout in seconds.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "message",
+          "type": "CANMessage",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "timeout",
+          "type": "float | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "set_filters",
+      "signature": "(filters: list[CANFilter]) -> None",
+      "docstring": "Set message filters.\n\nArgs:\n    filters: List of filters to apply.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "filters",
+          "type": "list[CANFilter]",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "stream",
+      "signature": "(timeout: float = 1.0) -> AsyncIterator[CANMessage]",
+      "docstring": "Async stream of received messages.\n\nArgs:\n    timeout: Receive timeout per message.\n\nYields:\n    Received CAN messages.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "timeout",
+          "type": "float",
+          "default": "1.0",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "AsyncIterator[CANMessage]",
+      "is_async": false
+    }
+  ],
+  "bases": [
+    "Bus"
+  ]
+}

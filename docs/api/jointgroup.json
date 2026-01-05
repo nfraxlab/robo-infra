@@ -1,0 +1,353 @@
+{
+  "name": "JointGroup",
+  "module": "robo_infra.controllers.joint_group",
+  "docstring": "Controller for coordinating multiple joints as a robot arm.\n\nJointGroup provides high-level control for multi-joint robots like\nrobot arms, pan-tilt mechanisms, and articulated systems.\n\nFeatures:\n- Synchronized multi-joint movement\n- Motion interpolation for smooth trajectories\n- Named position presets\n- Home/stop/disable functionality\n- Async movement support\n\nExample:\n    >>> joints = {\n    ...     \"base\": Servo(name=\"base\", angle_range=(0, 180)),\n    ...     \"shoulder\": Servo(name=\"shoulder\", angle_range=(0, 180)),\n    ...     \"elbow\": Servo(name=\"elbow\", angle_range=(0, 180)),\n    ... }\n    >>> arm = JointGroup(name=\"arm\", joints=joints)\n    >>> arm.enable()\n    >>> arm.move_to({\"base\": 90, \"shoulder\": 45, \"elbow\": 120})",
+  "parameters": [
+    {
+      "name": "name",
+      "type": "str",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "joints",
+      "type": "dict[str, Actuator]",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "config",
+      "type": "JointGroupConfig | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(name: str, joints: dict[str, Actuator], config: JointGroupConfig | None = None) -> None",
+      "docstring": "Initialize JointGroup controller.\n\nArgs:\n    name: Controller name\n    joints: Dictionary of joint name to Actuator\n    config: Optional configuration\n\nRaises:\n    ValueError: If joints dict is empty",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "joints",
+          "type": "dict[str, Actuator]",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "config",
+          "type": "JointGroupConfig | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "ago_to_named",
+      "signature": "(name: str, speed: float = 1.0) -> None",
+      "docstring": "Async version of go_to_named.\n\nArgs:\n    name: Name of the saved position\n    speed: Movement speed factor\n\nRaises:\n    KeyError: If position name doesn't exist",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "speed",
+          "type": "float",
+          "default": "1.0",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "amove_joints",
+      "signature": "(positions: dict[str, float], speed: float = 1.0, interpolate: bool = True) -> None",
+      "docstring": "Async version of move_joints.\n\nArgs:\n    positions: Dictionary mapping joint names to target positions\n    speed: Movement speed factor (0.0 to 1.0)\n    interpolate: Whether to use motion interpolation\n\nRaises:\n    DisabledError: If controller is not enabled\n    KeyError: If unknown joint name provided\n    LimitsExceededError: If position exceeds limits (when clamp disabled)\n\nExample:\n    >>> await arm.amove_to({\"shoulder\": 45, \"elbow\": 90})",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "positions",
+          "type": "dict[str, float]",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "speed",
+          "type": "float",
+          "default": "1.0",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "interpolate",
+          "type": "bool",
+          "default": "True",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "disable",
+      "signature": "() -> None",
+      "docstring": "Disable the joint group and all joints.\n\nStops all movement and disables all actuators.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "enable",
+      "signature": "() -> None",
+      "docstring": "Enable the joint group and all joints.\n\nEnables all actuators and prepares for movement.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "get_joint_position",
+      "signature": "(name: str) -> float",
+      "docstring": "Get current position of a specific joint.\n\nArgs:\n    name: Joint name\n\nReturns:\n    Current position value\n\nRaises:\n    KeyError: If joint name doesn't exist",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "float",
+      "is_async": false
+    },
+    {
+      "name": "get_named_positions",
+      "signature": "() -> dict[str, dict[str, float]]",
+      "docstring": "Get all named positions.\n\nReturns:\n    Dictionary mapping position names to joint values",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "dict[str, dict[str, float]]",
+      "is_async": false
+    },
+    {
+      "name": "get_positions",
+      "signature": "() -> dict[str, float]",
+      "docstring": "Get current position of all joints.\n\nReturns:\n    Dictionary mapping joint name to current position\n\nExample:\n    >>> positions = arm.get_positions()\n    >>> print(positions)\n    {'shoulder': 90.0, 'elbow': 45.0, 'wrist': 135.0}",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "dict[str, float]",
+      "is_async": false
+    },
+    {
+      "name": "go_to_named",
+      "signature": "(name: str, speed: float = 1.0) -> None",
+      "docstring": "Move to a previously saved named position.\n\nArgs:\n    name: Name of the saved position\n    speed: Movement speed factor\n\nRaises:\n    KeyError: If position name doesn't exist\n\nExample:\n    >>> arm.go_to_named(\"ready\")",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "speed",
+          "type": "float",
+          "default": "1.0",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "home",
+      "signature": "() -> None",
+      "docstring": "Move all joints to their home positions.\n\nUses home_positions from config if set, otherwise uses\neach joint's default value.\n\nRaises:\n    DisabledError: If controller is not enabled",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "move_joints",
+      "signature": "(positions: dict[str, float], speed: float = 1.0, interpolate: bool = True) -> None",
+      "docstring": "Move joints to specified positions.\n\nArgs:\n    positions: Dictionary mapping joint names to target positions\n    speed: Movement speed factor (0.0 to 1.0)\n    interpolate: Whether to use motion interpolation\n\nRaises:\n    DisabledError: If controller is not enabled\n    KeyError: If unknown joint name provided\n    LimitsExceededError: If position exceeds limits (when clamp disabled)\n\nExample:\n    >>> arm.move_to({\"shoulder\": 45, \"elbow\": 90})\n    >>> arm.move_to({\"wrist\": 135}, speed=0.5)",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "positions",
+          "type": "dict[str, float]",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "speed",
+          "type": "float",
+          "default": "1.0",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "interpolate",
+          "type": "bool",
+          "default": "True",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "save_position",
+      "signature": "(name: str, metadata: dict[str, Any] | None = None) -> Position",
+      "docstring": "Save current joint positions as a named position.\n\nArgs:\n    name: Name for the saved position\n    metadata: Optional metadata to attach\n\nReturns:\n    The saved Position object\n\nExample:\n    >>> arm.move_joints({\"shoulder\": 45, \"elbow\": 90})\n    >>> arm.save_position(\"ready\")",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "metadata",
+          "type": "dict[str, Any] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "Position",
+      "is_async": false
+    },
+    {
+      "name": "stop",
+      "signature": "() -> None",
+      "docstring": "Stop all joint movement immediately.\n\nCancels any ongoing interpolated movement and stops\nall actuators at their current position.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    }
+  ],
+  "bases": [
+    "Controller"
+  ]
+}

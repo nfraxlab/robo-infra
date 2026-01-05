@@ -1,0 +1,216 @@
+{
+  "name": "Position",
+  "module": "robo_infra.core.types",
+  "docstring": "3D position with optional orientation (6-DOF).",
+  "parameters": [
+    {
+      "name": "x",
+      "type": "float",
+      "default": "0.0",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "y",
+      "type": "float",
+      "default": "0.0",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "z",
+      "type": "float",
+      "default": "0.0",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "roll",
+      "type": "float",
+      "default": "0.0",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "pitch",
+      "type": "float",
+      "default": "0.0",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "yaw",
+      "type": "float",
+      "default": "0.0",
+      "description": null,
+      "required": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(x: float = 0.0, y: float = 0.0, z: float = 0.0, roll: float = 0.0, pitch: float = 0.0, yaw: float = 0.0) -> None",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "x",
+          "type": "float",
+          "default": "0.0",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "y",
+          "type": "float",
+          "default": "0.0",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "z",
+          "type": "float",
+          "default": "0.0",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "roll",
+          "type": "float",
+          "default": "0.0",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "pitch",
+          "type": "float",
+          "default": "0.0",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "yaw",
+          "type": "float",
+          "default": "0.0",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "distance_to",
+      "signature": "(other: Position) -> float",
+      "docstring": "Calculate Euclidean distance to another position.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "other",
+          "type": "Position",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "float",
+      "is_async": false
+    },
+    {
+      "name": "from_tuple",
+      "signature": "(coords: tuple[float, ...]) -> Position",
+      "docstring": "Create position from tuple (x, y, z) or (x, y, z, roll, pitch, yaw).",
+      "parameters": [
+        {
+          "name": "cls",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "coords",
+          "type": "tuple[float, ...]",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "Position",
+      "is_async": false
+    },
+    {
+      "name": "from_xyz",
+      "signature": "(x: float, y: float, z: float) -> Position",
+      "docstring": "Create position from XYZ coordinates only.",
+      "parameters": [
+        {
+          "name": "cls",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "x",
+          "type": "float",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "y",
+          "type": "float",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "z",
+          "type": "float",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "Position",
+      "is_async": false
+    },
+    {
+      "name": "to_tuple",
+      "signature": "(include_orientation: bool = True) -> tuple[float, ...]",
+      "docstring": "Convert to tuple.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "include_orientation",
+          "type": "bool",
+          "default": "True",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "tuple[float, ...]",
+      "is_async": false
+    }
+  ],
+  "bases": []
+}

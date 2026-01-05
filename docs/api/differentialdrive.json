@@ -1,0 +1,330 @@
+{
+  "name": "DifferentialDrive",
+  "module": "robo_infra.controllers.differential",
+  "docstring": "Controller for differential drive (two-wheel) robots.\n\nDifferential drive robots use two independently controlled wheels\nfor locomotion. By varying the relative speeds of the left and right\nwheels, the robot can move forward, backward, turn, or spin in place.\n\nThis is the most common drive system for:\n- Mobile robots and rovers\n- Tank-drive robots\n- Warehouse AGVs\n- Educational robots\n\nMovement Methods:\n    - forward(speed): Drive forward\n    - reverse(speed): Drive backward\n    - turn_left(speed): Turn left while moving\n    - turn_right(speed): Turn right while moving\n    - spin(speed, clockwise): Spin in place\n    - arc(speed, radius): Follow a curved path\n    - tank(left, right): Direct wheel control\n    - stop(): Stop both motors\n    - brake(): Apply braking\n\nExample:\n    >>> from robo_infra.controllers.differential import DifferentialDrive\n    >>> from robo_infra.actuators.dc_motor import DCMotor\n    >>>\n    >>> left = DCMotor(name=\"left_wheel\")\n    >>> right = DCMotor(name=\"right_wheel\")\n    >>> rover = DifferentialDrive(\"my_rover\", left, right)\n    >>> rover.enable()\n    >>> rover.forward(0.5)\n    >>> rover.turn_left(0.3)\n    >>> rover.stop()",
+  "parameters": [
+    {
+      "name": "name",
+      "type": "str",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "left",
+      "type": "DCMotor",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "right",
+      "type": "DCMotor",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "config",
+      "type": "DifferentialDriveConfig | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(name: str, left: DCMotor, right: DCMotor, config: DifferentialDriveConfig | None = None) -> None",
+      "docstring": "Initialize DifferentialDrive controller.\n\nArgs:\n    name: Controller name\n    left: Left wheel motor\n    right: Right wheel motor\n    config: Optional configuration\n\nRaises:\n    ValueError: If motors are None",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "left",
+          "type": "DCMotor",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "right",
+          "type": "DCMotor",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "config",
+          "type": "DifferentialDriveConfig | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "arc",
+      "signature": "(speed: float, radius: float) -> None",
+      "docstring": "Drive in an arc of the specified radius.\n\nUses differential drive kinematics to follow a curved path.\n\nArgs:\n    speed: Linear speed (-1.0 to 1.0)\n    radius: Arc radius in meters (positive = turn left, negative = turn right)\n\nExample:\n    >>> rover.arc(0.5, 1.0)   # Arc left with 1m radius\n    >>> rover.arc(0.5, -0.5)  # Tight arc right with 0.5m radius",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "speed",
+          "type": "float",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "radius",
+          "type": "float",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "brake",
+      "signature": "() -> None",
+      "docstring": "Apply braking to both motors.\n\nFor DC motors, this typically means shorting the motor terminals\nto create dynamic braking. The actual braking behavior depends\non the motor driver implementation.\n\nExample:\n    >>> rover.brake()",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "disable",
+      "signature": "() -> None",
+      "docstring": "Disable the differential drive and both motors.\n\nStops all movement and disables both motors.\n\nExample:\n    >>> rover.disable()",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "enable",
+      "signature": "() -> None",
+      "docstring": "Enable the differential drive and both motors.\n\nMust be called before any movement commands.\n\nExample:\n    >>> rover.enable()\n    >>> rover.forward(0.5)",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "forward",
+      "signature": "(speed: float = 1.0) -> None",
+      "docstring": "Drive forward at the specified speed.\n\nArgs:\n    speed: Speed value (0.0 to 1.0, default 1.0)\n\nExample:\n    >>> rover.forward(0.5)  # Drive forward at half speed",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "speed",
+          "type": "float",
+          "default": "1.0",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "reverse",
+      "signature": "(speed: float = 1.0) -> None",
+      "docstring": "Drive backward at the specified speed.\n\nArgs:\n    speed: Speed value (0.0 to 1.0, default 1.0)\n\nExample:\n    >>> rover.reverse(0.5)  # Drive backward at half speed",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "speed",
+          "type": "float",
+          "default": "1.0",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "spin",
+      "signature": "(speed: float = 0.5, clockwise: bool = True) -> None",
+      "docstring": "Spin in place (rotate around center).\n\nBoth wheels turn at equal speed in opposite directions.\n\nArgs:\n    speed: Rotation speed (0.0 to 1.0, default 0.5)\n    clockwise: If True, spin clockwise; if False, counter-clockwise\n\nExample:\n    >>> rover.spin(0.5, clockwise=True)   # Spin right\n    >>> rover.spin(0.5, clockwise=False)  # Spin left",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "speed",
+          "type": "float",
+          "default": "0.5",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "clockwise",
+          "type": "bool",
+          "default": "True",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "stop",
+      "signature": "() -> None",
+      "docstring": "Stop both motors immediately.\n\nSets both motor speeds to zero without braking.\n\nExample:\n    >>> rover.stop()",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "tank",
+      "signature": "(left_speed: float, right_speed: float) -> None",
+      "docstring": "Direct tank-style control of wheel speeds.\n\nAllows independent control of each wheel for custom movements.\n\nArgs:\n    left_speed: Left wheel speed (-1.0 to 1.0)\n    right_speed: Right wheel speed (-1.0 to 1.0)\n\nExample:\n    >>> rover.tank(0.5, 0.5)   # Forward\n    >>> rover.tank(0.5, -0.5)  # Spin right\n    >>> rover.tank(0.3, 0.7)   # Arc left",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "left_speed",
+          "type": "float",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "right_speed",
+          "type": "float",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "turn_left",
+      "signature": "(speed: float = 0.5) -> None",
+      "docstring": "Turn left while moving forward.\n\nReduces left wheel speed to create a left turn.\n\nArgs:\n    speed: Turn intensity (0.0 to 1.0, default 0.5)\n\nExample:\n    >>> rover.turn_left(0.3)  # Gentle left turn",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "speed",
+          "type": "float",
+          "default": "0.5",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "turn_right",
+      "signature": "(speed: float = 0.5) -> None",
+      "docstring": "Turn right while moving forward.\n\nReduces right wheel speed to create a right turn.\n\nArgs:\n    speed: Turn intensity (0.0 to 1.0, default 0.5)\n\nExample:\n    >>> rover.turn_right(0.3)  # Gentle right turn",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "speed",
+          "type": "float",
+          "default": "0.5",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    }
+  ],
+  "bases": [
+    "Controller"
+  ]
+}

@@ -1,0 +1,166 @@
+{
+  "name": "CANMessage",
+  "module": "robo_infra.core.can_bus",
+  "docstring": "CAN message container.\n\nAttributes:\n    arbitration_id: CAN message ID (11-bit standard or 29-bit extended).\n    data: Message data (0-8 bytes for CAN 2.0, 0-64 for CAN FD).\n    timestamp: Message timestamp in seconds.\n    is_extended_id: True if using 29-bit extended ID.\n    is_remote_frame: True if this is a remote transmission request.\n    is_error_frame: True if this is an error frame.\n    is_fd: True if this is a CAN FD message.\n    bitrate_switch: True if CAN FD bitrate switch is used.\n    dlc: Data Length Code.\n    channel: Channel this message was received on.",
+  "parameters": [
+    {
+      "name": "arbitration_id",
+      "type": "int",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "data",
+      "type": "bytes",
+      "default": "bytes()",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "timestamp",
+      "type": "float",
+      "default": "time.time()",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "is_extended_id",
+      "type": "bool",
+      "default": "False",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "is_remote_frame",
+      "type": "bool",
+      "default": "False",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "is_error_frame",
+      "type": "bool",
+      "default": "False",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "is_fd",
+      "type": "bool",
+      "default": "False",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "bitrate_switch",
+      "type": "bool",
+      "default": "False",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "dlc",
+      "type": "int | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "channel",
+      "type": "str | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(arbitration_id: int, data: bytes = bytes(), timestamp: float = time.time(), is_extended_id: bool = False, is_remote_frame: bool = False, is_error_frame: bool = False, is_fd: bool = False, bitrate_switch: bool = False, dlc: int | None = None, channel: str | None = None) -> None",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "arbitration_id",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "data",
+          "type": "bytes",
+          "default": "bytes()",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "timestamp",
+          "type": "float",
+          "default": "time.time()",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "is_extended_id",
+          "type": "bool",
+          "default": "False",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "is_remote_frame",
+          "type": "bool",
+          "default": "False",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "is_error_frame",
+          "type": "bool",
+          "default": "False",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "is_fd",
+          "type": "bool",
+          "default": "False",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "bitrate_switch",
+          "type": "bool",
+          "default": "False",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "dlc",
+          "type": "int | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "channel",
+          "type": "str | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    }
+  ],
+  "bases": []
+}

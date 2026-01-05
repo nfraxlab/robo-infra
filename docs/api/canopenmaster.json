@@ -1,0 +1,300 @@
+{
+  "name": "CANOpenMaster",
+  "module": "robo_infra.protocols.canopen",
+  "docstring": "CANopen network master.\n\nManages multiple CANopen nodes on a network and provides\nnetwork-wide services like SYNC generation and NMT broadcast.",
+  "parameters": [
+    {
+      "name": "bus",
+      "type": "CANBus",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "sdo_timeout",
+      "type": "float",
+      "default": "1.0",
+      "description": null,
+      "required": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(bus: CANBus, sdo_timeout: float = 1.0) -> None",
+      "docstring": "Initialize CANopen master.\n\nArgs:\n    bus: CAN bus instance.\n    sdo_timeout: Default SDO timeout for nodes.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "bus",
+          "type": "CANBus",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "sdo_timeout",
+          "type": "float",
+          "default": "1.0",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "get_node",
+      "signature": "(node_id: int, name: str | None = None) -> CANOpenNode",
+      "docstring": "Get or create a node instance.\n\nArgs:\n    node_id: Node ID (1-127).\n    name: Optional node name.\n\nReturns:\n    CANOpenNode instance.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "node_id",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "str | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "CANOpenNode",
+      "is_async": false
+    },
+    {
+      "name": "nmt_broadcast",
+      "signature": "(command: NMTCommand) -> None",
+      "docstring": "Send NMT command to all nodes.\n\nArgs:\n    command: NMT command to broadcast.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "command",
+          "type": "NMTCommand",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "nmt_reset_all",
+      "signature": "() -> None",
+      "docstring": "Reset all nodes.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "nmt_start_all",
+      "signature": "() -> None",
+      "docstring": "Start all nodes.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "nmt_stop_all",
+      "signature": "() -> None",
+      "docstring": "Stop all nodes.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "process_message",
+      "signature": "(msg: CANMessage) -> None",
+      "docstring": "Process received CAN message.\n\nArgs:\n    msg: Received CAN message.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "msg",
+          "type": "CANMessage",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "remove_node",
+      "signature": "(node_id: int) -> None",
+      "docstring": "Remove a node from management.\n\nArgs:\n    node_id: Node ID to remove.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "node_id",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "scan_nodes",
+      "signature": "(timeout: float = 0.1) -> list[int]",
+      "docstring": "Scan for active nodes on the network.\n\nUses SDO read of device type (0x1000) to detect nodes.\n\nArgs:\n    timeout: Timeout per node scan.\n\nReturns:\n    List of responding node IDs.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "timeout",
+          "type": "float",
+          "default": "0.1",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "list[int]",
+      "is_async": false
+    },
+    {
+      "name": "send_sync",
+      "signature": "(counter: int = 0) -> None",
+      "docstring": "Send SYNC message.\n\nArgs:\n    counter: Optional SYNC counter (0-240).",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "counter",
+          "type": "int",
+          "default": "0",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "set_emcy_callback",
+      "signature": "(callback: Any) -> None",
+      "docstring": "Set callback for emergency messages.\n\nArgs:\n    callback: Function taking EMCYMessage parameter.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "callback",
+          "type": "Any",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "sync_loop",
+      "signature": "(interval: float = 0.01, with_counter: bool = False) -> None",
+      "docstring": "Run SYNC generation loop.\n\nArgs:\n    interval: SYNC interval in seconds.\n    with_counter: Include SYNC counter.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "interval",
+          "type": "float",
+          "default": "0.01",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "with_counter",
+          "type": "bool",
+          "default": "False",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    }
+  ],
+  "bases": []
+}
