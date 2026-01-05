@@ -1,0 +1,233 @@
+{
+  "name": "Gripper",
+  "module": "robo_infra.controllers.gripper",
+  "docstring": "Controller for robotic grippers and end effectors.\n\nGripper provides high-level control for gripping mechanisms,\nwith optional force sensing for grip detection.\n\nFeatures:\n- Open/close control\n- Partial position control\n- Force-based grip detection (optional)\n- Grip state tracking\n\nFull implementation in section 2.3.2.",
+  "parameters": [
+    {
+      "name": "name",
+      "type": "str",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "actuator",
+      "type": "Actuator",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "config",
+      "type": "GripperConfig | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "force_sensor",
+      "type": "Sensor | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(name: str, actuator: Actuator, config: GripperConfig | None = None, force_sensor: Sensor | None = None) -> None",
+      "docstring": "Initialize Gripper controller.\n\nArgs:\n    name: Controller name\n    actuator: Gripper actuator (servo, motor, etc.)\n    config: Optional configuration\n    force_sensor: Optional force sensor for grip detection\n\nRaises:\n    ValueError: If actuator is None",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "actuator",
+          "type": "Actuator",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "config",
+          "type": "GripperConfig | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "force_sensor",
+          "type": "Sensor | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "close",
+      "signature": "(speed: float = 1.0) -> None",
+      "docstring": "Close the gripper to fully closed position.\n\nArgs:\n    speed: Movement speed (0.0 to 1.0). Defaults to 1.0.\n           Uses config.default_speed if not specified.\n\nRaises:\n    RuntimeError: If gripper is not enabled.\n\nExample:\n    >>> gripper.enable()\n    >>> gripper.close()\n    >>> assert gripper.is_closed",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "speed",
+          "type": "float",
+          "default": "1.0",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "disable",
+      "signature": "() -> None",
+      "docstring": "Disable the gripper controller.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "enable",
+      "signature": "() -> None",
+      "docstring": "Enable the gripper controller.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "grip",
+      "signature": "() -> bool",
+      "docstring": "Close gripper until force threshold or fully closed.\n\nThis method closes the gripper slowly, checking for force feedback\n(if a force sensor is configured) to detect when an object is gripped.\n\nReturns:\n    True if object is gripped (force detected before fully closed),\n    False if gripper closed fully without detecting an object.\n\nRaises:\n    RuntimeError: If gripper is not enabled.\n\nExample:\n    >>> gripper.enable()\n    >>> gripper.open()\n    >>> # Place object between gripper jaws\n    >>> success = gripper.grip()\n    >>> if success:\n    ...     print(\"Object gripped!\")",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "bool",
+      "is_async": false
+    },
+    {
+      "name": "open",
+      "signature": "(speed: float = 1.0) -> None",
+      "docstring": "Open the gripper to fully open position.\n\nArgs:\n    speed: Movement speed (0.0 to 1.0). Defaults to 1.0.\n           Uses config.default_speed if not specified.\n\nRaises:\n    RuntimeError: If gripper is not enabled.\n\nExample:\n    >>> gripper.enable()\n    >>> gripper.open()\n    >>> assert gripper.is_open",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "speed",
+          "type": "float",
+          "default": "1.0",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "release",
+      "signature": "() -> None",
+      "docstring": "Release gripped object by opening gripper.\n\nThis is an alias for open() for semantic clarity.\n\nRaises:\n    RuntimeError: If gripper is not enabled.\n\nExample:\n    >>> success = gripper.grip()\n    >>> if success:\n    ...     # Do something with object\n    ...     gripper.release()",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "set",
+      "signature": "(position: float) -> None",
+      "docstring": "Move gripper to a specific position.\n\nArgs:\n    position: Target position (between open and closed).\n\nRaises:\n    RuntimeError: If gripper is not enabled.\n    ValueError: If position is out of range.\n\nExample:\n    >>> gripper.enable()\n    >>> gripper.set(50.0)  # Half-way between open and closed",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "position",
+          "type": "float",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "stop",
+      "signature": "() -> None",
+      "docstring": "Stop gripper movement immediately.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    }
+  ],
+  "bases": [
+    "Controller"
+  ]
+}

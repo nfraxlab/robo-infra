@@ -1,0 +1,160 @@
+{
+  "name": "Limits",
+  "module": "robo_infra.core.types",
+  "docstring": "Value limits for an actuator or sensor.",
+  "parameters": [
+    {
+      "name": "min",
+      "type": "float",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "max",
+      "type": "float",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "default",
+      "type": "float | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(min: float, max: float, default: float | None = None) -> None",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "min",
+          "type": "float",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "max",
+          "type": "float",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "default",
+          "type": "float | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "clamp",
+      "signature": "(value: float) -> float",
+      "docstring": "Clamp a value to the limits.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "value",
+          "type": "float",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "float",
+      "is_async": false
+    },
+    {
+      "name": "denormalize",
+      "signature": "(normalized: float) -> float",
+      "docstring": "Convert a 0-1 normalized value back to actual value.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "normalized",
+          "type": "float",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "float",
+      "is_async": false
+    },
+    {
+      "name": "is_within",
+      "signature": "(value: float) -> bool",
+      "docstring": "Check if a value is within the limits.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "value",
+          "type": "float",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "bool",
+      "is_async": false
+    },
+    {
+      "name": "normalize",
+      "signature": "(value: float) -> float",
+      "docstring": "Normalize a value to 0-1 range within limits.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "value",
+          "type": "float",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "float",
+      "is_async": false
+    }
+  ],
+  "bases": []
+}

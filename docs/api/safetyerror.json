@@ -1,0 +1,56 @@
+{
+  "name": "SafetyError",
+  "module": "robo_infra.core.exceptions",
+  "docstring": "Raised when a safety limit or condition is triggered.",
+  "parameters": [
+    {
+      "name": "condition",
+      "type": "str",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "action_taken",
+      "type": "str | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(condition: str, action_taken: str | None = None) -> None",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "condition",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "action_taken",
+          "type": "str | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    }
+  ],
+  "bases": [
+    "RoboInfraError"
+  ]
+}

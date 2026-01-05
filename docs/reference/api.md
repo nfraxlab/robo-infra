@@ -1,197 +1,58 @@
 # API Reference
 
-This section contains auto-generated API documentation from the robo-infra source code.
+This documentation has moved to the interactive API reference on nfrax.com.
 
-## Core Modules
+## Browse API Documentation
 
-### Core
+Visit the full API reference at **[nfrax.com/robo-infra/api](https://nfrax.com/robo-infra/api)** for:
 
-::: robo_infra.core
-    options:
-      show_root_heading: true
-      heading_level: 3
-      members:
-        - Actuator
-        - Sensor
-        - Controller
-        - Driver
-        - exceptions
+- Complete class documentation with type signatures
+- Method parameters and return types
+- Code examples and usage patterns
+- Dark mode support
 
-### Actuators
-
-::: robo_infra.actuators
-    options:
-      show_root_heading: true
-      heading_level: 3
-      members:
-        - Servo
-        - DCMotor
-        - Stepper
-        - BrushlessMotor
-        - LinearActuator
-        - Gripper
-
-### Sensors
-
-::: robo_infra.sensors
-    options:
-      show_root_heading: true
-      heading_level: 3
-      members:
-        - IMU
-        - Encoder
-        - DistanceSensor
-        - ForceSensor
-        - TemperatureSensor
-        - CurrentSensor
+## Quick Links
 
 ### Controllers
 
-::: robo_infra.controllers
-    options:
-      show_root_heading: true
-      heading_level: 3
-      members:
-        - JointGroup
-        - DifferentialDrive
-        - MecanumDrive
-        - OmniDrive
-        - ArmController
-        - ConveyorController
+| Class | Description |
+|-------|-------------|
+| [DifferentialDrive](https://nfrax.com/robo-infra/api/DifferentialDrive) | Differential drive controller |
+| [Gripper](https://nfrax.com/robo-infra/api/Gripper) | Gripper controller |
+| [JointGroup](https://nfrax.com/robo-infra/api/JointGroup) | Joint group controller |
+| [Lock](https://nfrax.com/robo-infra/api/Lock) | Hardware lock abstraction |
 
-### Drivers
+### CAN Bus
 
-::: robo_infra.drivers
-    options:
-      show_root_heading: true
-      heading_level: 3
-      members:
-        - PCA9685Driver
-        - DynamixelDriver
-        - ODriveDriver
-        - VESCDriver
-        - TMC2209Driver
-        - L298NDriver
-        - TB6612Driver
-        - ArduinoDriver
-        - SimulationDriver
+| Class | Description |
+|-------|-------------|
+| [CANBus](https://nfrax.com/robo-infra/api/CANBus) | CAN bus interface |
+| [CANConfig](https://nfrax.com/robo-infra/api/CANConfig) | CAN configuration |
+| [CANMessage](https://nfrax.com/robo-infra/api/CANMessage) | CAN message model |
+| [SimulatedCANBus](https://nfrax.com/robo-infra/api/SimulatedCANBus) | Simulated CAN bus for testing |
 
-## Motion & Kinematics
+### Core Types
 
-### Motion
-
-::: robo_infra.motion
-    options:
-      show_root_heading: true
-      heading_level: 3
-      members:
-        - TrajectoryGenerator
-        - LinearInterpolation
-        - CubicInterpolation
-        - TrapezoidalProfile
-        - SCurveProfile
-
-### Vision
-
-::: robo_infra.vision
-    options:
-      show_root_heading: true
-      heading_level: 3
-      members:
-        - Camera
-        - ObjectDetector
-        - MarkerDetector
-        - CoordinateTransform
-
-## Safety & Control
-
-### Safety
-
-::: robo_infra.safety
-    options:
-      show_root_heading: true
-      heading_level: 3
-      members:
-        - EStop
-        - SafetyMonitor
-        - JointLimiter
-        - Watchdog
-        - SafetyZone
-
-## Protocols
+| Class | Description |
+|-------|-------------|
+| [Limits](https://nfrax.com/robo-infra/api/Limits) | Joint/actuator limits |
+| [Position](https://nfrax.com/robo-infra/api/Position) | Position representation |
 
 ### Protocols
 
-::: robo_infra.protocols
-    options:
-      show_root_heading: true
-      heading_level: 3
-      members:
-        - CANopenMaster
-        - CANopenNode
-        - ModbusRTU
-        - ModbusTCP
+| Class | Description |
+|-------|-------------|
+| [CANOpenMaster](https://nfrax.com/robo-infra/api/CANOpenMaster) | CANopen master node |
+| [CANOpenNode](https://nfrax.com/robo-infra/api/CANOpenNode) | CANopen node interface |
+| [ModbusRTU](https://nfrax.com/robo-infra/api/ModbusRTU) | Modbus RTU protocol |
+| [ModbusTCP](https://nfrax.com/robo-infra/api/ModbusTCP) | Modbus TCP protocol |
 
-## Power
+### Exceptions
 
-### Power
-
-::: robo_infra.power
-    options:
-      show_root_heading: true
-      heading_level: 3
-      members:
-        - BatteryMonitor
-        - PowerRail
-        - PowerDistributionBoard
-        - INA219Driver
-        - INA226Driver
-
-## Platforms
-
-### Platforms
-
-::: robo_infra.platforms
-    options:
-      show_root_heading: true
-      heading_level: 3
-      members:
-        - RaspberryPi
-        - Jetson
-        - BeagleBone
-        - Arduino
-        - ESP32
-
-## Integrations
-
-### Integrations
-
-::: robo_infra.integrations
-    options:
-      show_root_heading: true
-      heading_level: 3
-      members:
-        - controller_to_ros2_node
-        - ROS2NodeConfig
-        - track_command
-        - record_position
-        - create_controller_health_check
-
-## Utilities
-
-### Utils
-
-::: robo_infra.utils
-    options:
-      show_root_heading: true
-      heading_level: 3
-      members:
-        - with_retry
-        - with_timeout
-        - CircuitBreaker
-        - DegradedModeController
-        - ConnectionPool
-        - ResourceManager
-        - validate_joint_angle
-        - sanitize_name
-        - check_gpio_access
+| Class | Description |
+|-------|-------------|
+| [RoboInfraError](https://nfrax.com/robo-infra/api/RoboInfraError) | Base exception class |
+| [HardwareNotFoundError](https://nfrax.com/robo-infra/api/HardwareNotFoundError) | Hardware not found |
+| [CommunicationError](https://nfrax.com/robo-infra/api/CommunicationError) | Communication failure |
+| [SafetyError](https://nfrax.com/robo-infra/api/SafetyError) | Safety violation |
+| [CalibrationError](https://nfrax.com/robo-infra/api/CalibrationError) | Calibration failure |

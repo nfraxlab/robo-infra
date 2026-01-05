@@ -27,3 +27,13 @@ repos:
           - pydantic>=2.0
           - typing-extensions>=4.0
         args: [--config-file=mypy.ini]
+
+  - repo: local
+    hooks:
+      - id: api-docs
+        name: API Docs Generation
+        entry: poetry run python scripts/extract_api_docs.py
+        language: system
+        pass_filenames: false
+        files: ^src/robo_infra/
+        stages: [pre-commit]

@@ -1,0 +1,827 @@
+{
+  "name": "CANOpenNode",
+  "module": "robo_infra.protocols.canopen",
+  "docstring": "CANopen node abstraction.\n\nRepresents a single CANopen device on the network.\nProvides methods for NMT control, SDO read/write, and PDO access.",
+  "parameters": [
+    {
+      "name": "bus",
+      "type": "CANBus",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "node_id",
+      "type": "int",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "sdo_timeout",
+      "type": "float",
+      "default": "1.0",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "name",
+      "type": "str | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(bus: CANBus, node_id: int, sdo_timeout: float = 1.0, name: str | None = None) -> None",
+      "docstring": "Initialize CANopen node.\n\nArgs:\n    bus: CAN bus instance.\n    node_id: Node ID (1-127).\n    sdo_timeout: SDO transfer timeout in seconds.\n    name: Optional node name.\n\nRaises:\n    ValueError: If node_id is out of range.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "bus",
+          "type": "CANBus",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "node_id",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "sdo_timeout",
+          "type": "float",
+          "default": "1.0",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "str | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "is_alive",
+      "signature": "(timeout: float = 2.0) -> bool",
+      "docstring": "Check if node is alive (heartbeat received recently).\n\nArgs:\n    timeout: Maximum time since last heartbeat.\n\nReturns:\n    True if node is responding.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "timeout",
+          "type": "float",
+          "default": "2.0",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "bool",
+      "is_async": false
+    },
+    {
+      "name": "nmt_pre_operational",
+      "signature": "() -> None",
+      "docstring": "Enter pre-operational state.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "nmt_reset",
+      "signature": "() -> None",
+      "docstring": "Reset the node.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "nmt_reset_communication",
+      "signature": "() -> None",
+      "docstring": "Reset communication.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "nmt_send",
+      "signature": "(command: NMTCommand) -> None",
+      "docstring": "Send NMT command to this node.\n\nArgs:\n    command: NMT command to send.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "command",
+          "type": "NMTCommand",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "nmt_start",
+      "signature": "() -> None",
+      "docstring": "Start the node (enter operational state).",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "nmt_stop",
+      "signature": "() -> None",
+      "docstring": "Stop the node (enter stopped state).",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "pdo_configure",
+      "signature": "(pdo_number: int, is_transmit: bool, mappings: list[PDOMapping], transmission_type: int = 255) -> None",
+      "docstring": "Configure PDO mapping.\n\nArgs:\n    pdo_number: PDO number (1-4).\n    is_transmit: True for TPDO, False for RPDO.\n    mappings: List of PDO mappings.\n    transmission_type: PDO transmission type (255=async).",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "pdo_number",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "is_transmit",
+          "type": "bool",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "mappings",
+          "type": "list[PDOMapping]",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "transmission_type",
+          "type": "int",
+          "default": "255",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "pdo_read",
+      "signature": "(pdo_number: int) -> bytes | None",
+      "docstring": "Read latest TPDO data.\n\nArgs:\n    pdo_number: PDO number (1-4).\n\nReturns:\n    PDO data or None if not received.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "pdo_number",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "bytes | None",
+      "is_async": false
+    },
+    {
+      "name": "pdo_write",
+      "signature": "(pdo_number: int, data: bytes) -> None",
+      "docstring": "Write RPDO data.\n\nArgs:\n    pdo_number: PDO number (1-4).\n    data: PDO data (0-8 bytes).",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "pdo_number",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "data",
+          "type": "bytes",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "process_heartbeat",
+      "signature": "(data: bytes) -> None",
+      "docstring": "Process received heartbeat message.\n\nArgs:\n    data: Heartbeat message data (1 byte = NMT state).",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "data",
+          "type": "bytes",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "sdo_read",
+      "signature": "(index: int, subindex: int = 0) -> bytes",
+      "docstring": "Read from object dictionary using SDO upload.\n\nArgs:\n    index: Object dictionary index (0x0000-0xFFFF).\n    subindex: Object dictionary subindex (0x00-0xFF).\n\nReturns:\n    Data read from object dictionary.\n\nRaises:\n    SDOError: If transfer fails.\n    TimeoutError: If no response received.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "index",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "subindex",
+          "type": "int",
+          "default": "0",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "bytes",
+      "is_async": false
+    },
+    {
+      "name": "sdo_read_i16",
+      "signature": "(index: int, subindex: int = 0) -> int",
+      "docstring": "Read signed 16-bit integer from object dictionary.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "index",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "subindex",
+          "type": "int",
+          "default": "0",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "int",
+      "is_async": false
+    },
+    {
+      "name": "sdo_read_i32",
+      "signature": "(index: int, subindex: int = 0) -> int",
+      "docstring": "Read signed 32-bit integer from object dictionary.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "index",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "subindex",
+          "type": "int",
+          "default": "0",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "int",
+      "is_async": false
+    },
+    {
+      "name": "sdo_read_i8",
+      "signature": "(index: int, subindex: int = 0) -> int",
+      "docstring": "Read signed 8-bit integer from object dictionary.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "index",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "subindex",
+          "type": "int",
+          "default": "0",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "int",
+      "is_async": false
+    },
+    {
+      "name": "sdo_read_string",
+      "signature": "(index: int, subindex: int = 0) -> str",
+      "docstring": "Read visible string from object dictionary.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "index",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "subindex",
+          "type": "int",
+          "default": "0",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "str",
+      "is_async": false
+    },
+    {
+      "name": "sdo_read_u16",
+      "signature": "(index: int, subindex: int = 0) -> int",
+      "docstring": "Read unsigned 16-bit integer from object dictionary.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "index",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "subindex",
+          "type": "int",
+          "default": "0",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "int",
+      "is_async": false
+    },
+    {
+      "name": "sdo_read_u32",
+      "signature": "(index: int, subindex: int = 0) -> int",
+      "docstring": "Read unsigned 32-bit integer from object dictionary.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "index",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "subindex",
+          "type": "int",
+          "default": "0",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "int",
+      "is_async": false
+    },
+    {
+      "name": "sdo_read_u8",
+      "signature": "(index: int, subindex: int = 0) -> int",
+      "docstring": "Read unsigned 8-bit integer from object dictionary.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "index",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "subindex",
+          "type": "int",
+          "default": "0",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "int",
+      "is_async": false
+    },
+    {
+      "name": "sdo_write",
+      "signature": "(index: int, subindex: int, data: bytes) -> None",
+      "docstring": "Write to object dictionary using SDO download.\n\nArgs:\n    index: Object dictionary index.\n    subindex: Object dictionary subindex.\n    data: Data to write.\n\nRaises:\n    SDOError: If transfer fails.\n    TimeoutError: If no response received.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "index",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "subindex",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "data",
+          "type": "bytes",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "sdo_write_i16",
+      "signature": "(index: int, subindex: int, value: int) -> None",
+      "docstring": "Write signed 16-bit integer to object dictionary.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "index",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "subindex",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "sdo_write_i32",
+      "signature": "(index: int, subindex: int, value: int) -> None",
+      "docstring": "Write signed 32-bit integer to object dictionary.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "index",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "subindex",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "sdo_write_i8",
+      "signature": "(index: int, subindex: int, value: int) -> None",
+      "docstring": "Write signed 8-bit integer to object dictionary.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "index",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "subindex",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "sdo_write_u16",
+      "signature": "(index: int, subindex: int, value: int) -> None",
+      "docstring": "Write unsigned 16-bit integer to object dictionary.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "index",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "subindex",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "sdo_write_u32",
+      "signature": "(index: int, subindex: int, value: int) -> None",
+      "docstring": "Write unsigned 32-bit integer to object dictionary.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "index",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "subindex",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "sdo_write_u8",
+      "signature": "(index: int, subindex: int, value: int) -> None",
+      "docstring": "Write unsigned 8-bit integer to object dictionary.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "index",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "subindex",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    }
+  ],
+  "bases": []
+}

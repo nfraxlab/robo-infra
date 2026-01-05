@@ -6062,4 +6062,4 @@ vision = ["opencv-python-headless"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<4.0"
-content-hash = "346d18c810e95b89621def66e63b09df29f18938a8d3f3d743e46af47e3ec08e"
+content-hash = "c82738b65a8732706f7c0136cd437b1f2d96fa96bde19104efd2c70deaa5569c"

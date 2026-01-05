@@ -1,0 +1,198 @@
+{
+  "name": "Lock",
+  "module": "robo_infra.controllers.lock",
+  "docstring": "Controller for robotic locks and latches.\n\nLock provides high-level control for locking mechanisms,\nwith state tracking and optional security features.\n\nFeatures:\n- Lock/unlock control\n- State tracking (locked/unlocked/transitioning)\n- Async support for transition timing\n- Optional auto-lock timeout\n- Toggle convenience method\n\nExample:\n    >>> lock = Lock(\"door\", servo, config=LockConfig(name=\"door\"))\n    >>> lock.enable()\n    >>> lock.unlock()\n    >>> assert lock.is_unlocked\n    >>> lock.lock()\n    >>> assert lock.is_locked",
+  "parameters": [
+    {
+      "name": "name",
+      "type": "str",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "actuator",
+      "type": "Actuator",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "config",
+      "type": "LockConfig | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(name: str, actuator: Actuator, config: LockConfig | None = None) -> None",
+      "docstring": "Initialize Lock controller.\n\nArgs:\n    name: Controller name\n    actuator: Lock actuator (servo, motor, solenoid, etc.)\n    config: Optional configuration\n\nRaises:\n    ValueError: If actuator is None",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "actuator",
+          "type": "Actuator",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "config",
+          "type": "LockConfig | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "alock",
+      "signature": "() -> None",
+      "docstring": "Lock the mechanism asynchronously.\n\nMoves the actuator to the locked position and waits\nfor the transition time.\n\nRaises:\n    RuntimeError: If lock is not enabled.\n\nExample:\n    >>> lock.enable()\n    >>> await lock.alock()\n    >>> assert lock.is_locked",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "aunlock",
+      "signature": "() -> None",
+      "docstring": "Unlock the mechanism asynchronously.\n\nMoves the actuator to the unlocked position and waits\nfor the transition time.\n\nRaises:\n    RuntimeError: If lock is not enabled.\n\nExample:\n    >>> lock.enable()\n    >>> await lock.aunlock()\n    >>> assert lock.is_unlocked",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "disable",
+      "signature": "() -> None",
+      "docstring": "Disable the lock controller.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "enable",
+      "signature": "() -> None",
+      "docstring": "Enable the lock controller.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "lock",
+      "signature": "() -> None",
+      "docstring": "Lock the mechanism.\n\nMoves the actuator to the locked position.\n\nRaises:\n    RuntimeError: If lock is not enabled.\n\nExample:\n    >>> lock.enable()\n    >>> lock.lock()\n    >>> assert lock.is_locked",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "stop",
+      "signature": "() -> None",
+      "docstring": "Stop lock movement immediately.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "toggle",
+      "signature": "() -> None",
+      "docstring": "Toggle the lock state.\n\nIf locked, unlocks. If unlocked, locks.\n\nRaises:\n    RuntimeError: If lock is not enabled.\n\nExample:\n    >>> lock.enable()\n    >>> lock.lock()\n    >>> lock.toggle()\n    >>> assert lock.is_unlocked",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "unlock",
+      "signature": "() -> None",
+      "docstring": "Unlock the mechanism.\n\nMoves the actuator to the unlocked position.\n\nRaises:\n    RuntimeError: If lock is not enabled.\n\nExample:\n    >>> lock.enable()\n    >>> lock.unlock()\n    >>> assert lock.is_unlocked",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    }
+  ],
+  "bases": [
+    "Controller"
+  ]
+}
