@@ -1,6 +1,6 @@
 {
   "name": "CANOpenMaster",
-  "module": "robo_infra.protocols.canopen",
+  "module": "robo_infra.protocols",
   "docstring": "CANopen network master.\n\nManages multiple CANopen nodes on a network and provides\nnetwork-wide services like SYNC generation and NMT broadcast.",
   "parameters": [
     {

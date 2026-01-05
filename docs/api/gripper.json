@@ -1,6 +1,6 @@
 {
   "name": "Gripper",
-  "module": "robo_infra.controllers.gripper",
+  "module": "robo_infra.controllers",
   "docstring": "Controller for robotic grippers and end effectors.\n\nGripper provides high-level control for gripping mechanisms,\nwith optional force sensing for grip detection.\n\nFeatures:\n- Open/close control\n- Partial position control\n- Force-based grip detection (optional)\n- Grip state tracking\n\nFull implementation in section 2.3.2.",
   "parameters": [
     {

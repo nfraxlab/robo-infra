@@ -1,6 +1,6 @@
 {
   "name": "JointGroup",
-  "module": "robo_infra.controllers.joint_group",
+  "module": "robo_infra.controllers",
   "docstring": "Controller for coordinating multiple joints as a robot arm.\n\nJointGroup provides high-level control for multi-joint robots like\nrobot arms, pan-tilt mechanisms, and articulated systems.\n\nFeatures:\n- Synchronized multi-joint movement\n- Motion interpolation for smooth trajectories\n- Named position presets\n- Home/stop/disable functionality\n- Async movement support\n\nExample:\n    >>> joints = {\n    ...     \"base\": Servo(name=\"base\", angle_range=(0, 180)),\n    ...     \"shoulder\": Servo(name=\"shoulder\", angle_range=(0, 180)),\n    ...     \"elbow\": Servo(name=\"elbow\", angle_range=(0, 180)),\n    ... }\n    >>> arm = JointGroup(name=\"arm\", joints=joints)\n    >>> arm.enable()\n    >>> arm.move_to({\"base\": 90, \"shoulder\": 45, \"elbow\": 120})",
   "parameters": [
     {
