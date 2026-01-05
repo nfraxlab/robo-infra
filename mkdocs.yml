@@ -75,8 +75,6 @@ nav:
   - Integration:
       - AI Integration: ai-integration.md
       - API Integration: api-integration.md
-  - Reference:
-      - API Reference: reference/api.md
 
 extra:
   social:
