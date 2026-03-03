@@ -1,6 +1,15 @@
 # CHANGELOG
 
 
+## v0.5.3 (2026-03-03)
+
+### Bug Fixes
+
+- Let semantic-release version handle push and github release creation
+  ([#21](https://github.com/nfraxlab/robo-infra/pull/21),
+  [`c7e325f`](https://github.com/nfraxlab/robo-infra/commit/c7e325f320c4d552b9527c3dd56f7b78a75cb3ae))
+
+
 ## v0.5.2 (2026-03-03)
 
 ### Bug Fixes
