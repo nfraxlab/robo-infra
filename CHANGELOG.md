@@ -1,6 +1,26 @@
 # CHANGELOG
 
 
+## v0.5.2 (2026-03-03)
+
+### Bug Fixes
+
+- Detect semantic-release version via git tag instead of parsing stdout
+  ([#20](https://github.com/nfraxlab/robo-infra/pull/20),
+  [`81d0207`](https://github.com/nfraxlab/robo-infra/commit/81d0207894cfb2f9f2431bac9a9e4cc8be338bc2))
+
+### Continuous Integration
+
+- Fix PyPI publish by calling workflow directly instead of relying on tag event delivery
+  ([#19](https://github.com/nfraxlab/robo-infra/pull/19),
+  [`7e6800e`](https://github.com/nfraxlab/robo-infra/commit/7e6800e68c5400114397b89c779f7eec03fa5835))
+
+### Documentation
+
+- Switch to fork-based contribution model ([#18](https://github.com/nfraxlab/robo-infra/pull/18),
+  [`ae43aa2`](https://github.com/nfraxlab/robo-infra/commit/ae43aa23a2f6d532e046a2eebfb413dcd54f2b8e))
+
+
 ## v0.5.1 (2026-01-05)
 
 ### Bug Fixes
